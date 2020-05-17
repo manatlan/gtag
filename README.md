@@ -1,2 +1,3 @@
 # gtag
-a guy sub module
+
+A [guy](https://github.com/manatlan/guy) sub module
