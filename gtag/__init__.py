@@ -16,48 +16,48 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-from gtag.tags import Tag
+from .tags import Tag
 import guy
 
 __version__="0.0.1"
 
-gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
+_gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
 class ReactiveProp:
     def __init__(self,instance,attribut:str):
         # assert attribut in instance.__dict__.keys()
-        self.instance=instance
-        self.attribut=attribut
+        self.__instance=instance
+        self.__attribut=attribut
     def set(self,v):
-        self.instance.__dict__[self.attribut]=v
+        self.__instance.__dict__[self.__attribut]=v
     def get(self):
-        return self.instance.__dict__[self.attribut]
+        return self.__instance.__dict__[self.__attribut]
 
 
     def __eq__(self, v):
-        return self.get() == gg(v)
+        return self.get() == _gg(v)
 
     def __ne__(self, v):
-        return self.get() != gg(v)
+        return self.get() != _gg(v)
 
     def __lt__(self, v):
-        return self.get() < gg(v)
+        return self.get() < _gg(v)
 
     def __le__(self, v):
-        return self.get() <= gg(v)
+        return self.get() <= _gg(v)
 
     def __ge__(self, v):
-        return self.get() >= gg(v)
+        return self.get() >= _gg(v)
 
     def __gt__(self, v):
-        return self.get() > gg(v)
+        return self.get() > _gg(v)
 
 
     def __int__(self):
         return int(self.get())
 
     def __add__(self,v): # add in place
-        vv=self.get() + gg(v)
+        vv=self.get() + _gg(v)
         self.set( vv )
         return self
 
@@ -65,16 +65,17 @@ class ReactiveProp:
         return str(self.get())
 
     def __repr__(self):
-        return "<%s instance=%s attr=%s>" % (self.__class__.__name__,self.instance.id,self.attribut)
+        iid=self.__instance.id if hasattr(self.__instance,"id") else str(self.__instance)
+        return "<%s instance=%s attr=%s>" % (self.__class__.__name__,iid,self.__attribut)
     #TODO: add a lot of __slot__ ;-)
 
 
 
 class GTagApp(guy.Guy):
 
-    def __init__(self,app):
+    def __init__(self,gtag):
         super().__init__()
-        self._tag=app
+        self._gtag=gtag
 
     def render(self,path=None):
         return """<!DOCTYPE html>
@@ -102,16 +103,17 @@ class GTagApp(guy.Guy):
             </head>
             <body>%s</body>
         </html>
-        """ % self._tag
+        """ % self._gtag
 
     def bindUpdate(self,id:str,method:str,*args):
-        obj=self._tag._getInstance(id)
+        """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
+        obj=self._gtag._getInstance(id)
         r=getattr(obj,method)(*args)
         return self.update()    # currently it update all ;-(
 
     def update(self):
-        """ Exposed in py/side !"""
-        return self._tag.update()
+        """ inner (js exposed) guy method, which returns the JS to update the content of the gtag !"""
+        return self._gtag.update()
 
 
 

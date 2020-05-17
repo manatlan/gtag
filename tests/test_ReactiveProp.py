@@ -7,6 +7,7 @@ def test_ReactiveProp():
     p.b=42
 
     a=ReactiveProp(p,"a")
+    assert "<ReactiveProp" in repr(a)
     assert int(a)==12
     assert p.__dict__["a"]==12
     a.set(42)

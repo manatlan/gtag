@@ -17,7 +17,7 @@
             "presentation": {
                 "panel": "new",
                 "focus": true
-            }            
+            }
         },
         {
             "label": "upload to pypi",
@@ -32,7 +32,7 @@
         {
             "label": "generate docs",
             "type": "shell",
-            "command": "pdoc --html gtag gtag.tags --html-dir docs",
+            "command": "pdoc --html gtag --overwrite --html-dir docs && google-chrome docs",
             "problemMatcher": [],
             "presentation": {
                 "panel": "new",
@@ -59,6 +59,6 @@
         //         "panel": "new",
         //         "focus": true
         //     }
-        // }        
+        // }
     ]
 }

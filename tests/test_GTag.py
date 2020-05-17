@@ -1,4 +1,5 @@
 from gtag import GTag
+from gtag.tags import Div,Tag
 import pytest
 
 def test_GTag():
@@ -18,3 +19,42 @@ def test_GTag():
     with pytest.raises(AssertionError):
         assert m.update()
 
+def test_GTag_build():
+    class My(GTag):
+
+        def __init__(self):
+            self.v=12
+            super().__init__()
+        def build(self):
+            return Div("hello",self.bind.v,onclick=self.bind.onclick())
+        def onclick(self):
+            pass
+
+    m=My()
+    o=m.build()
+    assert isinstance(o,Tag)
+    html=str(m)
+
+    assert 'onclick="self.bindUpdate(' in html
+    assert 'id="My_' in html
+    assert '>hello 12<' in html
+
+def test_GTag_render():
+    class My(GTag):
+
+        def __init__(self):
+            self.v=12
+            super().__init__()
+        def render(self):
+            return Div("hello",self.bind.v,onclick=self.bind.onclick())
+        def onclick(self):
+            pass
+
+    m=My()
+    o=m.render()
+    assert isinstance(o,Tag)
+    html=str(m)
+
+    assert 'onclick="self.bindUpdate(' in html
+    assert 'id="My_' in html
+    assert '>hello 12<' in html
