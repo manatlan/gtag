@@ -18,6 +18,10 @@
 import html
 
 class Tag:
+    """
+        This is a helper to produce "HTML TAG"
+        This is completly css agnostic
+    """
     tag="div" # default one
     klass=None
 
@@ -39,7 +43,7 @@ class Tag:
     def __str__(self):
         attrs=self.attrs
         if self.id: attrs["id"]=self.id
-        attrs=['%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) for k,v in attrs.items()]
+        attrs=['%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) for k,v in attrs.items() if v]
         return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
             tag=self.tag,
             attrs=" ".join([""]+attrs) if attrs else "",
@@ -50,6 +54,9 @@ class Tag:
         return "<%s>" % self.__class__.__name__
 
 
+###################################################################################################
+## here are Bulma specific tags
+###################################################################################################
 class Body(Tag): 
     tag="body"
     klass="body"

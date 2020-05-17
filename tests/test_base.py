@@ -1,4 +1,4 @@
-from gtag import GTag,ReactiveProp
+from gtag import ReactiveProp
 from gtag.tags import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 from gtag.tags import Tag
 
@@ -67,15 +67,3 @@ def test_Tag_class():
     assert str(Nope()) == '<none class="nine"></none>'
     assert str(Nope("hello")) == '<none class="nine">hello</none>'
     assert str(Nope("hello", klass='other') ) == '<none class="other">hello</none>'
-
-def test_GTag():
-    class My(GTag):
-        pass
-    m=My()
-    assert m._tag is None
-    assert m.build() is None
-    assert m.render() is None
-    id=m.id
-    assert id
-    assert m._getInstance(id) == m
-

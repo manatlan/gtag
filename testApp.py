@@ -12,7 +12,6 @@ class Inc(GTag):
                 Text(self.bind.cpt,style="text-align:center"),
                 Button("+",onclick=self.bind.addV(1) ),          #<- bind GuyCompo event
             )
-        
 
     def addV(self,v):
         self.cpt+=v
@@ -50,6 +49,7 @@ class MyTabs(GTag):
 
         
 class DynCreate(GTag):
+
     def __init__(self,n):
         self.n=n
         super().__init__()
@@ -91,10 +91,6 @@ class Page2(GTag):
             Box("A test page, with a binding value:", self.bind.nb),
             Inc(self.bind.nb),
         )
-
-        
-        
-   
 
 class TestApp(GTag):
     size=(400,300)

@@ -16,6 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
+from gtag.tags import Tag
 import guy
 
 __version__="0.0.1"
@@ -134,17 +135,17 @@ class GTag:
     def __del__(self):
         del GTag._tags[self.id]
 
-    def build(self):
+    def build(self) -> Tag:
         """ Override for static build 
             SHOULD RETURN a "Tag" (not a GTag)
         """
-        return None
+        pass
 
-    def render(self):
+    def render(self) -> Tag:
         """ Override for dynamic build 
             SHOULD RETURN a "Tag" (not a GTag)
         """
-        return None
+        pass
 
     def __str__(self):
         if self._tag is None:
