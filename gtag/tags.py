@@ -28,26 +28,26 @@ class Tag:
     def __init__(self,*contents,**attrs):
         assert "id" not in attrs.keys()
         self.id=None
-        self.tag=self.__class__.tag
-        self.contents=list(contents)
+        self.__tag=self.__class__.tag
+        self.__contents=list(contents)
 
         klass= attrs.get("klass") or self.klass
         if "klass" in attrs: del attrs["klass"]
 
-        self.attrs=attrs
-        if klass: self.attrs["class"]=klass
+        self.__attrs=attrs
+        if klass: self.__attrs["class"]=klass
 
-    def add(self,o):
-        self.contents.append(o)
+    def add(self,*elt):
+        self.__contents.extend(elt)
 
     def __str__(self):
-        attrs=self.attrs
+        attrs=self.__attrs
         if self.id: attrs["id"]=self.id
         attrs=['%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) for k,v in attrs.items() if v]
         return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
-            tag=self.tag,
+            tag=self.__tag,
             attrs=" ".join([""]+attrs) if attrs else "",
-            content=" ".join([str(i) for i in self.contents]),
+            content=" ".join([str(i) for i in self.__contents]),
         )
 
     def __repr__(self):
@@ -57,19 +57,19 @@ class Tag:
 ###################################################################################################
 ## here are Bulma specific tags
 ###################################################################################################
-class Body(Tag): 
+class Body(Tag):
     tag="body"
     klass="body"
 
-class Input(Tag): 
+class Input(Tag):
     tag="input"
     klass="input"
 
-class A(Tag): 
+class A(Tag):
     tag="a"
     klass="a"
 
-class Box(Tag): 
+class Box(Tag):
     tag="div"
     klass="box"
 
@@ -107,7 +107,7 @@ class Tabs(Tag):
     def __init__(self,**attrs):
         super().__init__(*attrs)
         self.ul=Ul()
-        self.contents.append( self.ul )
+        self.add( self.ul )
     def addTab(self,selected,title,onclick=None):
         if selected:
             self.ul.add( Li(A(title,onclick=onclick), klass="is-active" ) )
@@ -117,7 +117,7 @@ class Tabs(Tag):
 class Text(Tag):
     tag="p"
     klass="p"
-    
+
 class Button(Tag):
     tag="button"
     klass="button is-light"
