@@ -30,18 +30,16 @@ class Tag:
         self.id=None
         self.__tag=self.__class__.tag
         self.__contents=list(contents)
-
-        klass= attrs.get("klass") or self.klass
-        if "klass" in attrs: del attrs["klass"]
-
-        self.__attrs=attrs
-        if klass: self.__attrs["class"]=klass
+        self.__attrs=dict(attrs)
 
     def add(self,*elt):
         self.__contents.extend(elt)
 
     def __str__(self):
         attrs=self.__attrs
+        klass= attrs.get("klass") or self.klass
+        if "klass" in attrs: del attrs["klass"]
+        if klass: attrs["class"]=klass
         if self.id: attrs["id"]=self.id
         attrs=['%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) for k,v in attrs.items() if v]
         return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
