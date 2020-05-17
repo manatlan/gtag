@@ -63,7 +63,7 @@ class ReactiveProp:
 
     def __str__(self):
         return str(self.get())
-        
+
     def __repr__(self):
         return "<%s instance=%s attr=%s>" % (self.__class__.__name__,self.instance.id,self.attribut)
     #TODO: add a lot of __slot__ ;-)
@@ -83,12 +83,12 @@ class GTagApp(guy.Guy):
                 <script>
                 if(!sessionStorage["gid"]) sessionStorage["gid"]=Math.random().toString(36).substring(2);
                 var GID=sessionStorage["gid"];
-                
+
                 async function launchApp() {    // NOT USED YET !!
                     await self.startApp(GID);
                 }
                 </script>
-            
+
                 <script src="guy.js"></script>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -98,22 +98,22 @@ class GTagApp(guy.Guy):
                 div.hbox {display: flex;flex-flow: row nowrap;align-items:center }
                 div.vbox {display: flex;flex-flow: column nowrap;}
                 div.hbox > *,div.vbox > * {flex: 1 1 50%%;margin:1px}
-                </style> 
+                </style>
             </head>
             <body>%s</body>
         </html>
         """ % self._tag
-        
+
     def bindUpdate(self,id:str,method:str,*args):
         obj=self._tag._getInstance(id)
         r=getattr(obj,method)(*args)
         return self.update()    # currently it update all ;-(
-        
+
     def update(self):
         """ Exposed in py/side !"""
         return self._tag.update()
-        
-        
+
+
 
 
 
@@ -123,7 +123,7 @@ class GTag:
     """
     _tags={}
 
-    size=None 
+    size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
     def __init__(self):
@@ -136,13 +136,13 @@ class GTag:
         del GTag._tags[self.id]
 
     def build(self) -> Tag:
-        """ Override for static build 
+        """ Override for static build
             SHOULD RETURN a "Tag" (not a GTag)
         """
         pass
 
     def render(self) -> Tag:
-        """ Override for dynamic build 
+        """ Override for dynamic build
             SHOULD RETURN a "Tag" (not a GTag)
         """
         pass
@@ -195,7 +195,7 @@ class GTag:
                     return _
                 else:
                     raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
-        return Binder()        
+        return Binder()
 
     def update(self):
         #print("update:"+self.id)
@@ -204,9 +204,16 @@ class GTag:
         ))
 
     def run(self,*a,**k):
+        """ Run as Guy App """
         app=GTagApp(self)
         app.size=self.size
         self.exit=app.exit
         return app.run(*a,**k)
+
+    def serve(self,*a,**k):
+        """ Run as Guy Server App """
+        app=GTagApp(self)
+        self.exit=app.exit
+        return app.serve(*a,**k)
 
 
