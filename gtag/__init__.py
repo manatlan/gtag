@@ -20,6 +20,8 @@ import guy
 
 __version__="0.0.1"
 
+gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
+
 class ReactiveProp:
     def __init__(self,instance,attribut:str):
         # assert attribut in instance.__dict__.keys()
@@ -30,14 +32,31 @@ class ReactiveProp:
     def get(self):
         return self.instance.__dict__[self.attribut]
 
-    def __eq__(self,v):
-        return self.get() == v
-        
+
+    def __eq__(self, v):
+        return self.get() == gg(v)
+
+    def __ne__(self, v):
+        return self.get() != gg(v)
+
+    def __lt__(self, v):
+        return self.get() < gg(v)
+
+    def __le__(self, v):
+        return self.get() <= gg(v)
+
+    def __ge__(self, v):
+        return self.get() >= gg(v)
+
+    def __gt__(self, v):
+        return self.get() > gg(v)
+
+
     def __int__(self):
         return int(self.get())
 
     def __add__(self,v): # add in place
-        vv=self.get() + v
+        vv=self.get() + gg(v)
         self.set( vv )
         return self
 

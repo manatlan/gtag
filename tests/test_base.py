@@ -17,37 +17,49 @@ def test_ReactiveProp():
     assert type(a+1) == ReactiveProp
     assert a+1 == 44
 
+    b=ReactiveProp(p,"b")
+    assert a>b
+    assert a>0
+    assert a>=b
+    assert a>=0
+    assert b<=a
+    assert b<a
+    assert b<100
+    assert not a==b
+    assert a!=b
+
+    assert a+b == 86
+
 def test_Tag():
-    assert str(Tag()) == '<div class="tag"></div>'
-    assert str(Tag("hello")) == '<div class="tag">hello</div>'
+    assert str(Tag()) == '<div></div>'
+    assert str(Tag("hello")) == '<div>hello</div>'
     assert str(Tag("hello",klass="john doe")) == '<div class="john doe">hello</div>'
-    assert str(Tag("hello",data_mining="hell")) == '<div data-mining="hell" class="tag">hello</div>'
+    assert str(Tag("hello",data_mining="hell")) == '<div data-mining="hell">hello</div>'
     assert str(Tag("hello",42,klass="john doe")) == '<div class="john doe">hello 42</div>'
-    assert str(Tag("hello",onclick='alert("bill & john")')) == '<div onclick="alert(&quot;bill &amp; john&quot;)" class="tag">hello</div>'
+    assert str(Tag("hello",onclick='alert("bill & john")')) == '<div onclick="alert(&quot;bill &amp; john&quot;)">hello</div>'
+
+def test_Tag_add():
+    t=Tag()
+    t.add( A("click"))
+    assert str(t)=='<div><a class="a">click</a></div>'
+
+def test_Tag_repr():
+    t=Tag()
+    t.add( A("click"))
+    assert repr(t)=='<Tag>'
+
 
 def test_Tag_id():
     t=Tag()
     t.id="nope"
-    assert str(t) == '<div class="tag" id="nope"></div>'
+    assert str(t) == '<div id="nope"></div>'
 
 
 def test_Tag_class():
     class Nope(Tag): pass
-    assert str(Nope()) == '<div class="nope"></div>'
-    assert str(Nope("hello")) == '<div class="nope">hello</div>'
+    assert str(Nope()) == '<div></div>'
+    assert str(Nope("hello")) == '<div>hello</div>'
     assert str(Nope("hello", klass='other') ) == '<div class="other">hello</div>'
-
-    class Nope(Tag):
-        klass="none"
-    assert str(Nope()) == '<div class="none"></div>'
-    assert str(Nope("hello")) == '<div class="none">hello</div>'
-    assert str(Nope("hello", klass='other') ) == '<div class="other">hello</div>'
-
-    class Nope(Tag):
-        tag="none"
-    assert str(Nope()) == '<none class="nope"></none>'
-    assert str(Nope("hello")) == '<none class="nope">hello</none>'
-    assert str(Nope("hello", klass='other') ) == '<none class="other">hello</none>'
 
     class Nope(Tag):
         tag="none"

@@ -105,7 +105,7 @@ class TestApp(GTag):
 
     def render(self): # DYNAMIC RENDERING HERE !
         divBrand=Div( klass="navbar-brand" )
-        divBrand.add( A("<b>MYAPP</b>",klass="navbar-item") )
+        divBrand.add( A("<b>GTag Test App</b>",klass="navbar-item") )
         divBrand.add( A('<span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>',
                         role="button",
                         klass="navbar-burger burger",

@@ -26,17 +26,12 @@ class Tag:
         self.id=None
         self.tag=self.__class__.tag
         self.contents=list(contents)
-        if "klass" in attrs:
-            attrs["class"]=attrs["klass"]
-            del attrs["klass"]
-        else:
-            if self.klass:
-                attrs["class"]=self.klass
-            else:
-                attrs["class"]=self.__class__.__name__.lower()
+
+        klass= attrs.get("klass") or self.klass
+        if "klass" in attrs: del attrs["klass"]
 
         self.attrs=attrs
-        self.attrs={k.replace("_","-"):v for k,v in self.attrs.items()}
+        if klass: self.attrs["class"]=klass
 
     def add(self,o):
         self.contents.append(o)
@@ -44,10 +39,10 @@ class Tag:
     def __str__(self):
         attrs=self.attrs
         if self.id: attrs["id"]=self.id
-        attrs=['%s="%s"'%(k if k!="klass" else "class",html.escape( str(v) )) for k,v in attrs.items()]
-        return """<%(tag)s %(attrs)s>%(content)s</%(tag)s>""" % dict(
+        attrs=['%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) for k,v in attrs.items()]
+        return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
             tag=self.tag,
-            attrs=" ".join(attrs),
+            attrs=" ".join([""]+attrs) if attrs else "",
             content=" ".join([str(i) for i in self.contents]),
         )
 
@@ -93,7 +88,7 @@ class HBox(Tag):
 
 class Section(Tag):
     tag="section"
-    tag="section"
+    klass="section"
 
 class Nav(Tag):
     tag="nav"
