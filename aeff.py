@@ -17,7 +17,7 @@ class StaticComputed(GTag): # GOOD PRATICE !!
 
     @bind # -> Str'Able
     def stars(self):
-        return [Star(i) for i in range(int(self.n))]
+        return Text( *[Star(i) for i in range(int(self.n))] )
 
     def build(self):
         return Text(self.bind.n, self.stars() )

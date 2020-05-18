@@ -49,18 +49,6 @@ class MyTabs(GTag):
         self.selected=idx
 
 
-class DynCreate(GTag):
-
-    def __init__(self,n):
-        self.n=n
-        super().__init__()
-
-    @bind
-    def build(self):
-        b=Box()
-        for i in range( int(self.n) ):
-            b.add(Inc(i))
-        return b
 
 class Page1(GTag):
 
@@ -70,6 +58,13 @@ class Page1(GTag):
         self.selected=2
         super().__init__()
 
+    @bind
+    def compute(self):
+        b=Text()
+        for i in range( int(self.nb) ):
+            b.add( "⭐" )
+        return b
+
     def build(self):    # called at __init__()
         return VBox(
             MyInput( self.bind.txt ),
@@ -78,8 +73,7 @@ class Page1(GTag):
             Inc(self.bind.nb),
             Inc(self.nb),
             Inc(13),
-            Box(self.bind.nb),
-            DynCreate(self.bind.nb),
+            Box(self.bind.nb, self.compute()),
             MyTabs(self.bind.selected,["johan","jim"]),
         )
 
