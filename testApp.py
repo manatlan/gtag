@@ -1,11 +1,11 @@
-from gtag import GTag
+from gtag import GTag,bind
 from gtag.tags import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 
 class Inc(GTag):
     def __init__(self,v=0):
         self.cpt=v
         super().__init__()
-        
+
     def build(self):    # called at __init__()
         return HBox(
                 Button("-",onclick=self.bind.addV(-1) ),         #<- bind GuyCompo event
@@ -28,9 +28,9 @@ class MyInput(GTag):
 
     def onchange(self,txt):
         self.v = txt
-        
 
-        
+
+
 class MyTabs(GTag):
 
     def __init__(self,selected:int,tabs:list):
@@ -38,35 +38,38 @@ class MyTabs(GTag):
         self.tabs=tabs
         super().__init__()
 
-    def render(self): # dynamic rendering !
+    @bind
+    def build(self): # dynamic rendering !
         o = Tabs( )
         for idx,t in enumerate(self.tabs):
-            o.addTab( self.selected==idx+1, t, onclick=self.bind.select(idx+1) ) 
+            o.addTab( self.selected==idx+1, t, onclick=self.bind.select(idx+1) )
         return o
 
     def select(self,idx):
         self.selected=idx
 
-        
+
 class DynCreate(GTag):
 
     def __init__(self,n):
         self.n=n
         super().__init__()
-    def render(self):
+
+    @bind
+    def build(self):
         b=Box()
         for i in range( int(self.n) ):
             b.add(Inc(i))
         return b
 
 class Page1(GTag):
-    
+
     def __init__(self):
         self.nb=12
         self.txt="yolo"
         self.selected=2
         super().__init__()
-    
+
     def build(self):    # called at __init__()
         return VBox(
             MyInput( self.bind.txt ),
@@ -81,11 +84,11 @@ class Page1(GTag):
         )
 
 class Page2(GTag):
-    
+
     def __init__(self):
         self.nb=12
         super().__init__()
-    
+
     def build(self):    # called at __init__()
         return VBox(
             Box("A test page, with a binding value:", self.bind.nb),
@@ -99,7 +102,8 @@ class TestApp(GTag):
         self.obj=Page1()
         super().__init__()
 
-    def render(self): # DYNAMIC RENDERING HERE !
+    @bind
+    def build(self): # DYNAMIC RENDERING HERE !
         divBrand=Div( klass="navbar-brand" )
         divBrand.add( A("<b>GTag Test App</b>",klass="navbar-item") )
         divBrand.add( A('<span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>',
@@ -134,6 +138,5 @@ class TestApp(GTag):
 if __name__=="__main__":
     # tag=Multi()
     tag=TestApp()
-    
+
     print( tag.run() )
-    

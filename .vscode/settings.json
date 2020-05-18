@@ -6,7 +6,7 @@
     "python.testing.unittestEnabled": false,
     "python.formatting.provider": "black",
     "python.testing.pytestArgs": [
-        "tests"
+        "-s","tests"
     ],
     "files.watcherExclude": {
         "**/.buildozer/**": true,

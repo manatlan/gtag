@@ -71,6 +71,31 @@ class ReactiveProp:
 
 
 
+class StrAble:
+    """ (str'able) object that implements __str__"""
+    def __init__(self,instance,method):
+        self.__instance=instance
+        self.__method=method
+
+    def getTag(self):
+        x=self.__method(self.__instance)
+        if x:
+            assert isinstance(x,Tag)
+            return x
+
+    def __str__(self) -> str:
+        return str(self.getTag()) or ''
+
+
+def bind( method ): # -> str'able or list[str'able]
+    """ Decorator to make a gtag.method() reactiv !
+        (like 'computed vars' in vuejs)
+    """
+    def _(gtagInstance):
+        return StrAble(gtagInstance,method)
+    return _
+
+
 class GTagApp(guy.Guy):
 
     def __init__(self,gtag):
@@ -143,19 +168,11 @@ class GTag:
         """
         pass
 
-    def render(self) -> Tag:
-        """ Override for dynamic build
-            SHOULD RETURN a "Tag" (not a GTag)
-        """
-        pass
-
     def __str__(self):
-        if self._tag is None:
-            o=self.render()
-            assert o,"'%s' doesn't have a build or a render methods ?!" % self.__class__.__name__
-        else:
-            o=self._tag
-            assert self.render() is None, "'%s' has already builded its component ?!" % self.__class__.__name__
+        o= self._tag
+        assert o is not None, "no build ?!"
+        if isinstance(o,StrAble):
+            o=o.getTag()
         assert not isinstance(o,GTag), "'%s' produce a GTag, wtf?!" % self.__class__.__name__ # because it's a non-sense that a GTag return a GTag .. that's all!
         o.id=self.id
         return str(o)

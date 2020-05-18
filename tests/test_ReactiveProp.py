@@ -28,3 +28,20 @@ def test_ReactiveProp():
     assert a!=b
 
     assert a+b == 86
+
+
+
+def test_WARNING():
+    class Pojo: pass
+    p=Pojo()
+    p.a=42
+
+    a=ReactiveProp(p,"a")
+
+    assert str(a) == "42"
+    assert "-%s-" % a == "-42-"
+
+    p.a=43
+
+    assert str(a) == "43"
+    assert "-%s-" % a == "-43-"
