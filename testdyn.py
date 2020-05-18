@@ -25,7 +25,7 @@ class SSTag(GTag):
         super().__init__()
 
     def compute(self):
-        # def _(zelf):
+        # def _():
         #     return "*" * self.n
         # return _
         class R:
