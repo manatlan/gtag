@@ -40,7 +40,7 @@ class MyTabs(GTag):
 
     @bind
     def build(self): # dynamic rendering !
-        o = Tabs( )
+        o = Tabs()
         for idx,t in enumerate(self.tabs):
             o.addTab( self.selected==idx+1, t, onclick=self.bind.select(idx+1) )
         return o

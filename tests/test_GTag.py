@@ -1,4 +1,4 @@
-from gtag import GTag
+from gtag import GTag,bind,ReactiveTag
 from gtag.tags import Div,Tag
 import pytest
 
@@ -39,22 +39,23 @@ def test_GTag_build():
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
-# def test_GTag_render():
-#     class My(GTag):
+def test_GTag_render():
+    class My(GTag):
 
-#         def __init__(self):
-#             self.v=12
-#             super().__init__()
-#         def render(self):
-#             return Div("hello",self.bind.v,onclick=self.bind.onclick())
-#         def onclick(self):
-#             pass
+        def __init__(self):
+            self.v=12
+            super().__init__()
+        @bind
+        def build(self):
+            return Div("hello",self.bind.v,onclick=self.bind.onclick())
+        def onclick(self):
+            pass
 
-#     m=My()
-#     o=m.render()
-#     assert isinstance(o,Tag)
-#     html=str(m)
+    m=My()
+    o=m.build()
+    assert isinstance(o,ReactiveTag)
+    html=str(m)
 
-#     assert 'onclick="self.bindUpdate(' in html
-#     assert 'id="My_' in html
-#     assert '>hello 12<' in html
+    assert 'onclick="self.bindUpdate(' in html
+    assert 'id="My_' in html
+    assert '>hello 12<' in html

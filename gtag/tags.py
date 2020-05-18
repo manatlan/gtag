@@ -99,7 +99,7 @@ class Nav(Tag):
     tag="nav"
     klass="navbar is-fixed-top is-black"
 
-class Tabs(Tag):
+class Tabs(Tag): # WILL DISAPPEAR SOON (all logic will be included in gtag one !)
     tag="div"
     klass="tabs is-centered"
     def __init__(self,**attrs):

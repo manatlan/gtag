@@ -61,7 +61,7 @@ class StaticBuildBinded(GTag): # BAD PRACTICE
 
     @bind # -> Str'Able
     def build(self):
-        ll=[Star(i) for i in range(int(self.bind.n))]
+        ll=[Star(i) for i in range(int(self.n))]
         return Text(self.bind.n, *ll )
 
 

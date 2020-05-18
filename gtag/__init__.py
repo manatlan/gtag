@@ -16,8 +16,8 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-from .tags import Tag
 import guy
+from .tags import Tag
 
 __version__="0.0.1"
 
@@ -71,8 +71,10 @@ class ReactiveProp:
 
 
 
-class StrAble:
-    """ (str'able) object that implements __str__"""
+class ReactiveTag:
+    """ like ReactiveProp, but for gtag.method wchich can return binded tag
+        (object created by @bind decorator)
+    """
     def __init__(self,instance,method):
         self.__instance=instance
         self.__method=method
@@ -87,16 +89,18 @@ class StrAble:
         return str(self.getTag()) or ''
 
 
-def bind( method ): # -> str'able or list[str'able]
-    """ Decorator to make a gtag.method() reactiv !
+def bind( method ): # gtag.method decorator -> ReactiveTag
+    """ Decorator to make a gtag.method() able to return a "Reactive Tag" !
         (like 'computed vars' in vuejs)
     """
     def _(gtagInstance):
-        return StrAble(gtagInstance,method)
+        assert isinstance(gtagInstance,GTag)
+        return ReactiveTag(gtagInstance,method)
     return _
 
 
 class GTagApp(guy.Guy):
+    """ The main guy instance app, which cn run a gtag inside """
 
     def __init__(self,gtag):
         super().__init__()
@@ -171,7 +175,7 @@ class GTag:
     def __str__(self):
         o= self._tag
         assert o is not None, "no build ?!"
-        if isinstance(o,StrAble):
+        if isinstance(o,ReactiveTag):
             o=o.getTag()
         assert not isinstance(o,GTag), "'%s' produce a GTag, wtf?!" % self.__class__.__name__ # because it's a non-sense that a GTag return a GTag .. that's all!
         o.id=self.id

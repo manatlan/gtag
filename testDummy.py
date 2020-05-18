@@ -15,7 +15,7 @@ class StaticComputed(GTag): # GOOD PRATICE !!
         self.n=n
         super().__init__()
 
-    @bind # -> Str'Able
+    @bind # -> ReactiveTag
     def stars(self):
         return Text( *[Star(i) for i in range(int(self.n))] )
 
