@@ -16,8 +16,8 @@ class DTag(GTag):
         self.n=n
         super().__init__()
     def render(self):
-        stars="*" * self.bind.n.get()
-        return Text(self.bind.n,stars)
+        stars="*" * self.n
+        return Text(self.n,stars)
 
 class SSTag(GTag):
     def __init__(self,n):
@@ -25,6 +25,9 @@ class SSTag(GTag):
         super().__init__()
 
     def compute(self):
+        # def _(zelf):
+        #     return "*" * self.n
+        # return _
         class R:
             def __str__(zelf):
                 return "*" * self.n
