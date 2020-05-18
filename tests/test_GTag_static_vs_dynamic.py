@@ -45,7 +45,7 @@ class StaticComputed(GTag): # GOOD PRATICE !!
         self.n=n
         super().__init__()
 
-    @bind # -> Str'Able
+    @bind
     def stars(self):
         return Text( *[Star(i) for i in range(int(self.n))] )
 
@@ -59,21 +59,11 @@ class StaticBuildBinded(GTag): # BAD PRACTICE
         self.n=n
         super().__init__()
 
-    @bind # -> Str'Able
+    @bind
     def build(self):
         ll=[Star(i) for i in range(int(self.n))]
         return Text(self.n, *ll )
 
-
-# class DTag(GTag): # WILL DISAPPEAR SOON
-#     """ the gtag mode which will be disalowed ;-) """
-#     def __init__(self,n):
-#         self.n=n
-#         super().__init__()
-
-#     def render(self):
-#         stars=[Star(i) for i in range(int(self.n))]
-#         return Text(self.n,*stars)
 
 
 def check(tag,nb,nbstar):
@@ -92,7 +82,6 @@ def test_simple():
         StaticBinded(iv),
         StaticComputed(iv),
         StaticBuildBinded(iv),
-        # DTag(iv),
     ]
 
     for t in tags:
@@ -108,7 +97,6 @@ def test_change():
         StaticBinded(iv),
         StaticComputed(iv),
         StaticBuildBinded(iv),
-        # DTag(iv),
     ]
 
     for t in tags:
@@ -118,7 +106,6 @@ def test_change():
     check(tags[1],cv,iv)
     check(tags[2],cv,cv) # good
     check(tags[3],cv,cv) # good
-    # check(tags[4],cv,cv) # good
 
 
 def test_rp():
@@ -135,14 +122,12 @@ def test_rp():
         StaticBinded(a),
         StaticComputed(a),
         StaticBuildBinded(a),
-        # DTag(a),
     ]
 
     check(tags[0],iv,iv)
     check(tags[1],iv,iv)
     check(tags[2],iv,iv)
     check(tags[3],iv,iv)
-    # check(tags[4],iv,iv)
 
     p.a=3 # change RP to 3
 
@@ -150,7 +135,6 @@ def test_rp():
     check(tags[1],3,iv)
     check(tags[2],3,3) # good
     check(tags[3],3,3) # good
-    # check(tags[4],3,3) # good
 
 
 
