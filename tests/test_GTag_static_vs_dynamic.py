@@ -62,7 +62,7 @@ class StaticBuildBinded(GTag): # BAD PRACTICE
     @bind # -> Str'Able
     def build(self):
         ll=[Star(i) for i in range(int(self.n))]
-        return Text(self.bind.n, *ll )
+        return Text(self.n, *ll )
 
 
 # class DTag(GTag): # WILL DISAPPEAR SOON
@@ -172,23 +172,48 @@ def test_DANGEROUS():
     assert "-2-" in str(t)
 
     t.n=3
+    assert "-2-" in str(t) # ARGGHHH should be 3 ... but ^^ ... see workarounds vv
+
+def test_DANGEROUS_workaround1():
+    class StaticComputed(GTag): # GOOD PRATICE !!
+        """ A gtag component with a property bind'ed and a method binded (computed) """
+        def __init__(self,n):
+            self.n=n
+            super().__init__()
+
+        @bind # -> Str'Able
+        def stars(self):
+            return Text( *[Star(i) for i in range(int(self.n))] )
+
+        @bind
+        def compute(self):
+            return Text("-%s-" % self.n)
+
+        def build(self):
+            return Text( self.compute(), self.stars() ) # <---- DANGEROUS the binded is str'ised at build !!!!
+
+    t=StaticComputed(2)
     assert "-2-" in str(t)
 
+    t.n=3
+    assert "-3-" in str(t) # good!
 
-def test_DANGEROUS_good():
+
+
+def test_DANGEROUS_workaround2():
     class StaticBuildBinded(GTag): # BAD PRACTICE
 
         def __init__(self,n):
             self.n=n
             super().__init__()
 
-        @bind # -> Str'Able
+        @bind
         def build(self):
-            ll=[Star(i) for i in range(int(self.bind.n))]
+            ll=[Star(i) for i in range(int(self.n))]
             return Text("-%s-"%self.n, *ll )
 
     t=StaticBuildBinded(2)
     assert "-2-" in str(t)
 
     t.n=3
-    assert "-3-" in str(t)
+    assert "-3-" in str(t) # good!
