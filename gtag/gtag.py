@@ -57,7 +57,7 @@ class ReactiveProp:
     def __int__(self):
         return int(self.get())
 
-    def __add__(self,v): # add in place
+    def __iadd__(self,v):
         vv=self.get() + _gg(v)
         self.set( vv )
         return self
