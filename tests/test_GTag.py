@@ -1,5 +1,5 @@
-from gtag import GTag,bind,ReactiveMethod
-from gtag.gui import Div,Tag
+from gtag import GTag,bind,ReactiveMethod,Tag
+from gtag.gui import Div
 import pytest
 
 def test_GTag():

@@ -1,6 +1,5 @@
-from gtag import GTag,bind,ReactiveMethod
-from gtag.gui import Div,Tag
-import pytest
+from gtag import GTag
+from gtag.gui import Div
 
 def test_GTagApp():
     class My(GTag):
