@@ -72,8 +72,8 @@ def test_ReactiveMethod():
 
     p=MTag()
 
-    assert p.bm("X").exec() == "XX"
-    assert p.bm("O",nb=3).exec() == "OOO"
+    assert p.bm("X")() == "XX"
+    assert p.bm("O",nb=3)() == "OOO"
 
     assert p.m("X") == "XX"
     assert p.m("O",nb=3) == "OOO"

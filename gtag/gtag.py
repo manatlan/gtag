@@ -18,6 +18,7 @@
 
 import guy
 from .tag import Tag
+import typing as T
 
 __version__="0.0.1"
 
@@ -81,11 +82,11 @@ class ReactiveMethod:
         self.__a=args
         self.__k=kargs
 
-    def exec(self):
+    def __call__(self):
         return self.__method(self.__instance,*self.__a,**self.__k)
 
     def __str__(self) -> str:
-        return str(self.exec())
+        return str(self())
 
 
 def bind( method ): # gtag.method decorator -> ReactiveMethod
@@ -173,7 +174,7 @@ class GTag:
         """ Override to make inits """
         pass
 
-    def build(self) -> Tag:
+    def build(self) -> T.Union[Tag,None]:
         """ Override for static build
             SHOULD RETURN a "Tag" (not a GTag)
         """
@@ -181,8 +182,7 @@ class GTag:
 
     def __str__(self):
         o= self._tag
-        if isinstance(o,ReactiveMethod):
-            o=o.exec()
+        if isinstance(o,ReactiveMethod): o=o()
         assert isinstance(o,Tag), "'%s' doesn't produce a Tag, wtf?!" % self.__class__.__name__
         o.id=self.id
         return str(o)
@@ -205,10 +205,10 @@ class GTag:
             super().__setattr__(k,v)
 
     @property
-    def bind(self):
+    def bind(self) -> any:
         """ to bind attribute or method !"""
         class Binder:
-            def __getattr__(sself,name):
+            def __getattr__(this,name:str):
                 if name in self.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
                     o=self.__dict__[name]
                     if isinstance(o,ReactiveProp):
@@ -226,20 +226,20 @@ class GTag:
                     raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
         return Binder()
 
-    def update(self):
+    def update(self) -> dict:
         #print("update:"+self.id)
         return dict(script="""document.querySelector("#%s").innerHTML=`%s`;""" % (
             self.id, self
         ))
 
-    def run(self,*a,**k):
+    def run(self,*a,**k) -> any:
         """ Run as Guy App """
         app=GTagApp(self)
         app.size=self.size
         self.exit=app.exit
         return app.run(*a,**k)
 
-    def serve(self,*a,**k):
+    def serve(self,*a,**k) -> any:
         """ Run as Guy Server App """
         app=GTagApp(self)
         self.exit=app.exit
