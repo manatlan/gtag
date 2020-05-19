@@ -47,8 +47,8 @@ def test_GTag_render():
             super().__init__()
         @bind
         def build(self):
-            return Div("hello",self.bind.v,onclick=self.bind.onclick())
-        def onclick(self):
+            return Div("hello",self.bind.v,onclick=self.bind.onclick(42))
+        def onclick(self,anArg=None):
             pass
 
     m=My()
@@ -69,7 +69,7 @@ def test_ReactiveMethod():
 
         def m(self,c,nb=2):
             return c*nb
-            
+
     p=MTag()
 
     assert p.bm("X").exec() == "XX"

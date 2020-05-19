@@ -28,4 +28,19 @@ class StaticComputed(GTag): # GOOD PRATICE !!
 
 t=StaticComputed(2)
 print(t)
-# t.run()
+t.run()
+
+
+# from gtag import GTag,bind,ReactiveMethod
+# from gtag.tags import Div,Tag
+# import pytest
+
+# class My(GTag):
+#     size=(100,100)
+#     def init(self):
+#         self.exit(42)
+#     def build(self):
+#         return Div("hello")
+
+# m=My()
+# assert m.run(log=True)==42

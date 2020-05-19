@@ -103,7 +103,11 @@ class GTagApp(guy.Guy):
 
     def __init__(self,gtag):
         super().__init__()
+        assert isinstance(gtag,GTag)
         self._gtag=gtag
+
+    def init(self):
+        self._gtag.init()
 
     def render(self,path=None):
         return """<!DOCTYPE html>
@@ -164,6 +168,10 @@ class GTag:
 
     def __del__(self):
         del GTag._tags[self.id]
+
+    def init(self):
+        """ Override to make inits """
+        pass
 
     def build(self) -> Tag:
         """ Override for static build
