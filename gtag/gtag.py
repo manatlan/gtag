@@ -25,14 +25,13 @@ __version__="0.0.1"
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
 class ReactiveProp:
-    def __init__(self,instance,attribut:str):
-        # assert attribut in instance.__dict__.keys()
-        self.__instance=instance
+    def __init__(self,dico:dict,attribut:str):
+        self.__instance=dico
         self.__attribut=attribut
     def set(self,v):
-        self.__instance.__dict__[self.__attribut]=v
+        self.__instance[self.__attribut]=v
     def get(self):
-        return self.__instance.__dict__[self.__attribut]
+        return self.__instance[self.__attribut]
 
 
     def __eq__(self, v):
@@ -73,26 +72,21 @@ class ReactiveProp:
 class State(object):
     """ Just the beginning of vuex-like (a dict of react props)"""
     def __init__(self,**defaults):
-        self.__dict__.update(defaults)
+        self.__d=defaults
 
-    def __getitem__(self,attr:str):         # TODO: make it works with __setattr__/__getattr__
-        if attr in self.__dict__.keys():
-            return ReactiveProp(self,attr)
-        raise AttributeError("'%s' object has no attribute '%s' !"%(self.__class__.__name__,attr))
+    def __getattr__(self,attr:str):
+        assert attr in self.__d.keys()
+        return ReactiveProp(self.__d,attr)
 
-    def __setitem__(self,attr:str,v):       # TODO: make it works with __setattr__/__getattr__
-        if attr in self.__dict__.keys():
-            self.__dict__[attr]=_gg(v)
-            return
-        raise AttributeError("'%s' object has no attribute '%s' !!"%(self.__class__.__name__,attr))
 
     # def __setattr__(self,k,v):
+    #     assert k in self.__d.keys()
     #     # current="%s_%s" % (self.__class__.__name__,id(self))
-    #     o=self.__dict__.get(k)
+    #     o=self.__d.get(k)
     #     if isinstance(o,ReactiveProp):
     #         # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
     #         if isinstance(v,ReactiveProp):
-    #             self.__dict__[k]=v
+    #             self.__d[k]=v
     #         else:
     #             o.set(v)
     #     else:
@@ -241,7 +235,7 @@ class GTag:
                     if isinstance(o,ReactiveProp):
                         return o
                     else:
-                        return ReactiveProp(self,name)
+                        return ReactiveProp(self.__dict__,name)
                 elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
                     def _(*args):
                         if args:

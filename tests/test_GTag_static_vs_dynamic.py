@@ -112,9 +112,7 @@ def test_rp():
     """ initial value is a reative prop, all is good """
     iv=2
 
-    class Pojo: pass
-    p=Pojo()
-    p.a=iv
+    p=dict(a=iv)
     a=ReactiveProp(p,"a")
 
     tags=[
@@ -129,7 +127,7 @@ def test_rp():
     check(tags[2],iv,iv)
     check(tags[3],iv,iv)
 
-    p.a=3 # change RP to 3
+    p["a"]=3 # change RP to 3
 
     check(tags[0],3,iv) # really bad !
     check(tags[1],3,iv)

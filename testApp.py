@@ -102,7 +102,7 @@ class Page1(GTag):
         )
 
     def setMBoxMsg(self,txt):
-        STATE["msg"]=txt
+        STATE.msg.set(txt)
 
 class Page2(GTag):
 
@@ -168,7 +168,7 @@ class TestApp(GTag):
         return Body(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
             Section( Div( "<br>", self.content, klass="container") ),
-            MBox( STATE["msg"] )
+            MBox( STATE.msg )
         )
 
     def doExit(self):
@@ -180,6 +180,7 @@ class TestApp(GTag):
 STATE=State(
     msg=None
 )
+
 
 if __name__=="__main__":
     app=TestApp()
