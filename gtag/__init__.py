@@ -71,31 +71,30 @@ class ReactiveProp:
 
 
 
-class ReactiveTag:
+class ReactiveMethod:
     """ like ReactiveProp, but for gtag.method wchich can return binded tag
         (object created by @bind decorator)
     """
-    def __init__(self,instance,method):
+    def __init__(self,instance,method,args,kargs):
         self.__instance=instance
         self.__method=method
+        self.__a=args
+        self.__k=kargs
 
-    def getTag(self):
-        x=self.__method(self.__instance)
-        if x:
-            assert isinstance(x,Tag)
-            return x
+    def exec(self):
+        return self.__method(self.__instance,*self.__a,**self.__k)
 
     def __str__(self) -> str:
-        return str(self.getTag()) or ''
+        return str(self.exec())
 
 
-def bind( method ): # gtag.method decorator -> ReactiveTag
+def bind( method ): # gtag.method decorator -> ReactiveMethod
     """ Decorator to make a gtag.method() able to return a "Reactive Tag" !
         (like 'computed vars' in vuejs)
     """
-    def _(gtagInstance):
+    def _(gtagInstance,*a,**k):
         assert isinstance(gtagInstance,GTag)
-        return ReactiveTag(gtagInstance,method)
+        return ReactiveMethod(gtagInstance,method,a,k)
     return _
 
 
@@ -174,10 +173,9 @@ class GTag:
 
     def __str__(self):
         o= self._tag
-        assert o is not None, "no build ?!"
-        if isinstance(o,ReactiveTag):
-            o=o.getTag()
-        assert not isinstance(o,GTag), "'%s' produce a GTag, wtf?!" % self.__class__.__name__ # because it's a non-sense that a GTag return a GTag .. that's all!
+        if isinstance(o,ReactiveMethod):
+            o=o.exec()
+        assert isinstance(o,Tag), "'%s' doesn't produce a Tag, wtf?!" % self.__class__.__name__
         o.id=self.id
         return str(o)
 

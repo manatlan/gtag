@@ -1,4 +1,4 @@
-from gtag import GTag,bind,ReactiveTag
+from gtag import GTag,bind,ReactiveMethod
 from gtag.tags import Div,Tag
 import pytest
 
@@ -53,9 +53,27 @@ def test_GTag_render():
 
     m=My()
     o=m.build()
-    assert isinstance(o,ReactiveTag)
+    assert isinstance(o,ReactiveMethod)
     html=str(m)
 
     assert 'onclick="self.bindUpdate(' in html
     assert 'id="My_' in html
     assert '>hello 12<' in html
+
+
+def test_ReactiveMethod():
+    class MTag(GTag):
+        @bind
+        def bm(self,c,nb=2):
+            return c*nb
+
+        def m(self,c,nb=2):
+            return c*nb
+            
+    p=MTag()
+
+    assert p.bm("X").exec() == "XX"
+    assert p.bm("O",nb=3).exec() == "OOO"
+
+    assert p.m("X") == "XX"
+    assert p.m("O",nb=3) == "OOO"

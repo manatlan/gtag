@@ -15,12 +15,17 @@ class StaticComputed(GTag): # GOOD PRATICE !!
         self.n=n
         super().__init__()
 
-    @bind # -> ReactiveTag
+    @bind # -> ReactiveMethod
     def stars(self):
         return Text( *[Star(i) for i in range(int(self.n))] )
 
+    @bind
+    def nnn(self,c):
+        return c * self.n
+
     def build(self):
-        return Text(self.bind.n, self.stars() )
+        return Text(self.nnn("X"), self.stars() )
 
 t=StaticComputed(2)
 print(t)
+# t.run()
