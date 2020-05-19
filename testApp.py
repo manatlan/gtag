@@ -1,4 +1,4 @@
-from gtag import GTag,bind
+from gtag import GTag,bind,State
 from gtag.gui import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 
 class Inc(GTag):
@@ -32,21 +32,47 @@ class MyInput(GTag):
 
 
 class MyTabs(GTag):
-
-    def __init__(self,selected:int,tabs:list):
+    def __init__(self,selected:int):
         self.selected=selected
-        self.tabs=tabs
+        self.tabs=[]
         super().__init__()
 
+    def addTab(self,title):
+        self.tabs.append(title)
+
     @bind
+    def renderUL(self):
+        u=Ul()
+        for idx,title in enumerate(self.tabs):
+            isActive="is-active" if self.selected==idx+1 else None
+            u.add( Li(A(title,onclick=self.bind.select(idx+1)), klass=isActive ) )
+        return u
+
     def build(self): # dynamic rendering !
-        o = Tabs()
-        for idx,t in enumerate(self.tabs):
-            o.addTab( self.selected==idx+1, t, onclick=self.bind.select(idx+1) )
-        return o
+        return Tabs( self.renderUL() )
 
     def select(self,idx):
         self.selected=idx
+
+
+class MBox(GTag):
+    def __init__(self,content):
+        self.content=content
+        super().__init__()
+
+    @bind
+    def build(self):
+        if self.content!=None:
+            o = Div(klass="modal is-active")
+            o.add( Div(klass="modal-background",onclick=self.bind.close()) )
+            o.add( Div( Box(self.content),klass="modal-content") )
+            o.add( Div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
+            return o
+        else:
+            return Div()
+
+    def close(self):
+        self.content=None
 
 
 
@@ -55,27 +81,28 @@ class Page1(GTag):
     def __init__(self):
         self.nb=12
         self.txt="yolo"
-        self.selected=2
+        self.contentMessage=None
         super().__init__()
 
     @bind
     def compute(self):
-        b=Text()
+        b=Div()
         for i in range( int(self.nb) ):
             b.add( "⭐" )
         return b
 
-    def build(self):    # called at __init__()
+    def build(self):
         return VBox(
             MyInput( self.bind.txt ),
-            Text(self.bind.txt,self.bind.selected),
+            Text(self.bind.txt),
             Inc(self.bind.nb),
             Inc(self.bind.nb),
-            Inc(self.nb),
-            Inc(13),
             Box(self.bind.nb, self.compute()),
-            MyTabs(self.bind.selected,["johan","jim"]),
+            Button("Show mbox",onclick=self.bind.setMBoxMsg("'hello'")) #TODO: find better !!!
         )
+
+    def setMBoxMsg(self,txt):
+        STATE["msg"]=txt
 
 class Page2(GTag):
 
@@ -83,18 +110,41 @@ class Page2(GTag):
         self.nb=12
         super().__init__()
 
-    def build(self):    # called at __init__()
-        return VBox(
+    def build(self):
+        return Div(
             Box("A test page, with a binding value:", self.bind.nb),
             Inc(self.bind.nb),
         )
+
+class Page3(GTag):
+
+    def __init__(self):
+        self.selected=1
+        super().__init__()
+
+    def build(self):    # called at __init__()
+        t=MyTabs(self.bind.selected)
+        t.addTab("tab1")
+        t.addTab("tab2")
+        t.addTab("tab3")
+        return Div(t,Box(self.renderContent()))
+
+    @bind
+    def renderContent(self):
+        return "Content %s" % self.selected
+
 
 class TestApp(GTag):
     size=(400,300)
 
     def __init__(self):
-        self.obj=Page1()
+        self.pages=[]
+        self.content=None
         super().__init__()
+
+    def addPage(self,name,obj):
+        self.pages.append( dict(name=name,obj=obj) )
+        if self.content is None: self.content = obj
 
     @bind
     def build(self): # DYNAMIC RENDERING HERE !
@@ -108,29 +158,33 @@ class TestApp(GTag):
                         data_target="navbarBasicExample",
                         onclick="this.classList.toggle('is-active');document.querySelector('.navbar-menu').classList.toggle('is-active')") )
 
-        divMenu=Div( klass="navbar-menu" )
         menu=Div(klass="navbar-start")
-        menu.add( A("Page1", klass="navbar-item",onclick=self.bind.setPage1() ))
-        menu.add( A("Page2", klass="navbar-item",onclick=self.bind.setPage2() ))
+        for idx,item in enumerate(self.pages):
+            menu.add( A(item["name"], klass="navbar-item",onclick=self.bind.setPage(idx) ))
         menu.add( A("Exit", klass="navbar-item", onclick=self.bind.doExit() ) )
-        divMenu.add( menu )
+
+        divMenu=Div( menu, klass="navbar-menu" )
 
         return Body(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
-            Section( Div( "<br>", self.obj, klass="container") ),
+            Section( Div( "<br>", self.content, klass="container") ),
+            MBox( STATE["msg"] )
         )
 
     def doExit(self):
         self.exit(-1)
 
-    def setPage1(self):
-        self.obj=Page1()
+    def setPage(self,idx):
+        self.content=self.pages[idx]["obj"]
 
-    def setPage2(self):
-        self.obj=Page2()
+STATE=State(
+    msg=None
+)
 
 if __name__=="__main__":
-    # tag=Multi()
-    tag=TestApp()
+    app=TestApp()
+    app.addPage("Page1", Page1())
+    app.addPage("Page2", Page2())
+    app.addPage("Page3", Page3())
 
-    print( tag.run() )
+    print( app.run() )

@@ -18,7 +18,7 @@
 
 __version__="0.0.1"
 
-from .gtag import GTag,GTagApp,ReactiveMethod,ReactiveProp,bind
+from .gtag import GTag,GTagApp,ReactiveMethod,ReactiveProp,bind,State
 from .tag import Tag
 
-__all__ = ['GTag', 'bind']
+__all__ = ['GTag', 'bind', 'State']

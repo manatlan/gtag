@@ -70,7 +70,34 @@ class ReactiveProp:
         return "<%s instance=%s attr=%s>" % (self.__class__.__name__,iid,self.__attribut)
     #TODO: add a lot of __slot__ ;-)
 
+class State(object):
+    """ Just the beginning of vuex-like (a dict of react props)"""
+    def __init__(self,**defaults):
+        self.__dict__.update(defaults)
 
+    def __getitem__(self,attr:str):         # TODO: make it works with __setattr__/__getattr__
+        if attr in self.__dict__.keys():
+            return ReactiveProp(self,attr)
+        raise AttributeError("'%s' object has no attribute '%s' !"%(self.__class__.__name__,attr))
+
+    def __setitem__(self,attr:str,v):       # TODO: make it works with __setattr__/__getattr__
+        if attr in self.__dict__.keys():
+            self.__dict__[attr]=_gg(v)
+            return
+        raise AttributeError("'%s' object has no attribute '%s' !!"%(self.__class__.__name__,attr))
+
+    # def __setattr__(self,k,v):
+    #     # current="%s_%s" % (self.__class__.__name__,id(self))
+    #     o=self.__dict__.get(k)
+    #     if isinstance(o,ReactiveProp):
+    #         # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
+    #         if isinstance(v,ReactiveProp):
+    #             self.__dict__[k]=v
+    #         else:
+    #             o.set(v)
+    #     else:
+    #         # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
+    #         super().__setattr__(k,v)
 
 class ReactiveMethod:
     """ like ReactiveProp, but for gtag.method wchich can return binded tag

@@ -64,18 +64,9 @@ class Nav(Tag):
     tag="nav"
     klass="navbar is-fixed-top is-black"
 
-class Tabs(Tag): # WILL DISAPPEAR SOON (all logic will be included in gtag one !)
+class Tabs(Tag):
     tag="div"
     klass="tabs is-centered"
-    def __init__(self,**attrs):
-        super().__init__(*attrs)
-        self.ul=Ul()
-        self.add( self.ul )
-    def addTab(self,selected,title,onclick=None):
-        if selected:
-            self.ul.add( Li(A(title,onclick=onclick), klass="is-active" ) )
-        else:
-            self.ul.add( Li(A(title,onclick=onclick)) )
 
 class Text(Tag):
     tag="p"
