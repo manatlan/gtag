@@ -15,42 +15,7 @@
 #
 #    more: https://github.com/manatlan/guy
 # #############################################################################
-import html
-
-class Tag:
-    """
-        This is a helper to produce "HTML TAG"
-        This is completly css agnostic
-    """
-    tag="div" # default one
-    klass=None
-
-    def __init__(self,*contents,**attrs):
-        assert "id" not in attrs.keys()
-        self.id=None
-        self.__tag=self.__class__.tag
-        self.__contents=list(contents)
-        self.__attrs=dict(attrs)
-
-    def add(self,*elt):
-        self.__contents.extend(elt)
-
-    def __str__(self):
-        attrs=self.__attrs
-        klass= attrs.get("klass") or self.klass
-        if "klass" in attrs: del attrs["klass"]
-        if klass: attrs["class"]=klass
-        if self.id: attrs["id"]=self.id
-        attrs=['%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) for k,v in attrs.items() if v]
-        return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
-            tag=self.__tag,
-            attrs=" ".join([""]+attrs) if attrs else "",
-            content=" ".join([str(i) for i in self.__contents]),
-        )
-
-    def __repr__(self):
-        return "<%s>" % self.__class__.__name__
-
+from .tag import Tag
 
 ###################################################################################################
 ## here are Bulma specific tags

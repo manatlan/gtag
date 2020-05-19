@@ -1,4 +1,4 @@
-from gtag.tags import Tabs
+from gtag.gui import Tabs
 
 def test():
     t=Tabs()

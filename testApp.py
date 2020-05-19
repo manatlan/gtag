@@ -1,5 +1,5 @@
 from gtag import GTag,bind
-from gtag.tags import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
+from gtag.gui import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 
 class Inc(GTag):
     def __init__(self,v=0):

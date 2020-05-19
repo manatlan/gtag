@@ -1,5 +1,5 @@
-from gtag.tags import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
-from gtag.tags import Tag
+from gtag.gui import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
+from gtag import Tag
 
 def test_Tag():
     assert str(Tag()) == '<div></div>'

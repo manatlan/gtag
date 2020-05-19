@@ -1,6 +1,5 @@
-from gtag import GTag,ReactiveProp,bind
-from gtag.tags import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
-from gtag.tags import Tag
+from gtag import GTag,ReactiveProp,bind,Tag
+from gtag.gui import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 import types
 
 class Star(Tag): # a Star tag for the tests bellow
