@@ -1,6 +1,11 @@
 from gtag import GTag,bind,State
 from gtag.gui import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 
+"""
+the most advanced gtag example, in the world ;-)
+(mainly used for manual tests)
+"""
+
 class Inc(GTag):
     def __init__(self,v=0):
         self.cpt=v
@@ -68,8 +73,6 @@ class MBox(GTag):
             o.add( Div( Box(self.content),klass="modal-content") )
             o.add( Div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
             return o
-        else:
-            return Div()
 
     def close(self):
         self.content=None
@@ -102,7 +105,7 @@ class Page1(GTag):
         )
 
     def setMBoxMsg(self,txt):
-        STATE.setMBox(txt)
+        self.state.setMBox(txt)
 
 class Page2(GTag):
 
@@ -168,7 +171,7 @@ class TestApp(GTag):
         return Body(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
             Section( Div( "<br>", self.content, klass="container") ),
-            MBox( STATE.msg )
+            MBox( self.state.msg )
         )
 
     def doExit(self):
@@ -177,17 +180,21 @@ class TestApp(GTag):
     def setPage(self,idx):
         self.content=self.pages[idx]["obj"]
 
-
-class MyState(State):
-    def __init__(self,**d):
-        super().__init__(**d)
+#/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
+# in dev (so don't use now)
+#/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
+class MyState(State): # a global STATE to share things between components
+    def __init__(self):
+        super().__init__(
+            msg=None
+        )
 
     def setMBox(self,txt):
         self.msg.set(txt)
 
-STATE=MyState(
-    msg=None
-)
+GTag.setState( MyState( ) ) # i don't like that (but for now ... it does the job)
+#/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
+
 
 
 if __name__=="__main__":

@@ -16,8 +16,7 @@ def test_GTag():
     with pytest.raises(AssertionError):
         assert str(m)
 
-    with pytest.raises(AssertionError):
-        assert m.update()
+    assert type(m.update()) is dict
 
 def test_GTag_build():
     class My(GTag):

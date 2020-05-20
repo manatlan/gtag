@@ -70,7 +70,9 @@ class ReactiveProp:
     #TODO: add a lot of __slot__ ;-)
 
 class State:
-    """ Just the beginning of vuex-like (a dict of react props)"""
+    """ Just the beginning of vuex-like (a instance of react'props)
+        (it's important that props are reactiveprop ... to be able to be passed to a gtag)
+    """
     def __init__(self,**defaults):
         self.__d=defaults
 
@@ -88,20 +90,6 @@ class State:
             else:
                 raise Exception("can't")
 
-
-    # def __setattr__(self,k,v):
-    #     assert k in self.__d.keys()
-    #     # current="%s_%s" % (self.__class__.__name__,id(self))
-    #     o=self.__d.get(k)
-    #     if isinstance(o,ReactiveProp):
-    #         # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
-    #         if isinstance(v,ReactiveProp):
-    #             self.__d[k]=v
-    #         else:
-    #             o.set(v)
-    #     else:
-    #         # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
-    #         super().__setattr__(k,v)
 
 class ReactiveMethod:
     """ like ReactiveProp, but for gtag.method wchich can return binded tag
@@ -214,9 +202,12 @@ class GTag:
     def __str__(self):
         o= self._tag
         if isinstance(o,ReactiveMethod): o=o()
-        assert isinstance(o,Tag), "'%s' doesn't produce a Tag, wtf?!" % self.__class__.__name__
-        o.id=self.id
-        return str(o)
+        if o is None:
+            return ""
+        else:
+            assert isinstance(o,Tag), "'%s' doesn't produce a Tag, wtf?!" % self.__class__.__name__ # can't produce a gtag (non-sense !)
+            o.id=self.id # set an id for js interactions (cf update()/bindUpdate())
+            return str(o)
 
 
     def _getInstance(self,id):
@@ -257,6 +248,7 @@ class GTag:
                     raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
         return Binder()
 
+
     def update(self) -> dict:
         #print("update:"+self.id)
         return dict(script="""document.querySelector("#%s").innerHTML=`%s`;""" % (
@@ -270,10 +262,27 @@ class GTag:
         self.exit=app.exit
         return app.run(*a,**k)
 
-    def serve(self,*a,**k) -> any:
-        """ Run as Guy Server App """
-        app=GTagApp(self)
-        self.exit=app.exit
-        return app.serve(*a,**k)
+    # def serve(self,*a,**k) -> any:    # serve will be available when state will depend on session !
+    #     """ Run as Guy Server App """
+    #     app=GTagApp(self)
+    #     self.exit=app.exit
+    #     return app.serve(*a,**k)
 
 
+    #/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
+    # in dev (so don't use now)
+    #/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
+    state=None #currently it's shared between all gtag (but should be different to handle sessions)
+    @classmethod
+    def setState(cls,s):
+        assert isinstance(s,State)
+        cls.state=s
+
+    # @property
+    # def state(self) -> any:
+    #     """ to share the defined state between components"""
+    #     class BindState:
+    #         def __getattr__(this,name:str):
+    #             return "state.%s"%name
+    #     return BindState()
+    #/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\

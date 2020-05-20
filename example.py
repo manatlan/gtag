@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
-from gtag import GTag
+from gtag import GTag, bind
 import gtag.gui as g
+
+"""
+A basic simple example
+With all main features:
+    - dynamic compute with @bind
+    - nested gtag (reusable component)
+    - bind/call a method
+    - reactive prop (share the same state)
+    - sized main window
+"""
 
 class Starred(GTag):
     def __init__(self, v=0):
@@ -26,11 +36,16 @@ class App(GTag):
         self.cpt2 = 7
         super().__init__()
 
+    @bind
+    def compute(self):
+        return self.cpt1 * self.cpt2
+
     def build(self):
         return g.VBox(
             g.HBox( g.Text("Value1:"), Starred( self.bind.cpt1 )),
             g.HBox( g.Text("Value2:"), Starred( self.bind.cpt2 )),
+            g.Text("Value1 x Value2=",self.compute(),style="text-align:center")
         )
 
 app=App()
-app.run() # or app.serve()
+app.run()
