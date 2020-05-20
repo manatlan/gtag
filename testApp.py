@@ -105,7 +105,7 @@ class Page1(GTag):
         )
 
     def setMBoxMsg(self,txt):
-        self.state.setMBox(txt)
+        self.state.setMBox( Page2() )
 
 class Page2(GTag):
 
