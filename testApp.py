@@ -102,7 +102,7 @@ class Page1(GTag):
         )
 
     def setMBoxMsg(self,txt):
-        STATE.msg.set(txt)
+        STATE.setMBox(txt)
 
 class Page2(GTag):
 
@@ -177,7 +177,15 @@ class TestApp(GTag):
     def setPage(self,idx):
         self.content=self.pages[idx]["obj"]
 
-STATE=State(
+
+class MyState(State):
+    def __init__(self,**d):
+        super().__init__(**d)
+
+    def setMBox(self,txt):
+        self.msg.set(txt)
+
+STATE=MyState(
     msg=None
 )
 

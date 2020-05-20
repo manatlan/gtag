@@ -69,14 +69,24 @@ class ReactiveProp:
         return "<%s instance=%s attr=%s>" % (self.__class__.__name__,iid,self.__attribut)
     #TODO: add a lot of __slot__ ;-)
 
-class State(object):
+class State:
     """ Just the beginning of vuex-like (a dict of react props)"""
     def __init__(self,**defaults):
         self.__d=defaults
 
-    def __getattr__(self,attr:str):
-        assert attr in self.__d.keys()
-        return ReactiveProp(self.__d,attr)
+    def __setattr__(self,k,v):
+        if k.startswith("_"):
+            super().__setattr__(k, v)
+        else:
+            raise Exception("can't")
+    def __getattr__(self,k):
+        if k.startswith("_"):
+            return super().__getattr__(k)
+        else:
+            if k in self.__d.keys():
+                return ReactiveProp(self.__d,k)
+            else:
+                raise Exception("can't")
 
 
     # def __setattr__(self,k,v):
