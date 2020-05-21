@@ -180,9 +180,6 @@ class TestApp(GTag):
     def setPage(self,idx):
         self.content=self.pages[idx]["obj"]
 
-#/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
-# in dev (so don't use now)
-#/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
 class MyState(State): # a global STATE to share things between components
     def __init__(self):
         super().__init__(
@@ -192,13 +189,10 @@ class MyState(State): # a global STATE to share things between components
     def setMBox(self,txt):
         self.msg.set(txt)
 
-GTag.setState( MyState( ) ) # i don't like that (but for now ... it does the job)
-#/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
-
-
 
 if __name__=="__main__":
     app=TestApp()
+    app.state=MyState() # <- the state will be shared will all gtag (kind of mixins), in "self.state"
     app.addPage("Page1", Page1())
     app.addPage("Page2", Page2())
     app.addPage("Page3", Page3())

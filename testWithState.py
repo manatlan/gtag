@@ -9,15 +9,23 @@ class MyState(State):
     def change(self,nv):
         self.a.set(nv)
 
-GTag.setState( MyState( ) )
 
-
-class Page2(GTag):
+class ShareState(GTag):
 
     def build(self):
         return Div( "hello",
             self.state.a
         )
 
-app=Page2()
+
+class Page2(GTag):
+
+    def __init__(self,s):
+        self.state=s        # <- self.state will be shared will all gtag (kind of mixins)
+        super().__init__()
+
+    def build(self):
+        return Div( ShareState() )
+
+app=Page2( MyState() )
 app.run()

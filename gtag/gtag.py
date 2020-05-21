@@ -238,16 +238,20 @@ class GTag:
 
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))
-        o=self.__dict__.get(k)
-        if isinstance(o,ReactiveProp):
-            # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
-            if isinstance(v,ReactiveProp):
-                self.__dict__[k]=v
-            else:
-                o.set(v)
+        if k=="state":
+            assert isinstance(v,State),"setting state with 'non State instance' is not possible!"
+            GTag.state=v
         else:
-            # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
-            super().__setattr__(k,v)
+            o=self.__dict__.get(k)
+            if isinstance(o,ReactiveProp):
+                # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
+                if isinstance(v,ReactiveProp):
+                    self.__dict__[k]=v
+                else:
+                    o.set(v)
+            else:
+                # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
+                super().__setattr__(k,v)
 
     @property
     def bind(self) -> any:
@@ -292,20 +296,3 @@ class GTag:
     #     return app.serve(*a,**k)
 
 
-    #/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
-    # in dev (so don't use now)
-    #/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
-    state=None #currently it's shared between all gtag (but should be different to handle sessions)
-    @classmethod
-    def setState(cls,s):
-        assert isinstance(s,State)
-        cls.state=s
-
-    # @property
-    # def state(self) -> any:
-    #     """ to share the defined state between components"""
-    #     class BindState:
-    #         def __getattr__(this,name:str):
-    #             return "state.%s"%name
-    #     return BindState()
-    #/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
