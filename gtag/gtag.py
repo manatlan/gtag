@@ -130,6 +130,7 @@ class GTagApp(guy.Guy):
         self._gtag.init()
 
     def render(self,path=None):
+        css,js=self._gtag._guessCssJs()
         return """<!DOCTYPE html>
         <html>
             <head>
@@ -145,8 +146,8 @@ class GTagApp(guy.Guy):
                 <script src="guy.js"></script>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
-
+%s
+%s
                 <style>
                 div.hbox {display: flex;flex-flow: row nowrap;align-items:center }
                 div.vbox {display: flex;flex-flow: column nowrap;}
@@ -155,7 +156,11 @@ class GTagApp(guy.Guy):
             </head>
             <body>%s</body>
         </html>
-        """ % self._gtag
+        """ % (
+            "\n".join(['<link rel="stylesheet" href="%s">'%i for i in css]),
+            "\n".join(['<script src="%s"></script>'%i for i in js]),
+            self._gtag
+        )
 
     def bindUpdate(self,id:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
@@ -189,7 +194,25 @@ class GTag:
     def __del__(self):
         del GTag._tags[self.id]
 
-    def init(self):
+    def _guessCssJs(self):
+        """ try to found the main tag used by the gtag component, and return its css/js (as a list)
+            (downside: importing css/js will depends only on first tag returned by the gtag)
+            (downside: as tag can be produce by a reactivemethod, we need to execute it)
+        """
+        js=[]
+        css=[]
+        if self._tag:
+            tag=self._tag
+            if isinstance(tag,ReactiveMethod): tag=tag()    # <- dangerous
+            if hasattr(tag,"css"):
+                css=getattr(tag,"css")
+                css= [css] if isinstance(css,str) else css
+            if hasattr(tag,"js"):
+                js=getattr(tag,"js")
+                js= [js] if isinstance(js,str) else js
+        return (css,js)
+
+    def init(self):                     # currently only the main gtag can use this #TODO: find something cool
         """ Override to make inits """
         pass
 

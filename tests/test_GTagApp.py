@@ -10,4 +10,18 @@ def test_GTagApp():
             return Div("hello")
 
     m=My()
+    assert ">hello<" in str(m)
     assert m.run()==42
+
+def test_GTagAppBad():
+    class My(GTag):
+        size=(100,100)
+        def init(self):     #<- this works only for the main gtag TODO: should do something for others (liflecycle events)
+            self.exit(42)
+        def build(self):
+            return None
+
+    m=My()  # no css included (in guy win)
+    assert str(m)==""
+    assert m.run()==42
+

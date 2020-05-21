@@ -17,34 +17,45 @@
 # #############################################################################
 from .tag import Tag
 
+"""
+
+This is a minimal set of tags, based on bulma.css
+Embedded in gtag, just for the show ;-)
+
+"""
+
+class BulmaTag(Tag):
+    css=["https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css"]
+    #js one day
+
 ###################################################################################################
 ## here are Bulma specific tags
 ###################################################################################################
-class Body(Tag):
+class Body(BulmaTag):
     tag="body"
     klass="body"
 
-class Input(Tag):
+class Input(BulmaTag):
     tag="input"
     klass="input"
 
-class A(Tag):
+class A(BulmaTag):
     tag="a"
     klass="a"
 
-class Box(Tag):
+class Box(BulmaTag):
     tag="div"
     klass="box"
 
-class Div(Tag):
+class Div(BulmaTag):
     tag="div"
     klass="div"
 
-class VBox(Tag):
+class VBox(BulmaTag):   # not really a bulma tag ;-)
     tag="div"
     klass="vbox"
 
-class HBox(Tag):
+class HBox(BulmaTag):   # not really a bulma tag ;-)
     tag="div"
     klass="hbox"
 # class HBox(Tag):
@@ -56,30 +67,30 @@ class HBox(Tag):
 #     def add(self,o):
 #         self.contents.append( Div(o,klass="column"))
 
-class Section(Tag):
+class Section(BulmaTag):
     tag="section"
     klass="section"
 
-class Nav(Tag):
+class Nav(BulmaTag):
     tag="nav"
     klass="navbar is-fixed-top is-black"
 
-class Tabs(Tag):
+class Tabs(BulmaTag):
     tag="div"
     klass="tabs is-centered"
 
-class Text(Tag):
+class Text(BulmaTag):
     tag="p"
     klass="p"
 
-class Button(Tag):
+class Button(BulmaTag):
     tag="button"
     klass="button is-light"
 
-class Ul(Tag):
+class Ul(BulmaTag):
     tag="ul"
     klass="ul"
 
-class Li(Tag):
+class Li(BulmaTag):
     tag="li"
     klass="li"
