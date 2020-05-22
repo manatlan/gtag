@@ -28,4 +28,4 @@ class Page2(GTag):
         return Div( ShareState() )
 
 app=Page2( MyState() )
-app.run()
+app.serve()

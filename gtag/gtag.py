@@ -75,6 +75,7 @@ class State:
     """
     def __init__(self,**defaults):
         self.__d=defaults
+        self._session={}
 
     def __setattr__(self,k,v):
         if k.startswith("_"):
@@ -90,6 +91,11 @@ class State:
             else:
                 raise Exception("can't")
 
+    def _initSession(self,sessName):
+        self._session[sessName] = self.__class__(**self.__d)
+
+    def __getitem__(self,sessName):
+        return self._session[sessName]
 
 class ReactiveMethod:
     """ like ReactiveProp, but for gtag.method wchich can return binded tag
@@ -121,12 +127,18 @@ def bind( method ): # gtag.method decorator -> ReactiveMethod
 class GTagApp(guy.Guy):
     """ The main guy instance app, which cn run a gtag inside """
 
-    def __init__(self,gtag):
+    def __init__(self,gtag,isMultipleSessionPossible=False):
         super().__init__()
         assert isinstance(gtag,GTag)
         self._gtag=gtag
+        self._isSession=isMultipleSessionPossible
 
-    def init(self):
+    async def init(self):
+        if self._isSession:
+            gid=await self.js.getSessionId()
+            print("WEB SESSION:",gid,"should find a way to clone:",self._gtag.state)
+        else:
+            gid=None
         self._gtag.init()
 
     def render(self,path=None):
@@ -138,9 +150,7 @@ class GTagApp(guy.Guy):
                 if(!sessionStorage["gid"]) sessionStorage["gid"]=Math.random().toString(36).substring(2);
                 var GID=sessionStorage["gid"];
 
-                async function launchApp() {    // NOT USED YET !!
-                    await self.startApp(GID);
-                }
+                async function getSessionId() {return GID}
                 </script>
 
                 <script src="guy.js"></script>
@@ -286,15 +296,15 @@ class GTag:
 
     def run(self,*a,**k) -> any:
         """ Run as Guy App """
-        app=GTagApp(self)
+        app=GTagApp(self,False)
         app.size=self.size
         self.exit=app.exit
         return app.run(*a,**k)
 
-    # def serve(self,*a,**k) -> any:    # serve will be available when state will depend on session !
-    #     """ Run as Guy Server App """
-    #     app=GTagApp(self)
-    #     self.exit=app.exit
-    #     return app.serve(*a,**k)
+    def serve(self,*a,**k) -> any:    # serve will be available when state will depend on session !
+        """ Run as Guy Server App """
+        app=GTagApp(self,True)
+        self.exit=app.exit
+        return app.serve(*a,**k)
 
 
