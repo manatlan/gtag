@@ -1,40 +1,37 @@
+if __name__=="__main__":
+    import sys,os
+    sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
+
 from gtag import State,GTag,bind
 from gtag.gui import Div,Button
 
 
 class MyState(State):
-    def inc(self):
+    def inc(self):                      # not used
         self.a.set(self.a.get()+1)
 
-
 class ShareState(GTag):
-
     def build(self):
         return Div( "hello",
-            self.state.a
+            self.state.a,
+            self.parent.v
         )
 
-
 class Page2(GTag):
-
     def __init__(self,s):
+        self.v=42
         self.state=s        # <- self.state will be shared will all gtag (kind of mixins)
         super().__init__()
 
     def build(self):
         return Div(
             ShareState() ,
-            Button("++",onclick=self.bind.change()),
-            Button("QUIT",onclick=self.bind.quit()+";window.close()"),
         )
 
-    def change(self):
-        print(self.state._id,self.state.a)
-        self.state.inc()
 
-    def quit(self):
-        self.exit()
+def test_gtag_inherit_state():
+    app=Page2( MyState(a=12) )
+    print(app)
 
-
-app=Page2( MyState(a=12) )
-app.serve()
+if __name__=="__main__":
+    test_gtag_inherit_state()

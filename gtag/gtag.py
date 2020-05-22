@@ -73,9 +73,11 @@ class State:
     """ Just the beginning of vuex-like (a instance of react'props)
         (it's important that props are reactiveprop ... to be able to be passed to a gtag)
     """
+    _sessions={}
+    _id=None
+
     def __init__(self,**defaults):
         self.__d=defaults
-        self._session={}
 
     def __setattr__(self,k,v):
         if k.startswith("_"):
@@ -92,10 +94,14 @@ class State:
                 raise Exception("can't")
 
     def _initSession(self,sessName):
-        self._session[sessName] = self.__class__(**self.__d)
+        import json
+        clone=json.loads(json.dumps(self.__d)) #TODO: not needed (but to be sure, before removing)
+        State._sessions[sessName] = self.__class__(**clone)
+        State._sessions[sessName]._id=sessName
 
-    def __getitem__(self,sessName):
-        return self._session[sessName]
+    @classmethod
+    def _get(cls,sessName):
+        return State._sessions[sessName]
 
 class ReactiveMethod:
     """ like ReactiveProp, but for gtag.method wchich can return binded tag
@@ -138,8 +144,6 @@ class GTagApp(guy.Guy):
             gid=await self.js.getSessionId()
             self._gtag.state._initSession(gid)
             print("WEB SESSION:",gid)
-        else:
-            gid=None
         self._gtag.init()
 
     def render(self,path=None):
@@ -178,6 +182,8 @@ class GTagApp(guy.Guy):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
         print(">>>>",gid,"event",id,method,args)
         obj=self._gtag._getInstance(id)
+        # if self._isSession:
+        #     obj.state=State._get(gid)
         r=getattr(obj,method)(*args)
         return self.update()    # currently it update all ;-(
 
@@ -187,6 +193,8 @@ class GTagApp(guy.Guy):
 
 
 
+import sys
+
 
 
 class GTag:
@@ -195,7 +203,7 @@ class GTag:
     """
     _tags={}
     state=None
-
+    parent=None
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
@@ -203,6 +211,20 @@ class GTag:
         self.id="%s_%s" % (self.__class__.__name__,id(self))
         GTag._tags[self.id]=self       # maj une liste des dynamic created
 
+        #========================================================================= auto set ".parent" gtag
+        if self.parent is None:
+            frame = sys._getframe(1)
+            arguments = frame.f_code.co_argcount
+            if arguments == 0:
+                print ("Not called from a method")
+                return
+            caller_calls_self = frame.f_code.co_varnames[0]
+            self.parent=frame.f_locals[caller_calls_self]
+            if self.parent==self: self.parent=None
+            print("INIT",self.__class__.__name__, "parent=",repr(self.parent))
+        #=========================================================================
+        if self.parent:
+            self.state=self.parent.state
         self._tag = self.build()
 
     def __del__(self):
@@ -253,9 +275,9 @@ class GTag:
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))
         if k=="state":
-            assert GTag.state is None,"State is already setted, you can't change that"
+            # assert GTag.state is None,"State is already setted, you can't change that"
             assert isinstance(v,State),"setting state with 'non State instance' is not possible!"
-            GTag.state=v
+            super().__setattr__("state",v)
         else:
             o=self.__dict__.get(k)
             if isinstance(o,ReactiveProp):

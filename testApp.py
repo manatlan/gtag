@@ -81,7 +81,8 @@ class MBox(GTag):
 
 class Page1(GTag):
 
-    def __init__(self):
+    def __init__(self,parent):
+        self.parent=parent
         self.nb=12
         self.txt="yolo"
         self.contentMessage=None
@@ -105,11 +106,12 @@ class Page1(GTag):
         )
 
     def setMBoxMsg(self,txt):
-        self.state.setMBox( Page2() )
+        self.state.setMBox( Page2(self) )
 
 class Page2(GTag):
 
-    def __init__(self):
+    def __init__(self,parent):
+        self.parent=parent
         self.nb=12
         super().__init__()
 
@@ -121,7 +123,8 @@ class Page2(GTag):
 
 class Page3(GTag):
 
-    def __init__(self):
+    def __init__(self,parent):
+        self.parent=parent
         self.selected=1
         super().__init__()
 
@@ -140,7 +143,8 @@ class Page3(GTag):
 class TestApp(GTag):
     size=(400,300)
 
-    def __init__(self):
+    def __init__(self,s):
+        self.state=s
         self.pages=[]
         self.content=None
         super().__init__()
@@ -181,20 +185,15 @@ class TestApp(GTag):
         self.content=self.pages[idx]["obj"]
 
 class MyState(State): # a global STATE to share things between components
-    def __init__(self):
-        super().__init__(
-            msg=None
-        )
 
     def setMBox(self,txt):
         self.msg.set(txt)
 
 
 if __name__=="__main__":
-    app=TestApp()
-    app.state=MyState() # <- the state will be shared will all gtag (kind of mixins), in "self.state"
-    app.addPage("Page1", Page1())
-    app.addPage("Page2", Page2())
-    app.addPage("Page3", Page3())
+    app=TestApp( MyState(msg=None) )
+    app.addPage("Page1", Page1(app))
+    app.addPage("Page2", Page2(app))
+    app.addPage("Page3", Page3(app))
 
     print( app.run(log=True) )
