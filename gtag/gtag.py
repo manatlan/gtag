@@ -183,7 +183,7 @@ class GTagApp(guy.Guy):
         print(">>>>",gid,"event",id,method,args)
         obj=self._gtag._getInstance(id)
         # if self._isSession:
-        #     obj.state=State._get(gid)
+        #     obj.state=State._get(gid)   # TODO: not optimal here
         r=getattr(obj,method)(*args)
         return self.update()    # currently it update all ;-(
 
@@ -204,24 +204,24 @@ class GTag:
     _tags={}
     state=None
     parent=None
+    # _tag=None
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
     def __init__(self):
         self.id="%s_%s" % (self.__class__.__name__,id(self))
         GTag._tags[self.id]=self       # maj une liste des dynamic created
-
         #========================================================================= auto set ".parent" gtag
         if self.parent is None:
             frame = sys._getframe(1)
             arguments = frame.f_code.co_argcount
             if arguments == 0:
                 print ("Not called from a method")
-                return
-            caller_calls_self = frame.f_code.co_varnames[0]
-            self.parent=frame.f_locals[caller_calls_self]
-            if self.parent==self: self.parent=None
-            print("INIT",self.__class__.__name__, "parent=",repr(self.parent))
+            else:
+                caller_calls_self = frame.f_code.co_varnames[0]
+                self.parent=frame.f_locals[caller_calls_self]
+                if self.parent==self: self.parent=None
+                print("INIT",self.__class__.__name__, "parent=",repr(self.parent))
         #=========================================================================
         if self.parent:
             self.state=self.parent.state

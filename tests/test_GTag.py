@@ -1,3 +1,7 @@
+if __name__=="__main__":
+    import sys,os
+    sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
+
 from gtag import GTag,bind,ReactiveMethod,Tag
 from gtag.gui import Div
 import pytest
@@ -17,6 +21,7 @@ def test_GTag():
         assert str(m)
 
     assert type(m.update()) is dict
+
 
 def test_GTag_build():
     class My(GTag):

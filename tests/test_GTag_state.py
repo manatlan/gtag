@@ -31,7 +31,7 @@ class Page2(GTag):
 
 def test_gtag_inherit_state():
     app=Page2( MyState(a=12) )
-    print(app)
+    assert ">hello 12 42<" in str(app)
 
 if __name__=="__main__":
     test_gtag_inherit_state()

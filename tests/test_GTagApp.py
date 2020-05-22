@@ -1,4 +1,4 @@
-from gtag import GTag
+from gtag import GTag,Tag
 from gtag.gui import Div
 
 def test_GTagApp():
@@ -10,6 +10,7 @@ def test_GTagApp():
             return Div("hello")
 
     m=My()
+    assert isinstance(m._tag,Tag)
     assert ">hello<" in str(m)
     assert m.run()==42
 
