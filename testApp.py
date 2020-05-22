@@ -197,4 +197,4 @@ if __name__=="__main__":
     app.addPage("Page2", Page2())
     app.addPage("Page3", Page3())
 
-    print( app.run() )
+    print( app.run(log=True) )

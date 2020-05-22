@@ -136,7 +136,8 @@ class GTagApp(guy.Guy):
     async def init(self):
         if self._isSession:
             gid=await self.js.getSessionId()
-            print("WEB SESSION:",gid,"should find a way to clone:",self._gtag.state)
+            self._gtag.state._initSession(gid)
+            print("WEB SESSION:",gid)
         else:
             gid=None
         self._gtag.init()
@@ -172,7 +173,7 @@ class GTagApp(guy.Guy):
             self._gtag
         )
 
-    def bindUpdate(self,id:str,method:str,*args):
+    def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
         obj=self._gtag._getInstance(id)
         r=getattr(obj,method)(*args)
@@ -279,9 +280,9 @@ class GTag:
                 elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
                     def _(*args):
                         if args:
-                            return "self.bindUpdate('%s','%s',%s)" % (self.id,name,",".join([str(i) for i in args]) ) #TODO: escaping here ! (and the render/str ?) json here !
+                            return "self.bindUpdate('%s',GID,'%s',%s)" % (self.id,name,",".join([str(i) for i in args]) ) #TODO: escaping here ! (and the render/str ?) json here !
                         else:
-                            return "self.bindUpdate('%s','%s')" % (self.id,name)
+                            return "self.bindUpdate('%s',GID,'%s')" % (self.id,name)
                     return _
                 else:
                     raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
