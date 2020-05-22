@@ -1,13 +1,10 @@
-from gtag import State,GTag
-from gtag.gui import Div
+from gtag import State,GTag,bind
+from gtag.gui import Div,Button
 
 
 class MyState(State):
-    def __init__(self):
-        super().__init__( a=12 )
-
-    def change(self,nv):
-        self.a.set(nv)
+    def inc(self):
+        self.a.set(self.a.get()+1)
 
 
 class ShareState(GTag):
@@ -25,7 +22,18 @@ class Page2(GTag):
         super().__init__()
 
     def build(self):
-        return Div( ShareState() )
+        return Div(
+            ShareState() ,
+            Button("++",onclick=self.bind.change()),
+            Button("QUIT",onclick=self.bind.quit()+";window.close()"),
+        )
 
-app=Page2( MyState() )
+    def change(self):
+        self.state.inc()
+
+    def quit(self):
+        self.exit()
+
+
+app=Page2( MyState(a=12) )
 app.serve()

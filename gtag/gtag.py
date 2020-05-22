@@ -147,16 +147,17 @@ class GTagApp(guy.Guy):
         return """<!DOCTYPE html>
         <html>
             <head>
-                <script>
-                if(!sessionStorage["gid"]) sessionStorage["gid"]=Math.random().toString(36).substring(2);
-                var GID=sessionStorage["gid"];
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
 
-                async function getSessionId() {return GID}
+                <script>
+                    if(!sessionStorage["gid"]) sessionStorage["gid"]=Math.random().toString(36).substring(2);
+                    var GID=sessionStorage["gid"];
+
+                    async function getSessionId() {return GID}
                 </script>
 
                 <script src="guy.js"></script>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1">
 %s
 %s
                 <style>
@@ -175,6 +176,7 @@ class GTagApp(guy.Guy):
 
     def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
+        print(">>>>",gid,"event",id,method,args)
         obj=self._gtag._getInstance(id)
         r=getattr(obj,method)(*args)
         return self.update()    # currently it update all ;-(
