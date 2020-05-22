@@ -181,6 +181,7 @@ class GTag:
     The magic thing ;-)
     """
     _tags={}
+    state=None
 
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
@@ -239,6 +240,7 @@ class GTag:
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))
         if k=="state":
+            assert GTag.state is None,"State is already setted, you can't change that"
             assert isinstance(v,State),"setting state with 'non State instance' is not possible!"
             GTag.state=v
         else:
