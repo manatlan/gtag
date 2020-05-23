@@ -179,16 +179,30 @@ class GTagApp(guy.Guy):
 
                     async function getSessionId() {return GID}
                     async function _render(html,css,js) {
+                        document.body.style="visibility:hidden";
+                        document.body.innerHTML=html;
 
-                        for(var ss of css) {
-                            var tss = document.createElement("link");
-                            tss.type = "text/css";
-                            tss.rel = "stylesheet";
-                            tss.href = ss;
-                            document.getElementsByTagName("head")[0].appendChild(tss);
+                        function show() {
+                            document.body.style="visibility:visible";
                         }
 
-                        document.body.innerHTML=html;
+                        for(var f of css) {
+                            var t = document.createElement("link");
+                            t.type = "text/css";
+                            t.rel = "stylesheet";
+                            t.href = f;
+                            t.onload=show
+                            document.getElementsByTagName("head")[0].appendChild(t);
+                        }
+
+                        for(var f of js) {
+                            var t = document.createElement("script");
+                            t.type = "text/javascript";
+                            t.src = f;
+                            t.onload=show
+                            document.getElementsByTagName("head")[0].appendChild(t);
+                        }
+                        if(css.length==0 && js.length==0) show()
                     }
                 </script>
 

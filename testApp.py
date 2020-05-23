@@ -131,7 +131,7 @@ class Page3(GTag):
 
 
 class TestApp(GTag):
-    size=(400,300)
+    size=(500,400)
 
     def init(self):
         self.pages=[]
