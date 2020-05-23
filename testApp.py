@@ -138,11 +138,9 @@ class Page3(GTag):
 class TestApp(GTag):
     size=(400,300)
 
-    def __init__(self,s):
-        self.state=s
+    def init(self):
         self.pages=[]
         self.content=None
-        super().__init__(None)
 
     def addPage(self,name,obj):
         self.pages.append( dict(name=name,obj=obj) )

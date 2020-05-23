@@ -142,12 +142,12 @@ class GTagApp(guy.Guy):
         self._gtag=gtag
         self._isSession=isMultipleSessionPossible
 
-    async def init(self):
-        if self._isSession:
-            gid=await self.js.getSessionId()
-            self._gtag.state._initSession(gid)
-            print("WEB SESSION:",gid)
-        self._gtag.init()
+    # async def init(self):
+    #     if self._isSession:
+    #         gid=await self.js.getSessionId()
+    #         self._gtag.state._initSession(gid)
+    #         print("WEB SESSION:",gid)
+    #     self._gtag.init()
 
     def render(self,path=None):
         css,js=self._gtag._guessCssJs()
@@ -215,10 +215,17 @@ class GTag:
         self.id="%s_%s" % (self.__class__.__name__,id(self))
         GTag._tags[self.id]=self       # maj une liste des dynamic created
 
-        self.parent=parent
-        if self.parent is not None:
+        if parent is None: # main gtag instance with no state
+            self.parent=None
+            self.state=None
+        elif isinstance(parent,State): # main gtag instance with state
+            self.parent=None
+            self.state=parent
+        else:
+            assert isinstance(parent,GTag)
+            self.parent=parent
             self.state=self.parent.state
-            assert isinstance(self.parent,GTag)
+
         print("INIT",self.__class__.__name__, "parent=",repr(self.parent), "state:", self.state)
 
         self.init(*a,**k)
@@ -245,7 +252,7 @@ class GTag:
                 js= [js] if isinstance(js,str) else js
         return (css,js)
 
-    def init(self,*a,**k):                     
+    def init(self,*a,**k):
         """ Override to make inits """
         pass
 
