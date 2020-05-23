@@ -142,12 +142,12 @@ class GTagApp(guy.Guy):
         self._gtag=gtag
         self._isSession=isMultipleSessionPossible
 
-    # async def init(self):
-    #     if self._isSession:
-    #         gid=await self.js.getSessionId()
-    #         self._gtag.state._initSession(gid)
-    #         print("WEB SESSION:",gid)
-    #     self._gtag.init()
+    async def init(self):
+        if self._isSession:
+            gid=await self.js.getSessionId()
+            self._gtag.state._initSession(gid)
+            print("WEB SESSION:",gid)
+        # self._gtag.init()
 
     def render(self,path=None):
         css,js=self._gtag._guessCssJs()
@@ -211,16 +211,27 @@ class GTag:
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
-    def __init__(self,parent,*a,**k):
+    def __init__(self,parent=None,*a,**k):
         self.id="%s_%s" % (self.__class__.__name__,id(self))
         GTag._tags[self.id]=self       # maj une liste des dynamic created
 
         if parent is None: # main gtag instance with no state
-            self.parent=None
+
+            # #-------------------------------- guess parent
+            # frame = sys._getframe(1)
+            # arguments = frame.f_code.co_argcount
+            # if arguments == 0:
+            #     parent=None
+            # else:
+            #     caller_calls_self = frame.f_code.co_varnames[0]
+            #     parent=frame.f_locals[caller_calls_self]
+            # #------------------------------------------
+
+            self.parent=parent
             self.state=None
         elif isinstance(parent,State): # main gtag instance with state
             self.parent=None
-            self.state=parent
+            self.state=parent   #<- the trick
         else:
             assert isinstance(parent,GTag)
             self.parent=parent
