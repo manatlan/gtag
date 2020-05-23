@@ -104,7 +104,7 @@ class State:
         return State._sessions[sessName]
 
     def __repr__(self):
-        return "<STATE:%s %s>" % (self.__class__.__name__, self._id)
+        return "<STATE:%s %s>" % (self.__class__.__name__, self._id or "main")
 
 class ReactiveMethod:
     """ like ReactiveProp, but for gtag.method wchich can return binded tag
@@ -212,7 +212,7 @@ class GTag:
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
     def __init__(self,parent=None,*a,**k):
-        self.id="%s_%s" % (self.__class__.__name__,id(self))
+        self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         GTag._tags[self.id]=self       # maj une liste des dynamic created
 
         if parent is None: # main gtag instance with no state
@@ -290,12 +290,6 @@ class GTag:
     def _getInstance(self,id):
         return GTag._tags[id]
 
-    # def __getattr__(self,k):
-    #     print("============",k)
-    #     if k=="state":
-    #         print("ooooooooooooooooooooooooooooooooo")
-    #     else:
-    #         return super().__getattr__(k)
 
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))
@@ -339,7 +333,7 @@ class GTag:
 
 
     def update(self) -> dict:
-        #print("update:"+self.id)
+        print("update:"+self.id)
         return dict(script="""document.querySelector("#%s").innerHTML=`%s`;""" % (
             self.id, self
         ))
