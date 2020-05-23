@@ -1,5 +1,5 @@
 from gtag import GTag,bind,State
-from gtag.gui import A,Body,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
+from gtag.gui import A,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 
 """
 the most advanced gtag example, in the world ;-)
@@ -184,4 +184,4 @@ if __name__=="__main__":
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))
     print(app)
-    print( app.run(log=False) )
+    print( app.run(log=False) ) #a.serve() is not possible HERE, coz object is changed after init !!! (calling addPage())

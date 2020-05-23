@@ -45,5 +45,5 @@ class App(GTag):
             g.Text("Value1 x Value2=",self.compute(),style="text-align:center")
         )
 
-app=App(None)
+app=App()
 app.run(log=False)

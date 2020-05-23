@@ -195,7 +195,7 @@ class GTagApp(guy.Guy):
                 <script src="guy.js"></script>
 
                 <style>
-                div.hbox {display: flex;flex-flow: row nowrap;align-items:center }
+                div.hbox {display: flex;flex-flow: row nowrap;align-items:center}
                 div.vbox {display: flex;flex-flow: column nowrap;}
                 div.hbox > *,div.vbox > * {flex: 1 1 50%%;margin:1px}
                 </style>
@@ -208,15 +208,12 @@ class GTagApp(guy.Guy):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
         if isinstance(self._ses,dict):
             gtag=self._ses[gid]
-            gtagCalled=gtag._getInstance(id)    # TODO: make more intelligent here
-            r=getattr(gtagCalled,method)(*args)
-            return gtag.update()
         else:
             gtag=self._ses
 
-            obj=gtag._getInstance(id)    # TODO: make more intelligent here
-            r=getattr(obj,method)(*args)
-            return gtag.update()
+        obj=gtag._getInstance(id)    # TODO: make more intelligent here
+        r=getattr(obj,method)(*args)
+        return gtag.update()
 
 
 
@@ -365,12 +362,10 @@ class GTag:
 
     def run(self,*a,**k) -> any:
         """ Run as Guy App """
-        app=GTagApp(self,False)
-        return app.run(*a,**k)
+        return GTagApp(self,False).run(*a,**k)
 
     def serve(self,*a,**k) -> any:    # serve will be available when state will depend on session !
         """ Run as Guy Server App """
-        app=GTagApp(self,True)
-        return app.serve(*a,**k)
+        return GTagApp(self,True).serve(*a,**k)
 
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-from gtag import GTag, bind
+from gtag import GTag
 import gtag.gui as g
-
 
 
 class App(GTag):
@@ -20,5 +19,5 @@ class App(GTag):
         self.cpt+=1
 
 
-app=App(None)
+app=App()
 app.run(log=True)
