@@ -34,5 +34,5 @@ class Page2(GTag):
 
 app=Page2( MyState(a=12) )
 print(app)
-app.serve()
+app.run()
 

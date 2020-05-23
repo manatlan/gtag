@@ -261,7 +261,6 @@ class GTag:
             self.parent=parent
             self.state=self.parent.state
 
-        print("INIT",self.__class__.__name__, "parent=",repr(self.parent), "state:", self.state)
 
         self.init(*a,**k)
         self._tag = self.build()
@@ -355,7 +354,7 @@ class GTag:
 
 
     def update(self) -> dict:
-        print("update:"+self.id)
+        # print("update:"+self.id)
         return dict(script="""document.querySelector("#%s").innerHTML=`%s`;""" % (
             self.id, self
         ))

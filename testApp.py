@@ -183,5 +183,5 @@ if __name__=="__main__":
     app.addPage("Page1", Page1(app))
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))
-    print(app)
+
     print( app.run(log=False) ) #a.serve() is not possible HERE, coz object is changed after init !!! (calling addPage())
