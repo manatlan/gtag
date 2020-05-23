@@ -77,11 +77,10 @@ class MBox(GTag):
 
 class Page1(GTag):
 
-    def __init__(self,parent):
+    def init(self):
         self.nb=12
         self.txt="yolo"
         self.contentMessage=None
-        super().__init__(parent)
 
     @bind
     def compute(self):
@@ -105,10 +104,8 @@ class Page1(GTag):
 
 class Page2(GTag):
 
-    def __init__(self,parent):
-        self.parent=parent
+    def init(self):
         self.nb=12
-        super().__init__(parent)
 
     def build(self):
         return Div(
@@ -118,10 +115,8 @@ class Page2(GTag):
 
 class Page3(GTag):
 
-    def __init__(self,parent):
-        self.parent=parent
+    def init(self):
         self.selected=1
-        super().__init__(parent)
 
     def build(self):    # called at __init__()
         t=MyTabs(self,self.bind.selected)
