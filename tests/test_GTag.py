@@ -43,6 +43,8 @@ def test_GTag_build():
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
+    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], [])
+
 def test_GTag_render():
     class My(GTag):
 
@@ -63,6 +65,9 @@ def test_GTag_render():
     assert 'onclick="self.bindUpdate(' in html
     assert 'id="My_' in html
     assert '>hello 12<' in html
+
+    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], [])
+
 
 
 def test_ReactiveMethod():
