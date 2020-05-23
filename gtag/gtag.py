@@ -210,7 +210,7 @@ class GTagApp(guy.Guy):
                 <style>
                 div.hbox {display: flex;flex-flow: row nowrap;align-items:center}
                 div.vbox {display: flex;flex-flow: column nowrap;}
-                div.hbox > *,div.vbox > * {flex: 1 1 50%%;margin:1px}
+                div.hbox > *,div.vbox > * {flex: 1 1 50%;margin:1px}
                 </style>
             </head>
             <body></body>
