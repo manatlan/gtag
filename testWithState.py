@@ -16,7 +16,7 @@ class ShareState(GTag):
 
 
 class Page2(GTag):
-
+    size=(200,100)
     def build(self):
         return Div(
             ShareState(self) ,
@@ -25,16 +25,14 @@ class Page2(GTag):
         )
 
     def change(self):
-        print(self.state._id,self.state.a)
         self.state.inc()
 
     def quit(self):
         self.exit()
 
+###############################################################################
 
 app=Page2( MyState(a=12) )
 print(app)
-# app42=Page2( MyState(a=42) )
-# print(app42)
-# app.serve()
+app.serve()
 

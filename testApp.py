@@ -160,7 +160,7 @@ class TestApp(GTag):
 
         divMenu=Div( menu, klass="navbar-menu" )
 
-        return Body(
+        return Div(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
             Section( Div( "<br>", self.content, klass="container") ),
             MBox( self, self.state.msg )
@@ -183,5 +183,5 @@ if __name__=="__main__":
     app.addPage("Page1", Page1(app))
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))
-
+    print(app)
     print( app.run(log=False) )

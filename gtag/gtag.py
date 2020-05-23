@@ -73,8 +73,6 @@ class State:
     """ Just the beginning of vuex-like (a instance of react'props)
         (it's important that props are reactiveprop ... to be able to be passed to a gtag)
     """
-    _sessions={}
-    _id=None
 
     def __init__(self,**defaults):
         self.__d=defaults
@@ -93,18 +91,14 @@ class State:
             else:
                 raise Exception("can't")
 
-    def _initSession(self,sessName):
+    def _clone(self): #NEW
         import json
         clone=json.loads(json.dumps(self.__d)) #TODO: not needed (but to be sure, before removing)
-        State._sessions[sessName] = self.__class__(**clone)
-        State._sessions[sessName]._id=sessName
+        return self.__class__(**clone)
 
-    @classmethod
-    def _get(cls,sessName):
-        return State._sessions[sessName]
 
     def __repr__(self):
-        return "<STATE:%s %s>" % (self.__class__.__name__, self._id or "main")
+        return "<STATE:%s>" % (self.__class__.__name__)
 
 class ReactiveMethod:
     """ like ReactiveProp, but for gtag.method wchich can return binded tag
@@ -137,20 +131,42 @@ class GTagApp(guy.Guy):
     """ The main guy instance app, which cn run a gtag inside """
 
     def __init__(self,gtag,isMultipleSessionPossible=False):
-        super().__init__()
         assert isinstance(gtag,GTag)
-        self._gtag=gtag
-        self._isSession=isMultipleSessionPossible
+        self._gclass=gtag.__class__
+        self._state=gtag.state
+
+        self.size=gtag.size
+
+        if isMultipleSessionPossible:
+            self._ses={}
+        else:
+            self._ses=gtag
+        super().__init__()
+
+
+    def createGtag(self):
+        state=self._state._clone() if self._state else None
+        gtag = self._gclass(state)
+        assert isinstance(gtag,GTag)
+        return gtag
 
     async def init(self):
-        if self._isSession:
+        if isinstance(self._ses,dict):
             gid=await self.js.getSessionId()
-            self._gtag.state._initSession(gid)
-            print("WEB SESSION:",gid)
-        # self._gtag.init()
+            print("CREATE SESSION:",gid)
+            gtag = self._ses.get(gid)
+            if gtag is None:
+                gtag = self.createGtag()
+                self._ses[gid] = gtag
+        else:
+            gtag = self._ses
+
+        gtag.exit = self.exit
+
+        css,js=gtag._guessCssJs()
+        await self.js._render( str(gtag),css,js )
 
     def render(self,path=None):
-        css,js=self._gtag._guessCssJs()
         return """<!DOCTYPE html>
         <html>
             <head>
@@ -162,37 +178,45 @@ class GTagApp(guy.Guy):
                     var GID=sessionStorage["gid"];
 
                     async function getSessionId() {return GID}
+                    async function _render(html,css,js) {
+
+                        for(var ss of css) {
+                            var tss = document.createElement("link");
+                            tss.type = "text/css";
+                            tss.rel = "stylesheet";
+                            tss.href = ss;
+                            document.getElementsByTagName("head")[0].appendChild(tss);
+                        }
+
+                        document.body.innerHTML=html;
+                    }
                 </script>
 
                 <script src="guy.js"></script>
-%s
-%s
+
                 <style>
                 div.hbox {display: flex;flex-flow: row nowrap;align-items:center }
                 div.vbox {display: flex;flex-flow: column nowrap;}
                 div.hbox > *,div.vbox > * {flex: 1 1 50%%;margin:1px}
                 </style>
             </head>
-            <body>%s</body>
+            <body></body>
         </html>
-        """ % (
-            "\n".join(['<link rel="stylesheet" href="%s">'%i for i in css]),
-            "\n".join(['<script src="%s"></script>'%i for i in js]),
-            self._gtag
-        )
+        """
 
     def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
-        print(">>>>",gid,"event",id,method,args)
-        obj=self._gtag._getInstance(id)
-        # if self._isSession:
-        #     obj.state=State._get(gid)   # TODO: not optimal here
-        r=getattr(obj,method)(*args)
-        return self.update()    # currently it update all ;-(
+        if isinstance(self._ses,dict):
+            gtag=self._ses[gid]
+            gtagCalled=gtag._getInstance(id)    # TODO: make more intelligent here
+            r=getattr(gtagCalled,method)(*args)
+            return gtag.update()
+        else:
+            gtag=self._ses
 
-    def update(self):
-        """ inner (js exposed) guy method, which returns the JS to update the content of the gtag !"""
-        return self._gtag.update()
+            obj=gtag._getInstance(id)    # TODO: make more intelligent here
+            r=getattr(obj,method)(*args)
+            return gtag.update()
 
 
 
@@ -211,9 +235,12 @@ class GTag:
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
+    def _getInstance(self,id):
+        return GTag._tags[id]          # TODO: make more intelligent here
+
     def __init__(self,parent=None,*a,**k):
         self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
-        GTag._tags[self.id]=self       # maj une liste des dynamic created
+        GTag._tags[self.id]=self       # TODO: make more intelligent here
 
         if parent is None: # main gtag instance with no state
 
@@ -287,8 +314,6 @@ class GTag:
         return "<GTAG:%s %s>" % (self.__class__.__name__, self.id)
 
 
-    def _getInstance(self,id):
-        return GTag._tags[id]
 
 
     def __setattr__(self,k,v):
@@ -341,14 +366,11 @@ class GTag:
     def run(self,*a,**k) -> any:
         """ Run as Guy App """
         app=GTagApp(self,False)
-        app.size=self.size
-        self.exit=app.exit
         return app.run(*a,**k)
 
     def serve(self,*a,**k) -> any:    # serve will be available when state will depend on session !
         """ Run as Guy Server App """
         app=GTagApp(self,True)
-        self.exit=app.exit
         return app.serve(*a,**k)
 
 

@@ -46,4 +46,4 @@ class App(GTag):
         )
 
 app=App(None)
-app.run()
+app.run(log=False)
