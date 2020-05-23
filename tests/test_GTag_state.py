@@ -25,7 +25,7 @@ class Page2(GTag):
 
     def build(self):
         return Div(
-            ShareState() ,
+            ShareState(self) ,
         )
 
 

@@ -103,6 +103,9 @@ class State:
     def _get(cls,sessName):
         return State._sessions[sessName]
 
+    def __repr__(self):
+        return "<STATE:%s %s>" % (self.__class__.__name__, self._id)
+
 class ReactiveMethod:
     """ like ReactiveProp, but for gtag.method wchich can return binded tag
         (object created by @bind decorator)
@@ -208,23 +211,15 @@ class GTag:
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
-    def __init__(self):
+    def __init__(self,parent=None):
         self.id="%s_%s" % (self.__class__.__name__,id(self))
         GTag._tags[self.id]=self       # maj une liste des dynamic created
-        #========================================================================= auto set ".parent" gtag
-        if self.parent is None:
-            frame = sys._getframe(1)
-            arguments = frame.f_code.co_argcount
-            if arguments == 0:
-                print ("Not called from a method")
-            else:
-                caller_calls_self = frame.f_code.co_varnames[0]
-                self.parent=frame.f_locals[caller_calls_self]
-                if self.parent==self: self.parent=None
-                print("INIT",self.__class__.__name__, "parent=",repr(self.parent))
-        #=========================================================================
-        if self.parent:
+
+        self.parent=parent
+        if self.parent is not None:
             self.state=self.parent.state
+            assert isinstance(self.parent,GTag)
+        print("INIT",self.__class__.__name__, "parent=",repr(self.parent), "state:", self.state)
         self._tag = self.build()
 
     def __del__(self):
@@ -268,15 +263,25 @@ class GTag:
             o.id=self.id # set an id for js interactions (cf update()/bindUpdate())
             return str(o)
 
+    def __repr__(self):
+        return "<GTAG:%s %s>" % (self.__class__.__name__, self.id)
+
 
     def _getInstance(self,id):
         return GTag._tags[id]
+
+    # def __getattr__(self,k):
+    #     print("============",k)
+    #     if k=="state":
+    #         print("ooooooooooooooooooooooooooooooooo")
+    #     else:
+    #         return super().__getattr__(k)
 
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))
         if k=="state":
             # assert GTag.state is None,"State is already setted, you can't change that"
-            assert isinstance(v,State),"setting state with 'non State instance' is not possible!"
+            assert v==None or isinstance(v,State),"setting state with 'non State instance' is not possible!"
             super().__setattr__("state",v)
         else:
             o=self.__dict__.get(k)

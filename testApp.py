@@ -7,9 +7,9 @@ the most advanced gtag example, in the world ;-)
 """
 
 class Inc(GTag):
-    def __init__(self,v=0):
+    def __init__(self,parent,v=0):
         self.cpt=v
-        super().__init__()
+        super().__init__(parent)
 
     def build(self):    # called at __init__()
         return HBox(
@@ -24,9 +24,9 @@ class Inc(GTag):
 
 class MyInput(GTag):
 
-    def __init__(self,txt):
+    def __init__(self,parent,txt):
         self.v=txt
-        super().__init__()
+        super().__init__(parent)
 
     def build(self):
         return Input(type="text",value=self.v,onchange=self.bind.onchange("this.value"))
@@ -37,10 +37,10 @@ class MyInput(GTag):
 
 
 class MyTabs(GTag):
-    def __init__(self,selected:int):
+    def __init__(self,parent,selected:int):
         self.selected=selected
         self.tabs=[]
-        super().__init__()
+        super().__init__(parent)
 
     def addTab(self,title):
         self.tabs.append(title)
@@ -61,9 +61,9 @@ class MyTabs(GTag):
 
 
 class MBox(GTag):
-    def __init__(self,content):
+    def __init__(self,parent,content):
         self.content=content
-        super().__init__()
+        super().__init__(parent)
 
     @bind
     def build(self):
@@ -82,11 +82,10 @@ class MBox(GTag):
 class Page1(GTag):
 
     def __init__(self,parent):
-        self.parent=parent
         self.nb=12
         self.txt="yolo"
         self.contentMessage=None
-        super().__init__()
+        super().__init__(parent)
 
     @bind
     def compute(self):
@@ -97,10 +96,10 @@ class Page1(GTag):
 
     def build(self):
         return VBox(
-            MyInput( self.bind.txt ),
+            MyInput(self, self.bind.txt ),
             Text(self.bind.txt),
-            Inc(self.bind.nb),
-            Inc(self.bind.nb),
+            Inc(self,self.bind.nb),
+            Inc(self,self.bind.nb),
             Box(self.bind.nb, self.compute()),
             Button("Show mbox",onclick=self.bind.setMBoxMsg("'hello'")) #TODO: find better !!!
         )
@@ -113,12 +112,12 @@ class Page2(GTag):
     def __init__(self,parent):
         self.parent=parent
         self.nb=12
-        super().__init__()
+        super().__init__(parent)
 
     def build(self):
         return Div(
             Box("A test page, with a binding value:", self.bind.nb),
-            Inc(self.bind.nb),
+            Inc(self,self.bind.nb),
         )
 
 class Page3(GTag):
@@ -126,10 +125,10 @@ class Page3(GTag):
     def __init__(self,parent):
         self.parent=parent
         self.selected=1
-        super().__init__()
+        super().__init__(parent)
 
     def build(self):    # called at __init__()
-        t=MyTabs(self.bind.selected)
+        t=MyTabs(self,self.bind.selected)
         t.addTab("tab1")
         t.addTab("tab2")
         t.addTab("tab3")
@@ -175,7 +174,7 @@ class TestApp(GTag):
         return Body(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
             Section( Div( "<br>", self.content, klass="container") ),
-            MBox( self.state.msg )
+            MBox( self, self.state.msg )
         )
 
     def doExit(self):
@@ -192,6 +191,8 @@ class MyState(State): # a global STATE to share things between components
 
 if __name__=="__main__":
     app=TestApp( MyState(msg=None) )
+    assert app.parent==None
+    assert app.state
     app.addPage("Page1", Page1(app))
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))
