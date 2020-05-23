@@ -13,9 +13,8 @@ With all main features:
 """
 
 class Starred(GTag):
-    def __init__(self, parent, v=0):
+    def init(self, v=0):
         self.value = v
-        super().__init__(parent)
 
     def build(self):
         return g.HBox(
@@ -31,10 +30,9 @@ class Starred(GTag):
 class App(GTag):
     size=(400,150)
 
-    def __init__(self):
+    def init(self):
         self.cpt1 = 12
         self.cpt2 = 7
-        super().__init__(None)
 
     @bind
     def compute(self):
@@ -47,5 +45,5 @@ class App(GTag):
             g.Text("Value1 x Value2=",self.compute(),style="text-align:center")
         )
 
-app=App()
+app=App(None)
 app.run()

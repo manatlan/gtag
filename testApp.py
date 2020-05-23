@@ -7,9 +7,8 @@ the most advanced gtag example, in the world ;-)
 """
 
 class Inc(GTag):
-    def __init__(self,parent,v=0):
+    def init(self,v=0):
         self.cpt=v
-        super().__init__(parent)
 
     def build(self):    # called at __init__()
         return HBox(
@@ -24,9 +23,8 @@ class Inc(GTag):
 
 class MyInput(GTag):
 
-    def __init__(self,parent,txt):
+    def init(self,txt):
         self.v=txt
-        super().__init__(parent)
 
     def build(self):
         return Input(type="text",value=self.v,onchange=self.bind.onchange("this.value"))
@@ -37,10 +35,9 @@ class MyInput(GTag):
 
 
 class MyTabs(GTag):
-    def __init__(self,parent,selected:int):
+    def init(self,selected:int):
         self.selected=selected
         self.tabs=[]
-        super().__init__(parent)
 
     def addTab(self,title):
         self.tabs.append(title)
@@ -61,9 +58,8 @@ class MyTabs(GTag):
 
 
 class MBox(GTag):
-    def __init__(self,parent,content):
+    def init(self,content):
         self.content=content
-        super().__init__(parent)
 
     @bind
     def build(self):

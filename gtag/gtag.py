@@ -211,7 +211,7 @@ class GTag:
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
-    def __init__(self,parent):
+    def __init__(self,parent,*a,**k):
         self.id="%s_%s" % (self.__class__.__name__,id(self))
         GTag._tags[self.id]=self       # maj une liste des dynamic created
 
@@ -220,6 +220,8 @@ class GTag:
             self.state=self.parent.state
             assert isinstance(self.parent,GTag)
         print("INIT",self.__class__.__name__, "parent=",repr(self.parent), "state:", self.state)
+
+        self.init(*a,**k)
         self._tag = self.build()
 
     def __del__(self):
@@ -243,7 +245,7 @@ class GTag:
                 js= [js] if isinstance(js,str) else js
         return (css,js)
 
-    def init(self):                     # currently only the main gtag can use this #TODO: find something cool
+    def init(self,*a,**k):                     
         """ Override to make inits """
         pass
 
