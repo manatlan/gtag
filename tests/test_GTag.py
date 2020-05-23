@@ -9,7 +9,7 @@ import pytest
 def test_GTag():
     class My(GTag):
         pass
-    m=My()
+    m=My(None)
     assert m._tag is None
     assert m.build() is None
     # assert m.render() is None
@@ -28,7 +28,7 @@ def test_GTag_build():
 
         def __init__(self):
             self.v=12
-            super().__init__()
+            super().__init__(None)
         def build(self):
             return Div("hello",self.bind.v,onclick=self.bind.onclick())
         def onclick(self):
@@ -48,7 +48,7 @@ def test_GTag_render():
 
         def __init__(self):
             self.v=12
-            super().__init__()
+            super().__init__(None)
         @bind
         def build(self):
             return Div("hello",self.bind.v,onclick=self.bind.onclick(42))
@@ -74,7 +74,7 @@ def test_ReactiveMethod():
         def m(self,c,nb=2):
             return c*nb
 
-    p=MTag()
+    p=MTag(None)
 
     assert p.bm("X")() == "XX"
     assert p.bm("O",nb=3)() == "OOO"

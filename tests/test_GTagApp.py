@@ -9,7 +9,7 @@ def test_GTagApp():
         def build(self):
             return Div("hello")
 
-    m=My()
+    m=My(None)
     assert isinstance(m._tag,Tag)
     assert ">hello<" in str(m)
     assert m.run()==42
@@ -22,7 +22,7 @@ def test_GTagAppBad():
         def build(self):
             return None
 
-    m=My()  # no css included (in guy win)
+    m=My(None)  # no css included (in guy win)
     assert str(m)==""
     assert m.run()==42
 

@@ -19,7 +19,7 @@ class Page2(GTag):
 
     def __init__(self,s):
         self.state=s        # <- self.state will be shared will all gtag (kind of mixins)
-        super().__init__()
+        super().__init__(None)
 
     def build(self):
         return Div(
@@ -36,8 +36,8 @@ class Page2(GTag):
         self.exit()
 
 
-app12=Page2( MyState(a=12) )
-print(app12)
-app42=Page2( MyState(a=42) )
-print(app42)
-# app.serve()
+app=Page2( MyState(a=12) )
+# print(app12)
+# app42=Page2( MyState(a=42) )
+# print(app42)
+app.serve()

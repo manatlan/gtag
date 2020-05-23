@@ -146,7 +146,7 @@ class TestApp(GTag):
         self.state=s
         self.pages=[]
         self.content=None
-        super().__init__()
+        super().__init__(None)
 
     def addPage(self,name,obj):
         self.pages.append( dict(name=name,obj=obj) )
@@ -191,8 +191,6 @@ class MyState(State): # a global STATE to share things between components
 
 if __name__=="__main__":
     app=TestApp( MyState(msg=None) )
-    assert app.parent==None
-    assert app.state
     app.addPage("Page1", Page1(app))
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))

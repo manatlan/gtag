@@ -41,7 +41,7 @@ class AnotherGUI(GTag):
         print("hello")
 
 
-t=AnotherGUI()
+t=AnotherGUI(None)
 t.run()
 
 

@@ -34,7 +34,7 @@ class App(GTag):
     def __init__(self):
         self.cpt1 = 12
         self.cpt2 = 7
-        super().__init__()
+        super().__init__(None)
 
     @bind
     def compute(self):

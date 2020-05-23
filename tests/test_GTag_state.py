@@ -21,7 +21,7 @@ class Page2(GTag):
     def __init__(self,s):
         self.v=42
         self.state=s        # <- self.state will be shared will all gtag (kind of mixins)
-        super().__init__()
+        super().__init__(None)
 
     def build(self):
         return Div(

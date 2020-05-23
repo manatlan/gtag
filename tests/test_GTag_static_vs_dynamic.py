@@ -18,7 +18,7 @@ class Static(GTag):
     """ A full static gtag component without any 'bind' """
     def __init__(self,n):
         self.n=n
-        super().__init__()
+        super().__init__(None)
 
     def stars(self):
         return [Star(i) for i in range( int(self.n) )]
@@ -30,7 +30,7 @@ class StaticBinded(GTag):
     """ A gtag component with its property bind'ed ! """
     def __init__(self,n):
         self.n=n
-        super().__init__()
+        super().__init__(None)
 
     def stars(self):
         return [Star(i) for i in range(int(self.n))]
@@ -43,7 +43,7 @@ class StaticComputed(GTag): # GOOD PRATICE !!
     """ A gtag component with a property bind'ed and a method binded (computed) """
     def __init__(self,n):
         self.n=n
-        super().__init__()
+        super().__init__(None)
 
     @bind
     def stars(self):
@@ -57,7 +57,7 @@ class StaticBuildBinded(GTag): # BAD PRACTICE
     """ the build is binded !!!!"""
     def __init__(self,n):
         self.n=n
-        super().__init__()
+        super().__init__(None)
 
     @bind
     def build(self):
@@ -141,7 +141,7 @@ def test_DANGEROUS():
         """ A gtag component with a property bind'ed and a method binded (computed) """
         def __init__(self,n):
             self.n=n
-            super().__init__()
+            super().__init__(None)
 
         @bind # -> Str'Able
         def stars(self):
@@ -161,7 +161,7 @@ def test_DANGEROUS_workaround1():
         """ A gtag component with a property bind'ed and a method binded (computed) """
         def __init__(self,n):
             self.n=n
-            super().__init__()
+            super().__init__(None)
 
         @bind # -> Str'Able
         def stars(self):
@@ -187,7 +187,7 @@ def test_DANGEROUS_workaround2():
 
         def __init__(self,n):
             self.n=n
-            super().__init__()
+            super().__init__(None)
 
         @bind
         def build(self):

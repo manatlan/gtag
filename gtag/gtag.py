@@ -211,7 +211,7 @@ class GTag:
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
-    def __init__(self,parent=None):
+    def __init__(self,parent):
         self.id="%s_%s" % (self.__class__.__name__,id(self))
         GTag._tags[self.id]=self       # maj une liste des dynamic created
 
