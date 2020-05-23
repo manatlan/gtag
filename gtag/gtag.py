@@ -20,7 +20,6 @@ import guy
 from .tag import Tag
 import typing as T
 
-__version__="0.0.2"
 
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 

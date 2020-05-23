@@ -16,7 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-__version__="0.0.1"
+__version__="0.0.3"
 
 from .gtag import GTag,GTagApp,ReactiveMethod,ReactiveProp,bind,State
 from .tag import Tag
