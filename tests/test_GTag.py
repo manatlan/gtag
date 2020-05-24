@@ -17,6 +17,13 @@ def test_GTag():
     assert id
     assert m._getInstance(id) == m
 
+
+    with pytest.raises(Exception):
+        print(m.bind.unknown)
+
+    with pytest.raises(Exception):
+        print(m.bind.unknown())
+
     with pytest.raises(AssertionError):
         assert str(m)
 
