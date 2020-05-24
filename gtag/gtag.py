@@ -203,7 +203,7 @@ class GTag:
         self._tag = self.build()
 
     def _clone(self):
-        props={k:v for k,v in self.__dict__.items() if k not in ['id', '_args', '_kargs', 'parent', 'state', '_tag']}
+        props={k:v for k,v in self.__dict__.items() if k not in ['id', '_args', '_kargs', 'parent', '_tag']}
         state=self.state._clone() if self.state else None
         gtag = self.__class__(state,*self._args,**self._kargs)
         gtag.__dict__.update(props)
