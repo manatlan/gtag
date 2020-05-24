@@ -1,10 +1,6 @@
-from gtag import State,GTag,bind
+from gtag import GTag,bind
 from gtag.gui import Div,Button
 
-
-class MyState(State):
-    def inc(self):
-        self.a.set(self.a.get()+1)
 
 
 class ShareState(GTag):
@@ -17,6 +13,9 @@ class ShareState(GTag):
 class Page2(GTag):
     size=(200,100)
 
+    def init(self):
+        self.a=12
+
     def build(self):
         return Div(
             ShareState() , self.state.a,
@@ -25,14 +24,14 @@ class Page2(GTag):
         )
 
     def change(self):
-        self.state.inc()
+        self.a+=1
 
     def quit(self):
         self.exit()
 
 ###############################################################################
 
-app=Page2( MyState(a=12) )
+app=Page2( )
 GTag._tags={} #<- good try : delete all created object, to be sure to loose them
 app.serve(log=False)
 

@@ -2,13 +2,8 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
-from gtag import State,GTag,bind
+from gtag import GTag,bind
 from gtag.gui import Div,Button
-
-
-class MyState(State):
-    def inc(self):                      # not used
-        self.a.set(self.a.get()+1)
 
 class ShareState(GTag):
     def build(self):
@@ -19,16 +14,16 @@ class ShareState(GTag):
 
 class Page2(GTag):
     def init(self):
+        self.a=12
         self.v=42
 
     def build(self):
         return Div(
-            ShareState(self) ,
+            ShareState() ,
         )
 
-
 def test_gtag_inherit_state():
-    app=Page2( MyState(a=12) )
+    app=Page2( )
     assert ">hello 12 42<" in str(app)
 
 if __name__=="__main__":

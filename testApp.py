@@ -1,4 +1,4 @@
-from gtag import GTag,bind,State
+from gtag import GTag,bind
 from gtag.gui import A,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 
 """
@@ -92,10 +92,10 @@ class Page1(GTag):
             Inc(self.bind.nb),
             Inc(self.bind.nb),
             Box(self.bind.nb, self.compute()),
-            Button("Show mbox",onclick=self.bind.setMBoxMsg("'hello'")) #TODO: find better !!!
+            Button("Show mbox",onclick=self.bind.aff()) #TODO: find better !!!
         )
 
-    def setMBoxMsg(self,txt):
+    def aff(self):
         self.state.setMBox( Inc(42) )
 
 class Page2(GTag):
@@ -106,7 +106,7 @@ class Page2(GTag):
     def build(self):
         return Div(
             Box("A test page, with a binding value:", self.bind.nb),
-            Inc(self,self.bind.nb),
+            Inc(self.bind.nb),
             Button("show",onclick=self.bind.kik())
         )
     def kik(self):
@@ -133,8 +133,13 @@ class TestApp(GTag):
     size=(500,400)
 
     def init(self):
-        self.nb=12
         self.txt="yolo"
+        self.n=12
+        self.nb=12
+        self.msg=None
+        self.page=1
+        self.selectedTab=1
+
 
     @bind
     def build(self): # DYNAMIC RENDERING HERE !
@@ -150,39 +155,39 @@ class TestApp(GTag):
 
         menu=Div(klass="navbar-start")
         menu.add( A("Page1", klass="navbar-item", onclick=self.bind.setPage(1)))
-        menu.add( A("Page2 (%s)"% int(self.state.nb), klass="navbar-item", onclick=self.bind.setPage(2)))
+        menu.add( A("Page2 (%s)"% int(self.nb), klass="navbar-item", onclick=self.bind.setPage(2)))
         menu.add( A("Page3", klass="navbar-item", onclick=self.bind.setPage(3)))
         menu.add( A("Exit", klass="navbar-item", onclick=self.bind.doExit() ) )
 
         divMenu=Div( menu, klass="navbar-menu" )
 
 
-        if self.state.page==1:
-            page=Page1(self.bind.nb,self.bind.txt)
-        elif self.state.page==2:
-            page=Page2(self.state.nb)
-        elif self.state.page==3:
-            page=Page3(self.state.selectedTab)
+        if self.page==1:
+            page=Page1(self.bind.n,self.bind.txt)
+        elif self.page==2:
+            page=Page2(self.bind.nb)
+        elif self.page==3:
+            page=Page3(self.bind.selectedTab)
 
 
 
         return Div(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
             Section( Div( "<br>", page, klass="container") ),
-            MBox( self.state.msg )
+            MBox( self.bind.msg )
         )
 
     def doExit(self):
         self.exit(-1)
 
     def setPage(self,n):
-        self.state.page.set(n)
+        self.page=n
 
-class MyState(State): # a global STATE to share things between components
     def setMBox(self,txt):
-        self.msg.set(txt)
+        self.msg=txt
+
 
 if __name__=="__main__":
-    app=TestApp( MyState(nb=12,msg=None,page=1,selectedTab=1) )
-    print( app.run(log=False) )
-    # print( app.serve(log=False) )
+    app=TestApp( )
+    # print( app.run(log=False) )
+    print( app.serve(log=False) )

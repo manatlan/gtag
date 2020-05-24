@@ -2,7 +2,7 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
-from gtag import GTag,bind,ReactiveMethod,Tag,State
+from gtag import GTag,bind,ReactiveMethod,Tag
 from gtag.gui import Div
 import pytest
 
@@ -119,37 +119,33 @@ def test_GTag_clone_with_State():
         def onclick(self,anArg=None):
             pass
 
-    s=State(a=7)
-
-    m=My(s,12)
+    m=My(12)
     m.vv=13
     assert m.v==12
     assert m.vv==13
-    assert m.state.a==7
 
     mm=m._clone() #clone state too
     assert mm.v==12
     assert mm.vv==13
-    assert mm.state.a==7
 
-    m.state.a.set(8)
-    assert m.state.a==8
-    assert mm.state.a==7                    # not same state
-    assert id(mm.state) != id(m.state)      # proof !
+    # m.state.a.set(8)
+    # assert m.state.a==8
+    # assert mm.state.a==7                    # not same state
+    # assert id(mm.state) != id(m.state)      # proof !
 
-    childM=My( m , 6)
-    assert childM.v==6
-    assert childM.state.a==8
-    assert childM.parent.v==12
-    assert childM.parent.vv==13
-    assert id(childM.state)==id(m.state)
+    # childM=My( m , 6)
+    # assert childM.v==6
+    # assert childM.state.a==8
+    # assert childM.parent.v==12
+    # assert childM.parent.vv==13
+    # assert id(childM.state)==id(m.state)
 
-    childMM=My( mm , 6)
-    assert childMM.v==6
-    assert childMM.state.a==7
-    assert childMM.parent.v==12
-    assert childMM.parent.vv==13
-    assert id(childMM.state)==id(mm.state)
+    # childMM=My( mm , 6)
+    # assert childMM.v==6
+    # assert childMM.state.a==7
+    # assert childMM.parent.v==12
+    # assert childMM.parent.vv==13
+    # assert id(childMM.state)==id(mm.state)
 
 
 
