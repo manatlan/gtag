@@ -184,5 +184,5 @@ if __name__=="__main__":
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))
 
-    # print( app.run(log=False) )
-    print( app.serve(log=False) ) # bugged state msg !!!!!!!!!!!!!!
+    print( app.run(log=False) )
+    # print( app.serve(log=False) ) # bugged state msg !!!!!!!!!!!!!!
