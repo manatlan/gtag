@@ -16,7 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-import guy
+import guy,sys
 from .tag import Tag
 import typing as T
 
@@ -141,23 +141,13 @@ class GTag:
     def _getInstance(self,id):
         return GTag._tags[id]          # TODO: make more intelligent here
 
-    """# implicit parent version (don't need to pass self(=parent) when creating a gtag)
-    def __init__(self,*a,**k):
+    # implicit parent version (don't need to pass self(=parent) when creating a gtag)
+    def __init__(self,parent_or_state=None,*a,**k):
         self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         GTag._tags[self.id]=self       # TODO: make more intelligent here
 
         self._args=list(a)
         self._kargs=k
-
-
-        # looking for a state param (only main gtag can do this)
-        state=None
-        for o in self._args:
-            if isinstance(o,State):
-                state=o
-                self._args.remove(o)
-                print("find state",state)
-                break
 
         # guess parent
         frame = sys._getframe(1)
@@ -169,41 +159,53 @@ class GTag:
             parent=frame.f_locals[caller_calls_self]
             assert isinstance(parent,GTag)
             if parent.__class__ == self.__class__: parent=None
-            print("DETECT PARENT of current",repr(self),"parent=",repr(parent))
 
-        if parent:
-            self.parent=parent
-            self.state=self.parent.state
+        state=None
+        if parent_or_state:
+            if isinstance(parent_or_state,State):
+                self.parent=None                             # main gtag
+                self.state=parent_or_state
+            elif isinstance(parent_or_state,GTag):
+                self.parent=parent_or_state                  #explicit re-parent
+                self.state=self.parent.state
+            else:
+                self._args.insert(0,parent_or_state)
+                self.parent=parent
+                self.state=parent.state if parent else None
         else:
-            self.parent=None
-            self.state=state
+            # self._args.insert(0,parent_or_state)
+            self.parent=parent
+            self.state=parent.state if parent else None
 
+
+        print("INIT",repr(self))
         self.init(*self._args,**self._kargs)
         self._tag = self.build()
+
+
     """
+        def __init__(self,parent=None,*a,**k):
+            self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
+            self._args=a
+            self._kargs=k
+            GTag._tags[self.id]=self       # TODO: make more intelligent here
 
-    def __init__(self,parent=None,*a,**k):
-        self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
-        self._args=a
-        self._kargs=k
-        GTag._tags[self.id]=self       # TODO: make more intelligent here
+            if parent is None: # main gtag instance with no state
+                self.parent=None
+                self.state=None
+            elif isinstance(parent,State): # main gtag instance with state
+                self.parent=None
+                self.state=parent   #<- the trick
+            else:
+                assert isinstance(parent,GTag)
+                self.parent=parent
+                self.state=self.parent.state
 
-        if parent is None: # main gtag instance with no state
-            self.parent=None
-            self.state=None
-        elif isinstance(parent,State): # main gtag instance with state
-            self.parent=None
-            self.state=parent   #<- the trick
-        else:
-            assert isinstance(parent,GTag)
-            self.parent=parent
-            self.state=self.parent.state
-
-        self.init(*self._args,**self._kargs)
-        self._tag = self.build()
-
+            self.init(*self._args,**self._kargs)
+            self._tag = self.build()
+    """
     def _clone(self):
-        props={k:v for k,v in self.__dict__.items() if k not in ['id', '_args', '_kargs', 'parent', '_tag']}
+        props={k:v for k,v in self.__dict__.items() if k not in ['id', '_args', '_kargs', 'parent','state', '_tag']}
         state=self.state._clone() if self.state else None
         gtag = self.__class__(state,*self._args,**self._kargs)
         gtag.__dict__.update(props)
@@ -253,7 +255,7 @@ class GTag:
             return str(o)
 
     def __repr__(self):
-        return "<GTAG:%s %s>" % (self.__class__.__name__, self.id)
+        return "<GTAG:%s %s (parent:%s)>" % (self.__class__.__name__, self.id,self.parent.id if self.parent else "no")
 
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))

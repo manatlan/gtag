@@ -91,10 +91,10 @@ class Page1(GTag):
 
     def build(self):
         return VBox(
-            MyInput(self, self.bind.txt ),
+            MyInput(self.bind.txt ),
             Text(self.bind.txt),
-            Inc(self,self.bind.nb),
-            Inc(self,self.bind.nb),
+            Inc(self.bind.nb),
+            Inc(self.bind.nb),
             Box(self.bind.nb, self.compute()),
             Button("Show mbox",onclick=self.bind.setMBoxMsg("'hello'")) #TODO: find better !!!
         )
@@ -119,7 +119,7 @@ class Page3(GTag):
         self.selected=1
 
     def build(self):    # called at __init__()
-        t=MyTabs(self,self.bind.selected)
+        t=MyTabs(self.bind.selected)
         t.addTab("tab1")
         t.addTab("tab2")
         t.addTab("tab3")
@@ -163,7 +163,7 @@ class TestApp(GTag):
         return Div(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
             Section( Div( "<br>", self.content, klass="container") ),
-            MBox( self, self.state.msg )
+            MBox( self.state.msg )
         )
 
     def doExit(self):
@@ -184,5 +184,5 @@ if __name__=="__main__":
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))
 
-    # print( app.run(log=False) )
-    print( app.serve(log=False) )
+    print( app.run(log=False) )
+    # print( app.serve(log=False) ) # state message is currently broken with that

@@ -20,8 +20,8 @@ class App(GTag):
     def build(self):
         return g.VBox(
             self.bind.cpt,
-            Btn(self)
+            Btn()
         )
 
 app=App()
-app.run(log=False)
+app.serve(log=False)
