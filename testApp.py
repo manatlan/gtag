@@ -6,11 +6,11 @@ the most advanced gtag example, in the world ;-)
 (mainly used for manual tests)
 """
 
-class Inc(GTag):
+class MyInc(GTag):
     def init(self,v=0):
         self.cpt=v
 
-    def build(self):    # called at __init__()
+    def build(self):
         return HBox(
                 Button("-",onclick=self.bind.addV(-1) ),         #<- bind GuyCompo event
                 Text(self.bind.cpt,style="text-align:center"),
@@ -21,7 +21,7 @@ class Inc(GTag):
         self.cpt+=v
 
 
-class MBox(GTag):
+class MyBox(GTag):
     def init(self,content):
         self.content=content
 
@@ -87,16 +87,15 @@ class Page1(GTag):
 
     def build(self):
         return VBox(
-            MyInput(self.bind.txt ),
-            Text(self.bind.txt),
-            Inc(self.bind.nb),
-            Inc(self.bind.nb),
+            HBox(MyInput(self.bind.txt ),Text(self.bind.txt)),
+            MyInc(self.bind.nb),
+            MyInc(self.bind.nb),
             Box(self.bind.nb, self.compute()),
             Button("Show mbox",onclick=self.bind.aff()) #TODO: find better !!!
         )
 
     def aff(self):
-        self.state.setMBox( Inc(42) )
+        self.main.setMBox( MyInc(42) )
 
 class Page2(GTag):
 
@@ -106,18 +105,18 @@ class Page2(GTag):
     def build(self):
         return Div(
             Box("A test page, with a binding value:", self.bind.nb),
-            Inc(self.bind.nb),
+            MyInc(self.bind.nb),
             Button("show",onclick=self.bind.kik())
         )
     def kik(self):
-        self.state.setMBox("yo")
+        self.main.setMBox("yo")
 
 class Page3(GTag):
 
     def init(self,sel):
         self.selected=sel
 
-    def build(self):    # called at __init__()
+    def build(self):
         t=MyTabs(self.bind.selected)
         t.addTab("tab1")
         t.addTab("tab2")
@@ -161,20 +160,19 @@ class TestApp(GTag):
 
         divMenu=Div( menu, klass="navbar-menu" )
 
-
         if self.page==1:
             page=Page1(self.bind.n,self.bind.txt)
         elif self.page==2:
             page=Page2(self.bind.nb)
         elif self.page==3:
             page=Page3(self.bind.selectedTab)
-
-
+        else:
+            page="no"
 
         return Div(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
             Section( Div( "<br>", page, klass="container") ),
-            MBox( self.bind.msg )
+            MyBox( self.bind.msg )
         )
 
     def doExit(self):
@@ -189,5 +187,5 @@ class TestApp(GTag):
 
 if __name__=="__main__":
     app=TestApp( )
-    # print( app.run(log=False) )
-    print( app.serve(log=False) )
+    print( app.run(log=False) )
+    # print( app.serve(log=False) )

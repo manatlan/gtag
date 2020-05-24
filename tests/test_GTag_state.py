@@ -8,7 +8,7 @@ from gtag.gui import Div,Button
 class ShareState(GTag):
     def build(self):
         return Div( "hello",
-            self.state.a,
+            self.main.a,
             self.parent.v
         )
 

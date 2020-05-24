@@ -7,7 +7,7 @@ class ShareState(GTag):
 
     def build(self):
         return Div( "hello",
-            self.state.a,
+            self.main.a,        # <-- the shared state is the main instance !
         )
 
 class Page2(GTag):
@@ -18,12 +18,12 @@ class Page2(GTag):
 
     def build(self):
         return Div(
-            ShareState() , self.state.a,
-            Button("++",onclick=self.bind.change()),
+            ShareState() , self.bind.a,
+            Button("++",onclick=self.bind.changeState()),
             Button("QUIT",onclick=self.bind.quit()+";window.close()"),
         )
 
-    def change(self):
+    def changeState(self):
         self.a+=1
 
     def quit(self):

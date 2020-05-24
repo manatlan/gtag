@@ -96,6 +96,23 @@ def bind( method ): # gtag.method decorator -> ReactiveMethod
     return _
 
 
+class Binder:
+    def __init__(self,instance):
+        self.__instance=instance
+    def __getattr__(self,name:str):
+        if name in self.__instance.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
+            o=self.__instance.__dict__[name]
+            if isinstance(o,ReactiveProp):
+                return o
+            else:
+                return ReactiveProp(self.__instance.__dict__,name)
+        elif name in dir(self.__instance):   # bind a self.method    -> return a js/string for a guy's call in js side
+            def _(*a,**k):
+                method=getattr(self.__instance,name)
+                return method(*a,**k)
+            return _
+        else:
+            raise Exception("Unknown method/attribut '%s' in '%s'"%(name,repr(self.__instance)))
 
 
 
@@ -103,14 +120,8 @@ class GTag:
     """
     The magic thing ;-)
     """
-    # _tags={}
-    parent=None
-    # _tag=None
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
-
-    # def _getInstance(self,id):
-    #     return GTag._tags[id]          # TODO: make more intelligent here
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
@@ -128,54 +139,74 @@ class GTag:
             caller_calls_self = frame.f_code.co_varnames[0]
             parent=frame.f_locals[caller_calls_self]
             assert isinstance(parent,GTag)
-            if parent.__class__ == self.__class__: parent=None
+            if parent.__class__ == self.__class__: parent=None  #TODO: not top !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        self.parent=parent
+        self._parent=parent
+        if parent is None: self._childs={}
 
         print("INIT",repr(self))
         self.init(*self._args,**self._kargs)
         self._tag = self.build()
-        # GTag._tags[self.id]=self       # TODO: make more intelligent here
 
-        ##(((((((((((((((
+        # Store the instance in the main._childs
         main=self._getMain()
-        if not hasattr(main,"_childs"):
-            main._childs={}
         main._childs[self.id]=self
-        ##(((((((((((((((
+
+    def _getChild(self,id):
+        assert self._parent is None,"You are not on the main instance, you can't get a child"
+        return self._childs[id]
 
     def _getMain(self):
         x=self
-        while x.parent is not None:
-            x=x.parent
+        while x._parent is not None:
+            x=x._parent
         return x
 
     @property
-    def state(self):
+    def parent(self)-> any:
+        """ return caller/binder to parent instance """
+        if self._parent is None:
+            return None
+        else:
+            assert isinstance(self._parent,GTag)
+            return Binder( self._parent )
+
+
+    @property
+    def main(self)-> any:
         """ return caller/binder to main instance """
         main=self._getMain()
+        if main is self:
+            raise Exception("Don't use 'main' in main instance")
+        else:
+            return Binder( main )
+
+
+    @property
+    def bind(self) -> any:
+        """ to bind attribute or method !"""
         class Binder:
             def __getattr__(this,name:str):
-                if name in main.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
-                    o=main.__dict__[name]
+                if name in self.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
+                    o=self.__dict__[name]
                     if isinstance(o,ReactiveProp):
                         return o
                     else:
-                        return ReactiveProp(main.__dict__,name)
-                elif name in dir(main):   # bind a self.method    -> return a js/string for a guy's call in js side
-                    def _(*a,**k):
-                        method=getattr(main,name)
-                        return method(*a,**k)
+                        return ReactiveProp(self.__dict__,name)
+                elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
+                    def _(*args):
+                        if args:
+                            return "self.bindUpdate('%s',GID,'%s',%s)" % (self.id,name,",".join([str(i) for i in args]) ) #TODO: escaping here ! (and the render/str ?) json here !
+                        else:
+                            return "self.bindUpdate('%s',GID,'%s')" % (self.id,name)
                     return _
                 else:
                     raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
         return Binder()
 
 
-
     def _clone(self):
-        props={k:v for k,v in self.__dict__.items() if k not in ['id', 'parent', '_tag','_childs']}
-        # state=self.state._clone() if self.state else None
+        props={k:v for k,v in self.__dict__.items() if k not in ['id', '_parent', '_tag','_childs']}
         gtag = self.__class__(*self._args,**self._kargs)
         gtag.__dict__.update(props)
         assert isinstance(gtag,GTag)
@@ -222,7 +253,7 @@ class GTag:
             return str(o)
 
     def __repr__(self):
-        return "<GTAG:%s %s (parent:%s)>" % (self.__class__.__name__, self.id,self.parent.id if self.parent else "no")
+        return "<GTAG:%s %s (parent:%s)>" % (self.__class__.__name__, self.id,self._parent.id if self._parent else "no")
 
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))
@@ -237,27 +268,6 @@ class GTag:
             # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
             super().__setattr__(k,v)
 
-    @property
-    def bind(self) -> any:
-        """ to bind attribute or method !"""
-        class Binder:
-            def __getattr__(this,name:str):
-                if name in self.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
-                    o=self.__dict__[name]
-                    if isinstance(o,ReactiveProp):
-                        return o
-                    else:
-                        return ReactiveProp(self.__dict__,name)
-                elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
-                    def _(*args):
-                        if args:
-                            return "self.bindUpdate('%s',GID,'%s',%s)" % (self.id,name,",".join([str(i) for i in args]) ) #TODO: escaping here ! (and the render/str ?) json here !
-                        else:
-                            return "self.bindUpdate('%s',GID,'%s')" % (self.id,name)
-                    return _
-                else:
-                    raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
-        return Binder()
 
 
     def update(self) -> dict:
@@ -369,8 +379,8 @@ class GTagApp(guy.Guy):
             gtag=self._originalGTag
         else:
             gtag=self._ses[gid]
-        obj=gtag._childs[id]
-        # obj=gtag._getInstance(id)    # TODO: make more intelligent here
+
+        obj=gtag._getChild(id)
         print("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
         r=getattr(obj,method)(*args)
         return gtag.update()

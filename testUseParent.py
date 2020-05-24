@@ -5,6 +5,7 @@ import gtag.gui as g
 class Btn(GTag):
     def build(self):
         return g.VBox(
+            self.parent.cpt,
             g.Button("++",onclick=self.bind.add())
         )
     def add(self):
