@@ -95,7 +95,7 @@ class State:
 
 
     def __repr__(self):
-        return "<STATE:%s>" % (self.__class__.__name__)
+        return "<STATE:%s (id:%s)>" % (self.__class__.__name__,id(self))
 
 class ReactiveMethod:
     """ like ReactiveProp, but for gtag.method wchich can return binded tag
@@ -160,27 +160,29 @@ class GTag:
             assert isinstance(parent,GTag)
             if parent.__class__ == self.__class__: parent=None
 
-        state=None
-        if parent_or_state:
+        self._state=None
+        if parent_or_state is not None:
             if isinstance(parent_or_state,State):
                 self.parent=None                             # main gtag
-                self.state=parent_or_state
+                self._state=parent_or_state
             elif isinstance(parent_or_state,GTag):
                 self.parent=parent_or_state                  #explicit re-parent
-                self.state=self.parent.state
             else:
                 self._args.insert(0,parent_or_state)
                 self.parent=parent
-                self.state=parent.state if parent else None
         else:
-            # self._args.insert(0,parent_or_state)
             self.parent=parent
-            self.state=parent.state if parent else None
-
 
         print("INIT",repr(self))
         self.init(*self._args,**self._kargs)
         self._tag = self.build()
+
+    @property
+    def state(self):
+        x=self
+        while x.parent is not None:
+            x=x.parent
+        return x._state
 
 
     """
@@ -205,11 +207,12 @@ class GTag:
             self._tag = self.build()
     """
     def _clone(self):
-        props={k:v for k,v in self.__dict__.items() if k not in ['id', '_args', '_kargs', 'parent','state', '_tag']}
+        props={k:v for k,v in self.__dict__.items() if k not in ['id', 'parent', '_tag',"_state"]}
         state=self.state._clone() if self.state else None
         gtag = self.__class__(state,*self._args,**self._kargs)
         gtag.__dict__.update(props)
         assert isinstance(gtag,GTag)
+        print("CLONE",repr(self),"-->",repr(gtag))
         return gtag
 
 
@@ -255,7 +258,7 @@ class GTag:
             return str(o)
 
     def __repr__(self):
-        return "<GTAG:%s %s (parent:%s)>" % (self.__class__.__name__, self.id,self.parent.id if self.parent else "no")
+        return "<GTAG:%s %s (parent:%s) (state:%s)>" % (self.__class__.__name__, self.id,self.parent.id if self.parent else "no",id(self.state) if self.state else "no")
 
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))

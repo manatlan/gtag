@@ -100,7 +100,7 @@ class Page1(GTag):
         )
 
     def setMBoxMsg(self,txt):
-        self.state.setMBox( Page2(self) )
+        self.state.setMBox( Page2() )
 
 class Page2(GTag):
 
@@ -184,5 +184,5 @@ if __name__=="__main__":
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))
 
-    print( app.run(log=False) )
-    # print( app.serve(log=False) ) # state message is currently broken with that
+    # print( app.run(log=False) )
+    print( app.serve(log=False) ) # bugged state msg !!!!!!!!!!!!!!

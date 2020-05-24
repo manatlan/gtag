@@ -11,15 +11,14 @@ class ShareState(GTag):
 
     def build(self):
         return Div( "hello",
-            self.state.a
+            self.state.a,
         )
-
 
 class Page2(GTag):
     size=(200,100)
     def build(self):
         return Div(
-            ShareState() ,
+            ShareState() , self.state.a,
             Button("++",onclick=self.bind.change()),
             Button("QUIT",onclick=self.bind.quit()+";window.close()"),
         )
@@ -34,5 +33,5 @@ class Page2(GTag):
 
 app=Page2( MyState(a=12) )
 print(app)
-app.serve(log=True)
+app.serve(log=False)
 
