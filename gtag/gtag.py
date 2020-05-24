@@ -82,13 +82,10 @@ class State:
         else:
             raise Exception("can't")
     def __getattr__(self,k):
-        if k.startswith("_"):
-            return super().__getattr__(k)
+        if k in self.__d.keys():
+            return ReactiveProp(self.__d,k)
         else:
-            if k in self.__d.keys():
-                return ReactiveProp(self.__d,k)
-            else:
-                raise Exception("can't")
+            raise Exception("can't")
 
     def _clone(self): #NEW
         return self.__class__(**self.__d)
@@ -165,6 +162,7 @@ class GTag:
             if isinstance(parent_or_state,State):
                 self.parent=None                             # main gtag
                 self._state=parent_or_state
+                print("**STATE INIT**",repr(self._state))
             elif isinstance(parent_or_state,GTag):
                 self.parent=parent_or_state                  #explicit re-parent
             else:
@@ -272,21 +270,16 @@ class GTag:
 
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))
-        if k=="state":
-            # assert GTag.state is None,"State is already setted, you can't change that"
-            assert v==None or isinstance(v,State),"setting state with 'non State instance' is not possible!"
-            super().__setattr__("state",v)
-        else:
-            o=self.__dict__.get(k)
-            if isinstance(o,ReactiveProp):
-                # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
-                if isinstance(v,ReactiveProp):
-                    self.__dict__[k]=v
-                else:
-                    o.set(v)
+        o=self.__dict__.get(k)
+        if isinstance(o,ReactiveProp):
+            # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
+            if isinstance(v,ReactiveProp):
+                self.__dict__[k]=v
             else:
-                # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
-                super().__setattr__(k,v)
+                o.set(v)
+        else:
+            # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
+            super().__setattr__(k,v)
 
     @property
     def bind(self) -> any:
