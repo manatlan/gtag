@@ -2,8 +2,8 @@ from gtag import GTag,bind,State
 from gtag.gui import A,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 
 """
-the most advanced gtag example, in the world ;-)
-(mainly used for manual tests)
+BAD CONSTRUCT !!!
+(to be deleted)
 """
 
 class Inc(GTag):
@@ -21,21 +21,17 @@ class Inc(GTag):
         self.cpt+=v
 
 
-class MBox(GTag):
-    def init(self,content):
-        self.content=content
+class MyInput(GTag):
 
-    @bind
+    def init(self,txt):
+        self.v=txt
+
     def build(self):
-        if self.content!=None:
-            o = Div(klass="modal is-active")
-            o.add( Div(klass="modal-background",onclick=self.bind.close()) )
-            o.add( Div( Box(self.content),klass="modal-content") )
-            o.add( Div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
-            return o
+        return Input(type="text",value=self.v,onchange=self.bind.onchange("this.value"))
 
-    def close(self):
-        self.content=None
+    def onchange(self,txt):
+        self.v = txt
+
 
 
 class MyTabs(GTag):
@@ -61,22 +57,30 @@ class MyTabs(GTag):
         self.selected=idx
 
 
-class MyInput(GTag):
+class MBox(GTag):
+    def init(self,content):
+        self.content=content
 
-    def init(self,txt):
-        self.v=txt
-
+    @bind
     def build(self):
-        return Input(type="text",value=self.v,onchange=self.bind.onchange("this.value"))
+        if self.content!=None:
+            o = Div(klass="modal is-active")
+            o.add( Div(klass="modal-background",onclick=self.bind.close()) )
+            o.add( Div( Box(self.content),klass="modal-content") )
+            o.add( Div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
+            return o
 
-    def onchange(self,txt):
-        self.v = txt
+    def close(self):
+        self.content=None
+
+
 
 class Page1(GTag):
 
-    def init(self,nb,txt):
-        self.nb=nb
-        self.txt=txt
+    def init(self):
+        self.nb=12
+        self.txt="yolo"
+        self.contentMessage=None
 
     @bind
     def compute(self):
@@ -96,26 +100,23 @@ class Page1(GTag):
         )
 
     def setMBoxMsg(self,txt):
-        self.state.setMBox( Inc(42) )
+        self.state.setMBox( Page2() )
 
 class Page2(GTag):
 
-    def init(self,b):
-        self.nb=b
+    def init(self):
+        self.nb=12
 
     def build(self):
         return Div(
             Box("A test page, with a binding value:", self.bind.nb),
             Inc(self,self.bind.nb),
-            Button("show",onclick=self.bind.kik())
         )
-    def kik(self):
-        self.state.setMBox("yo")
 
 class Page3(GTag):
 
-    def init(self,sel):
-        self.selected=sel
+    def init(self):
+        self.selected=1
 
     def build(self):    # called at __init__()
         t=MyTabs(self.bind.selected)
@@ -133,8 +134,12 @@ class TestApp(GTag):
     size=(500,400)
 
     def init(self):
-        self.nb=12
-        self.txt="yolo"
+        self.pages=[]
+        self.content=None
+
+    def addPage(self,name,obj):
+        self.pages.append( dict(name=name,obj=obj) )
+        if self.content is None: self.content = obj
 
     @bind
     def build(self): # DYNAMIC RENDERING HERE !
@@ -149,40 +154,44 @@ class TestApp(GTag):
                         onclick="this.classList.toggle('is-active');document.querySelector('.navbar-menu').classList.toggle('is-active')") )
 
         menu=Div(klass="navbar-start")
-        menu.add( A("Page1", klass="navbar-item", onclick=self.bind.setPage(1)))
-        menu.add( A("Page2 (%s)"% int(self.state.nb), klass="navbar-item", onclick=self.bind.setPage(2)))
-        menu.add( A("Page3", klass="navbar-item", onclick=self.bind.setPage(3)))
+        for idx,item in enumerate(self.pages):
+            menu.add( A(item["name"], klass="navbar-item",onclick=self.bind.setPage(idx) ))
         menu.add( A("Exit", klass="navbar-item", onclick=self.bind.doExit() ) )
 
         divMenu=Div( menu, klass="navbar-menu" )
 
-
-        if self.state.page==1:
-            page=Page1(self.bind.nb,self.bind.txt)
-        elif self.state.page==2:
-            page=Page2(self.state.nb)
-        elif self.state.page==3:
-            page=Page3(self.state.selectedTab)
-
-
-
         return Div(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
-            Section( Div( "<br>", page, klass="container") ),
+            Section( Div( "<br>", self.content, klass="container") ),
             MBox( self.state.msg )
         )
 
     def doExit(self):
         self.exit(-1)
 
-    def setPage(self,n):
-        self.state.page.set(n)
+    def setPage(self,idx):
+        self.content=self.pages[idx]["obj"]
 
 class MyState(State): # a global STATE to share things between components
+
     def setMBox(self,txt):
         self.msg.set(txt)
 
+
 if __name__=="__main__":
-    app=TestApp( MyState(nb=12,msg=None,page=1,selectedTab=1) )
-    print( app.run(log=False) )
-    # print( app.serve(log=False) )
+    # app=TestApp( MyState(msg=None) )
+    # app.addPage("Page1", Page1(app))
+    # app.addPage("Page2", Page2(app))
+    # app.addPage("Page3", Page3(app))
+
+    class WT(TestApp):
+        def init(self):
+            super().init()
+            self.addPage("Page1", Page1(self))
+            self.addPage("Page2", Page2(self))
+            self.addPage("Page3", Page3(self))
+    app=WT( MyState(msg=None) )
+
+
+    # print( app.run(log=False) )
+    print( app.serve(log=False) ) # bugged state msg !!!!!!!!!!!!!!

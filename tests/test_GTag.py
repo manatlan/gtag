@@ -15,7 +15,7 @@ def test_GTag():
     # assert m.render() is None
     id=m.id
     assert id
-    assert m._getInstance(id) == m
+    # assert m._getInstance(id) == m
 
 
     with pytest.raises(Exception):
@@ -48,7 +48,8 @@ def test_GTag_build():
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
-    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], [])
+    m._tag.js="JS FILE" # possible, because _tag is not dynmacally created (not a @bind bulid)
+    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], ['JS FILE'])
 
 def test_GTag_render():
     class My(GTag):

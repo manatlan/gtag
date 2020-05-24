@@ -128,20 +128,19 @@ class GTag:
     """
     The magic thing ;-)
     """
-    _tags={}
+    # _tags={}
     state=None
     parent=None
     # _tag=None
     size=None
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
-    def _getInstance(self,id):
-        return GTag._tags[id]          # TODO: make more intelligent here
+    # def _getInstance(self,id):
+    #     return GTag._tags[id]          # TODO: make more intelligent here
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,parent_or_state=None,*a,**k):
         self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
-        GTag._tags[self.id]=self       # TODO: make more intelligent here
 
         self._args=list(a)
         self._kargs=k
@@ -174,6 +173,14 @@ class GTag:
         print("INIT",repr(self))
         self.init(*self._args,**self._kargs)
         self._tag = self.build()
+        # GTag._tags[self.id]=self       # TODO: make more intelligent here
+
+        ##(((((((((((((((
+        main=self._getMain()
+        if not hasattr(main,"_childs"):
+            main._childs={}
+        main._childs[self.id]=self
+        ##(((((((((((((((
 
     def _getMain(self):
         x=self
@@ -186,11 +193,11 @@ class GTag:
         x=self._getMain()
         return x._state
 
-    def _setState(self,s):  # rebind the state on the main parent of this gtag
-        if s is not None:
-            assert isinstance(s,State)
-        x=self._getMain()
-        x._state=s
+    # def _setState(self,s):  # rebind the state on the main parent of this gtag
+    #     if s is not None:
+    #         assert isinstance(s,State)
+    #     x=self._getMain()
+    #     x._state=s
 
 
     """
@@ -215,7 +222,7 @@ class GTag:
             self._tag = self.build()
     """
     def _clone(self):
-        props={k:v for k,v in self.__dict__.items() if k not in ['id', 'parent', '_tag',"_state"]}
+        props={k:v for k,v in self.__dict__.items() if k not in ['id', 'parent', '_tag',"_state",'_childs']}
         state=self.state._clone() if self.state else None
         gtag = self.__class__(state,*self._args,**self._kargs)
         gtag.__dict__.update(props)
@@ -351,7 +358,9 @@ class GTagApp(guy.Guy):
 
         print("SERVE",repr(gtag))
         css,js=gtag._guessCssJs()
+
         await self.js._render( str(gtag),css,js )
+        print(gtag._childs.keys())
 
     def render(self,path=None):
         return """<!DOCTYPE html>
@@ -411,10 +420,10 @@ class GTagApp(guy.Guy):
             gtag=self._originalGTag
         else:
             gtag=self._ses[gid]
-
-        obj=gtag._getInstance(id)    # TODO: make more intelligent here
+        obj=gtag._childs[id]
+        # obj=gtag._getInstance(id)    # TODO: make more intelligent here
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-        obj._setState(gtag._state)   # <--- PATH (NOT GREAT) TODO: fix that
+        # obj._setState(gtag._state)   # <--- PATH (NOT GREAT) TODO: fix that
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
         print("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
         r=getattr(obj,method)(*args)
