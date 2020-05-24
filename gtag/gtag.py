@@ -141,6 +141,47 @@ class GTag:
     def _getInstance(self,id):
         return GTag._tags[id]          # TODO: make more intelligent here
 
+    """# implicit parent version (don't need to pass self(=parent) when creating a gtag)
+    def __init__(self,*a,**k):
+        self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
+        GTag._tags[self.id]=self       # TODO: make more intelligent here
+
+        self._args=list(a)
+        self._kargs=k
+
+
+        # looking for a state param (only main gtag can do this)
+        state=None
+        for o in self._args:
+            if isinstance(o,State):
+                state=o
+                self._args.remove(o)
+                print("find state",state)
+                break
+
+        # guess parent
+        frame = sys._getframe(1)
+        arguments = frame.f_code.co_argcount
+        if arguments == 0:
+            parent=None
+        else:
+            caller_calls_self = frame.f_code.co_varnames[0]
+            parent=frame.f_locals[caller_calls_self]
+            assert isinstance(parent,GTag)
+            if parent.__class__ == self.__class__: parent=None
+            print("DETECT PARENT of current",repr(self),"parent=",repr(parent))
+
+        if parent:
+            self.parent=parent
+            self.state=self.parent.state
+        else:
+            self.parent=None
+            self.state=state
+
+        self.init(*self._args,**self._kargs)
+        self._tag = self.build()
+    """
+
     def __init__(self,parent=None,*a,**k):
         self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         self._args=a
@@ -148,18 +189,7 @@ class GTag:
         GTag._tags[self.id]=self       # TODO: make more intelligent here
 
         if parent is None: # main gtag instance with no state
-
-            # #-------------------------------- guess parent
-            # frame = sys._getframe(1)
-            # arguments = frame.f_code.co_argcount
-            # if arguments == 0:
-            #     parent=None
-            # else:
-            #     caller_calls_self = frame.f_code.co_varnames[0]
-            #     parent=frame.f_locals[caller_calls_self]
-            # #------------------------------------------
-
-            self.parent=parent
+            self.parent=None
             self.state=None
         elif isinstance(parent,State): # main gtag instance with state
             self.parent=None
@@ -168,7 +198,6 @@ class GTag:
             assert isinstance(parent,GTag)
             self.parent=parent
             self.state=self.parent.state
-
 
         self.init(*self._args,**self._kargs)
         self._tag = self.build()
