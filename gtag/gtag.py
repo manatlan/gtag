@@ -177,12 +177,22 @@ class GTag:
         self.init(*self._args,**self._kargs)
         self._tag = self.build()
 
-    @property
-    def state(self):
+    def _getMain(self):
         x=self
         while x.parent is not None:
             x=x.parent
+        return x
+
+    @property
+    def state(self):
+        x=self._getMain()
         return x._state
+
+    def _setState(self,s):  # rebind the state on the main parent of this gtag
+        if s is not None:
+            assert isinstance(s,State)
+        x=self._getMain()
+        x._state=s
 
 
     """
@@ -212,7 +222,7 @@ class GTag:
         gtag = self.__class__(state,*self._args,**self._kargs)
         gtag.__dict__.update(props)
         assert isinstance(gtag,GTag)
-        print("CLONE",repr(self),"-->",repr(gtag))
+        print("^^^ CLONED ^^^",repr(self),"-->",repr(gtag))
         return gtag
 
 
@@ -302,7 +312,7 @@ class GTag:
 
 
     def update(self) -> dict:
-        # print("update:"+self.id)
+        print(">>>>>>>>>>>>>>>>>> UPDATE:",repr(self))
         return dict(script="""document.querySelector("#%s").innerHTML=`%s`;""" % (
             self.id, self
         ))
@@ -346,6 +356,7 @@ class GTagApp(guy.Guy):
 
         gtag.exit = self.exit
 
+        print("SERVE",repr(gtag))
         css,js=gtag._guessCssJs()
         await self.js._render( str(gtag),css,js )
 
@@ -409,5 +420,7 @@ class GTagApp(guy.Guy):
             gtag=self._ses[gid]
 
         obj=gtag._getInstance(id)    # TODO: make more intelligent here
+        obj._setState(gtag._state)   # <--- PATH (NOT GREAT) TODO: fix that
+        print("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
         r=getattr(obj,method)(*args)
         return gtag.update()

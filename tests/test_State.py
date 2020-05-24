@@ -4,7 +4,7 @@ import pytest
 def test_State():
 
     s=State(a=12)
-    assert repr(s)=="<STATE:State>"
+    assert "<STATE:State" in repr(s)
     assert "<ReactiveProp" in repr(s.a)
     assert int(s.a)==12
     s.a.set(42)

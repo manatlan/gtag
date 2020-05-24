@@ -184,5 +184,14 @@ if __name__=="__main__":
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))
 
-    print( app.run(log=False) )
-    # print( app.serve(log=False) ) # bugged state msg !!!!!!!!!!!!!!
+    # class WT(TestApp):
+    #     def init(self):
+    #         super().init()
+    #         self.addPage("Page1", Page1(self))
+    #         self.addPage("Page2", Page2(self))
+    #         self.addPage("Page3", Page3(self))
+
+    # app=WT( MyState(msg=None) )
+    # print( app.run(log=False) )
+    # GTag._tags={} #<- good try : delete all created object, to be sure to loose them
+    print( app.serve(log=False) ) # bugged state msg !!!!!!!!!!!!!!

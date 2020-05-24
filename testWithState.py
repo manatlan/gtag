@@ -16,6 +16,7 @@ class ShareState(GTag):
 
 class Page2(GTag):
     size=(200,100)
+
     def build(self):
         return Div(
             ShareState() , self.state.a,
@@ -32,6 +33,6 @@ class Page2(GTag):
 ###############################################################################
 
 app=Page2( MyState(a=12) )
-print(app)
+GTag._tags={} #<- good try : delete all created object, to be sure to loose them
 app.serve(log=False)
 
