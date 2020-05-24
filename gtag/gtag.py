@@ -413,7 +413,9 @@ class GTagApp(guy.Guy):
             gtag=self._ses[gid]
 
         obj=gtag._getInstance(id)    # TODO: make more intelligent here
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
         obj._setState(gtag._state)   # <--- PATH (NOT GREAT) TODO: fix that
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
         print("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
         r=getattr(obj,method)(*args)
         return gtag.update()
