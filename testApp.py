@@ -184,15 +184,5 @@ if __name__=="__main__":
     app.addPage("Page2", Page2(app))
     app.addPage("Page3", Page3(app))
 
-    print( app.run(log=False) ) # app.serve() is not possible HERE, coz object is modifier after init() !!! (calling addPage())
-                                # see below for a working one
-
-    # class WebTestApp(TestApp):
-    #     def init(self):
-    #         super().init()
-    #         self.addPage("Page1", Page1(self))
-    #         self.addPage("Page2", Page2(self))
-    #         self.addPage("Page3", Page3(self))
-
-    # w=WebTestApp( MyState(msg=None) )
-    # w.serve()
+    # print( app.run(log=False) )
+    print( app.serve(log=False) )

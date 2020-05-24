@@ -68,6 +68,41 @@ def test_GTag_render():
 
     assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], [])
 
+def test_GTag_clone():
+    class My(GTag):
+
+        def __init__(self,v):
+            self.v=v
+            super().__init__(None)
+        @bind
+        def build(self):
+            return Div("hello",self.bind.v,onclick=self.bind.onclick(42))
+        def onclick(self,anArg=None):
+            pass
+
+    m=My(12)
+    m.added=42
+    o=m.build()
+    assert isinstance(o,ReactiveMethod)
+    html=str(m)
+
+    assert 'onclick="self.bindUpdate(' in html
+    assert 'id="My_' in html
+    assert '>hello 12<' in html
+
+    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], [])
+
+    mm=m._clone()
+    assert mm.added==42
+    o=m.build()
+    assert isinstance(o,ReactiveMethod)
+    html=str(m)
+
+    assert 'onclick="self.bindUpdate(' in html
+    assert 'id="My_' in html
+    assert '>hello 12<' in html
+
+    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], [])
 
 
 def test_ReactiveMethod():

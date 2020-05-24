@@ -91,9 +91,7 @@ class State:
                 raise Exception("can't")
 
     def _clone(self): #NEW
-        import json
-        clone=json.loads(json.dumps(self.__d)) #TODO: not needed (but to be sure, before removing)
-        return self.__class__(**clone)
+        return self.__class__(**self.__d)
 
 
     def __repr__(self):
@@ -126,39 +124,191 @@ def bind( method ): # gtag.method decorator -> ReactiveMethod
     return _
 
 
+
+
+
+class GTag:
+    """
+    The magic thing ;-)
+    """
+    _tags={}
+    state=None
+    parent=None
+    # _tag=None
+    size=None
+    """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
+
+    def _getInstance(self,id):
+        return GTag._tags[id]          # TODO: make more intelligent here
+
+    def __init__(self,parent=None,*a,**k):
+        self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
+        self._args=a
+        self._kargs=k
+        GTag._tags[self.id]=self       # TODO: make more intelligent here
+
+        if parent is None: # main gtag instance with no state
+
+            # #-------------------------------- guess parent
+            # frame = sys._getframe(1)
+            # arguments = frame.f_code.co_argcount
+            # if arguments == 0:
+            #     parent=None
+            # else:
+            #     caller_calls_self = frame.f_code.co_varnames[0]
+            #     parent=frame.f_locals[caller_calls_self]
+            # #------------------------------------------
+
+            self.parent=parent
+            self.state=None
+        elif isinstance(parent,State): # main gtag instance with state
+            self.parent=None
+            self.state=parent   #<- the trick
+        else:
+            assert isinstance(parent,GTag)
+            self.parent=parent
+            self.state=self.parent.state
+
+
+        self.init(*self._args,**self._kargs)
+        self._tag = self.build()
+
+    def _clone(self):
+        props={k:v for k,v in self.__dict__.items() if k not in ['id', '_args', '_kargs', 'parent', 'state', '_tag']}
+        state=self.state._clone() if self.state else None
+        gtag = self.__class__(state,*self._args,**self._kargs)
+        gtag.__dict__.update(props)
+        assert isinstance(gtag,GTag)
+        return gtag
+
+
+    def __del__(self):
+        del GTag._tags[self.id]
+
+    def _guessCssJs(self):
+        """ try to found the main tag used by the gtag component, and return its css/js (as a list)
+            (downside: importing css/js will depends only on first tag returned by the gtag)
+            (downside: as tag can be produce by a reactivemethod, we need to execute it)
+        """
+        js=[]
+        css=[]
+        if self._tag:
+            tag=self._tag
+            if isinstance(tag,ReactiveMethod): tag=tag()    # <- dangerous
+            if hasattr(tag,"css"):
+                css=getattr(tag,"css")
+                css= [css] if isinstance(css,str) else css
+            if hasattr(tag,"js"):
+                js=getattr(tag,"js")
+                js= [js] if isinstance(js,str) else js
+        return (css,js)
+
+    def init(self,*a,**k):
+        """ Override to make inits """
+        pass
+
+    def build(self) -> T.Union[Tag,None]:
+        """ Override for static build
+            SHOULD RETURN a "Tag" (not a GTag)
+        """
+        pass
+
+    def __str__(self):
+        o= self._tag
+        if isinstance(o,ReactiveMethod): o=o()
+        if o is None:
+            return ""
+        else:
+            assert isinstance(o,Tag), "'%s' doesn't produce a Tag, wtf?!" % self.__class__.__name__ # can't produce a gtag (non-sense !)
+            o.id=self.id # set an id for js interactions (cf update()/bindUpdate())
+            return str(o)
+
+    def __repr__(self):
+        return "<GTAG:%s %s>" % (self.__class__.__name__, self.id)
+
+    def __setattr__(self,k,v):
+        # current="%s_%s" % (self.__class__.__name__,id(self))
+        if k=="state":
+            # assert GTag.state is None,"State is already setted, you can't change that"
+            assert v==None or isinstance(v,State),"setting state with 'non State instance' is not possible!"
+            super().__setattr__("state",v)
+        else:
+            o=self.__dict__.get(k)
+            if isinstance(o,ReactiveProp):
+                # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
+                if isinstance(v,ReactiveProp):
+                    self.__dict__[k]=v
+                else:
+                    o.set(v)
+            else:
+                # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
+                super().__setattr__(k,v)
+
+    @property
+    def bind(self) -> any:
+        """ to bind attribute or method !"""
+        class Binder:
+            def __getattr__(this,name:str):
+                if name in self.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
+                    o=self.__dict__[name]
+                    if isinstance(o,ReactiveProp):
+                        return o
+                    else:
+                        return ReactiveProp(self.__dict__,name)
+                elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
+                    def _(*args):
+                        if args:
+                            return "self.bindUpdate('%s',GID,'%s',%s)" % (self.id,name,",".join([str(i) for i in args]) ) #TODO: escaping here ! (and the render/str ?) json here !
+                        else:
+                            return "self.bindUpdate('%s',GID,'%s')" % (self.id,name)
+                    return _
+                else:
+                    raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
+        return Binder()
+
+
+    def update(self) -> dict:
+        # print("update:"+self.id)
+        return dict(script="""document.querySelector("#%s").innerHTML=`%s`;""" % (
+            self.id, self
+        ))
+
+    def run(self,*a,**k) -> any:
+        """ Run as Guy App """
+        return GTagApp(self,False).run(*a,**k)
+
+    def serve(self,*a,**k) -> any:    # serve will be available when state will depend on session !
+        """ Run as Guy Server App """
+        return GTagApp(self,True).serve(*a,**k)
+
+
+
 class GTagApp(guy.Guy):
     """ The main guy instance app, which cn run a gtag inside """
 
     def __init__(self,gtag,isMultipleSessionPossible=False):
         assert isinstance(gtag,GTag)
-        self._gclass=gtag.__class__
-        self._state=gtag.state
+        self._originalGTag=gtag
 
         self.size=gtag.size
 
         if isMultipleSessionPossible:
             self._ses={}
         else:
-            self._ses=gtag
+            self._ses=None
         super().__init__()
 
 
-    def createGtag(self):
-        state=self._state._clone() if self._state else None
-        gtag = self._gclass(state)
-        assert isinstance(gtag,GTag)
-        return gtag
-
     async def init(self):
-        if isinstance(self._ses,dict):
+        if self._ses is not None:
             gid=await self.js.getSessionId()
             print("CREATE SESSION:",gid)
             gtag = self._ses.get(gid)
             if gtag is None:
-                gtag = self.createGtag()
+                gtag = self._originalGTag._clone()
                 self._ses[gid] = gtag
         else:
-            gtag = self._ses
+            gtag = self._originalGTag
 
         gtag.exit = self.exit
 
@@ -219,165 +369,11 @@ class GTagApp(guy.Guy):
 
     def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
-        if isinstance(self._ses,dict):
-            gtag=self._ses[gid]
+        if self._ses is None:
+            gtag=self._originalGTag
         else:
-            gtag=self._ses
+            gtag=self._ses[gid]
 
         obj=gtag._getInstance(id)    # TODO: make more intelligent here
         r=getattr(obj,method)(*args)
         return gtag.update()
-
-
-
-import sys
-
-
-
-class GTag:
-    """
-    The magic thing ;-)
-    """
-    _tags={}
-    state=None
-    parent=None
-    # _tag=None
-    size=None
-    """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
-
-    def _getInstance(self,id):
-        return GTag._tags[id]          # TODO: make more intelligent here
-
-    def __init__(self,parent=None,*a,**k):
-        self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
-        GTag._tags[self.id]=self       # TODO: make more intelligent here
-
-        if parent is None: # main gtag instance with no state
-
-            # #-------------------------------- guess parent
-            # frame = sys._getframe(1)
-            # arguments = frame.f_code.co_argcount
-            # if arguments == 0:
-            #     parent=None
-            # else:
-            #     caller_calls_self = frame.f_code.co_varnames[0]
-            #     parent=frame.f_locals[caller_calls_self]
-            # #------------------------------------------
-
-            self.parent=parent
-            self.state=None
-        elif isinstance(parent,State): # main gtag instance with state
-            self.parent=None
-            self.state=parent   #<- the trick
-        else:
-            assert isinstance(parent,GTag)
-            self.parent=parent
-            self.state=self.parent.state
-
-
-        self.init(*a,**k)
-        self._tag = self.build()
-
-    def __del__(self):
-        del GTag._tags[self.id]
-
-    def _guessCssJs(self):
-        """ try to found the main tag used by the gtag component, and return its css/js (as a list)
-            (downside: importing css/js will depends only on first tag returned by the gtag)
-            (downside: as tag can be produce by a reactivemethod, we need to execute it)
-        """
-        js=[]
-        css=[]
-        if self._tag:
-            tag=self._tag
-            if isinstance(tag,ReactiveMethod): tag=tag()    # <- dangerous
-            if hasattr(tag,"css"):
-                css=getattr(tag,"css")
-                css= [css] if isinstance(css,str) else css
-            if hasattr(tag,"js"):
-                js=getattr(tag,"js")
-                js= [js] if isinstance(js,str) else js
-        return (css,js)
-
-    def init(self,*a,**k):
-        """ Override to make inits """
-        pass
-
-    def build(self) -> T.Union[Tag,None]:
-        """ Override for static build
-            SHOULD RETURN a "Tag" (not a GTag)
-        """
-        pass
-
-    def __str__(self):
-        o= self._tag
-        if isinstance(o,ReactiveMethod): o=o()
-        if o is None:
-            return ""
-        else:
-            assert isinstance(o,Tag), "'%s' doesn't produce a Tag, wtf?!" % self.__class__.__name__ # can't produce a gtag (non-sense !)
-            o.id=self.id # set an id for js interactions (cf update()/bindUpdate())
-            return str(o)
-
-    def __repr__(self):
-        return "<GTAG:%s %s>" % (self.__class__.__name__, self.id)
-
-
-
-
-    def __setattr__(self,k,v):
-        # current="%s_%s" % (self.__class__.__name__,id(self))
-        if k=="state":
-            # assert GTag.state is None,"State is already setted, you can't change that"
-            assert v==None or isinstance(v,State),"setting state with 'non State instance' is not possible!"
-            super().__setattr__("state",v)
-        else:
-            o=self.__dict__.get(k)
-            if isinstance(o,ReactiveProp):
-                # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
-                if isinstance(v,ReactiveProp):
-                    self.__dict__[k]=v
-                else:
-                    o.set(v)
-            else:
-                # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
-                super().__setattr__(k,v)
-
-    @property
-    def bind(self) -> any:
-        """ to bind attribute or method !"""
-        class Binder:
-            def __getattr__(this,name:str):
-                if name in self.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
-                    o=self.__dict__[name]
-                    if isinstance(o,ReactiveProp):
-                        return o
-                    else:
-                        return ReactiveProp(self.__dict__,name)
-                elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
-                    def _(*args):
-                        if args:
-                            return "self.bindUpdate('%s',GID,'%s',%s)" % (self.id,name,",".join([str(i) for i in args]) ) #TODO: escaping here ! (and the render/str ?) json here !
-                        else:
-                            return "self.bindUpdate('%s',GID,'%s')" % (self.id,name)
-                    return _
-                else:
-                    raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
-        return Binder()
-
-
-    def update(self) -> dict:
-        # print("update:"+self.id)
-        return dict(script="""document.querySelector("#%s").innerHTML=`%s`;""" % (
-            self.id, self
-        ))
-
-    def run(self,*a,**k) -> any:
-        """ Run as Guy App """
-        return GTagApp(self,False).run(*a,**k)
-
-    def serve(self,*a,**k) -> any:    # serve will be available when state will depend on session !
-        """ Run as Guy Server App """
-        return GTagApp(self,True).serve(*a,**k)
-
-
