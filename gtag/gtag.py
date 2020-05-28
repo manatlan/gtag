@@ -25,7 +25,6 @@ _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
 def log(*a):
     pass
-    # print(*a)
 
 class ReactiveProp:
     def __init__(self,dico:dict,attribut:str):
@@ -131,25 +130,28 @@ class GTag:
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
+        if "dontGuessParent" in k.keys(): # clonage (only main tags, so parent is None)
+            del k["dontGuessParent"]
+            parent=None
+        else:
+            # guess parent
+            frame = sys._getframe(1)
+            arguments = frame.f_code.co_argcount
+            if arguments == 0:
+                parent=None
+            else:
+                caller_calls_self = frame.f_code.co_varnames[0]
+                parent=frame.f_locals[caller_calls_self]
+                assert isinstance(parent,GTag)
+                if parent is self: parent=None  #for TU only
+
         self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
+        self._childs={}
 
         self._args=a
         self._kargs=k
 
-        # guess parent
-        frame = sys._getframe(1)
-        arguments = frame.f_code.co_argcount
-        if arguments == 0:
-            parent=None
-        else:
-            caller_calls_self = frame.f_code.co_varnames[0]
-            parent=frame.f_locals[caller_calls_self]
-            assert isinstance(parent,GTag)
-            if parent is self: parent=None  #for TU only
-
-
         self._parent=parent
-        if parent is None: self._childs={}
 
         log("INIT",repr(self))
         self.init(*self._args,**self._kargs)
@@ -214,7 +216,7 @@ class GTag:
 
     def _clone(self):
         props={k:v for k,v in self.__dict__.items() if k[0]!="_"}
-        gtag = self.__class__(*self._args,**self._kargs)
+        gtag = self.__class__(*self._args,**self._kargs,dontGuessParent=True)
         gtag.__dict__.update(props)
         assert isinstance(gtag,GTag)
         log("^^^ CLONED ^^^",repr(self),"-->",repr(gtag))
@@ -249,6 +251,11 @@ class GTag:
         """
         pass
 
+    def script(self):
+        """ Override to get back some js code"""
+        pass
+
+
     def __str__(self):
         o= self._tag
         if isinstance(o,ReactiveMethod): o=o()
@@ -272,12 +279,20 @@ class GTag:
             # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
             super().__setattr__(k,v)
 
+    def _getScripts(self) -> str:
+        ll=[]
+        for k,v in self._childs.items():
+            js=v and v.script() or None
+            if js:
+                if isinstance(js,ReactiveMethod): js=js() # dangerous ?
+                ll.append( "(function(tag){%s})(document.getElementById('%s'))" % (str(js),k) )
+        return ";".join(ll)
 
 
     def update(self) -> dict:
         log(">>>UPDATE:",repr(self))
-        return dict(script="""document.querySelector("#%s").innerHTML=`%s`;""" % (
-            self.id, self
+        return dict(script="""document.querySelector("#%s").innerHTML=`%s`;%s""" % (
+            self.id, self, self._getScripts()
         ))
 
     def run(self,*a,**k) -> any:
@@ -323,10 +338,12 @@ class GTagApp(guy.Guy):
 
         gtag.exit = self.exit
 
-        log("SERVE",repr(gtag))
+        log("SERVE",repr(gtag),gtag._childs)
         css,js=gtag._guessCssJs()
 
+        script=gtag._getScripts()
         await self.js._render( str(gtag),css,js )
+        if script: await self.js.eval(script)
 
     def render(self,path=None):
         return """<!DOCTYPE html>
@@ -390,4 +407,4 @@ class GTagApp(guy.Guy):
         obj=gtag._getChild(id)
         log("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
         r=getattr(obj,method)(*args)
-        return gtag.update()
+        return gtag.update() #could update the obj gtag only !
