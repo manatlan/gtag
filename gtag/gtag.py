@@ -23,6 +23,10 @@ import typing as T
 
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
+def log(*a):
+    pass
+    # print(*a)
+
 class ReactiveProp:
     def __init__(self,dico:dict,attribut:str):
         self.__instance=dico
@@ -96,7 +100,8 @@ def bind( method ): # gtag.method decorator -> ReactiveMethod
     return _
 
 
-class Binder:
+class GtagProxy:
+    """ Expose props(as ReactiveProps)/method from a gtag """
     def __init__(self,instance):
         self.__instance=instance
     def __getattr__(self,name:str):
@@ -113,7 +118,8 @@ class Binder:
             return _
         else:
             raise Exception("Unknown method/attribut '%s' in '%s'"%(name,repr(self.__instance)))
-
+    def __repr__(self):
+        return repr(self.__instance)
 
 
 class GTag:
@@ -125,9 +131,9 @@ class GTag:
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
-        self.id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
+        self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
 
-        self._args=list(a)
+        self._args=a
         self._kargs=k
 
         # guess parent
@@ -139,18 +145,19 @@ class GTag:
             caller_calls_self = frame.f_code.co_varnames[0]
             parent=frame.f_locals[caller_calls_self]
             assert isinstance(parent,GTag)
-            if parent.__class__ == self.__class__: parent=None  #TODO: not top !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            if parent is self: parent=None  #for TU only
+
 
         self._parent=parent
         if parent is None: self._childs={}
 
-        print("INIT",repr(self))
+        log("INIT",repr(self))
         self.init(*self._args,**self._kargs)
         self._tag = self.build()
 
         # Store the instance in the main._childs
         main=self._getMain()
-        main._childs[self.id]=self
+        main._childs[self.id]=self # so, childs should die when main dies, in GC ;-)
 
     def _getChild(self,id):
         assert self._parent is None,"You are not on the main instance, you can't get a child"
@@ -163,23 +170,23 @@ class GTag:
         return x
 
     @property
+    def id(self):
+        return self._id
+
+
+    @property
     def parent(self)-> any:
-        """ return caller/binder to parent instance """
+        """ return caller/binder to parent instance (None if gtag is the main) """
         if self._parent is None:
             return None
         else:
-            assert isinstance(self._parent,GTag)
-            return Binder( self._parent )
+            return GtagProxy( self._parent )
 
 
     @property
     def main(self)-> any:
         """ return caller/binder to main instance """
-        main=self._getMain()
-        if main is self:
-            raise Exception("Don't use 'main' in main instance")
-        else:
-            return Binder( main )
+        return GtagProxy( self._getMain() )
 
 
     @property
@@ -206,11 +213,11 @@ class GTag:
 
 
     def _clone(self):
-        props={k:v for k,v in self.__dict__.items() if k not in ['id', '_parent', '_tag','_childs']}
+        props={k:v for k,v in self.__dict__.items() if k[0]!="_"}
         gtag = self.__class__(*self._args,**self._kargs)
         gtag.__dict__.update(props)
         assert isinstance(gtag,GTag)
-        print("^^^ CLONED ^^^",repr(self),"-->",repr(gtag))
+        log("^^^ CLONED ^^^",repr(self),"-->",repr(gtag))
         return gtag
 
 
@@ -233,7 +240,7 @@ class GTag:
         return (css,js)
 
     def init(self,*a,**k):
-        """ Override to make inits """
+        """ Override to make inits (replace the __init__(), but same role)"""
         pass
 
     def build(self) -> T.Union[Tag,None]:
@@ -260,10 +267,7 @@ class GTag:
         o=self.__dict__.get(k)
         if isinstance(o,ReactiveProp):
             # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
-            if isinstance(v,ReactiveProp):
-                self.__dict__[k]=v
-            else:
-                o.set(v)
+            o.set( _gg(v) )
         else:
             # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
             super().__setattr__(k,v)
@@ -271,14 +275,18 @@ class GTag:
 
 
     def update(self) -> dict:
-        print(">>>>>>>>>>>>>>>>>> UPDATE:",repr(self))
+        log(">>>UPDATE:",repr(self))
         return dict(script="""document.querySelector("#%s").innerHTML=`%s`;""" % (
             self.id, self
         ))
 
     def run(self,*a,**k) -> any:
-        """ Run as Guy App """
+        """ Run as Guy App (using Chrome) """
         return GTagApp(self,False).run(*a,**k)
+
+    def runCef(self,*a,**k) -> any:
+        """ Run as Guy App (using Cef) """
+        return GTagApp(self,False).runCef(*a,**k)
 
     def serve(self,*a,**k) -> any:
         """ Run as Guy Server App """
@@ -305,7 +313,7 @@ class GTagApp(guy.Guy):
     async def init(self):
         if self._ses is not None:
             gid=await self.js.getSessionId()
-            print("CREATE SESSION:",gid)
+            log("CREATE SESSION:",gid)
             gtag = self._ses.get(gid)
             if gtag is None:
                 gtag = self._originalGTag._clone()
@@ -315,11 +323,10 @@ class GTagApp(guy.Guy):
 
         gtag.exit = self.exit
 
-        print("SERVE",repr(gtag))
+        log("SERVE",repr(gtag))
         css,js=gtag._guessCssJs()
 
         await self.js._render( str(gtag),css,js )
-        print(gtag._childs.keys())
 
     def render(self,path=None):
         return """<!DOCTYPE html>
@@ -381,6 +388,6 @@ class GTagApp(guy.Guy):
             gtag=self._ses[gid]
 
         obj=gtag._getChild(id)
-        print("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
+        log("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
         r=getattr(obj,method)(*args)
         return gtag.update()
