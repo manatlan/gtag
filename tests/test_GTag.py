@@ -3,7 +3,7 @@ if __name__=="__main__":
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
 from gtag import GTag,bind,Tag
-from gtag.gtag import ReactiveMethod,CSSStyle,JS
+from gtag.gtag import ReactiveMethod,CSS,JS
 from gtag.gui import Div
 import pytest
 
@@ -52,7 +52,7 @@ def test_GTag_build():
 
     m._tag.js="JS FILE" # possible, because _tag is not dynmacally created (not a @bind bulid)
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSSStyle) for i in hh])
+    assert any( [isinstance(i,CSS) for i in hh])
     assert any( [isinstance(i,JS) for i in hh])
 
 def test_GTag_render():
@@ -75,7 +75,7 @@ def test_GTag_render():
     assert '>hello 12<' in html
 
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSSStyle) for i in hh])
+    assert any( [isinstance(i,CSS) for i in hh])
 
 
 def test_GTag_clone():
@@ -101,7 +101,7 @@ def test_GTag_clone():
     assert '>hello 12<' in html
 
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSSStyle) for i in hh])
+    assert any( [isinstance(i,CSS) for i in hh])
 
     mm=m._clone()
     assert mm.added==42
@@ -114,7 +114,7 @@ def test_GTag_clone():
     assert '>hello 12<' in html
 
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSSStyle) for i in hh])
+    assert any( [isinstance(i,CSS) for i in hh])
 
 
 def test_GTag_clone_with_State():

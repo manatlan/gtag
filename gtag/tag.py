@@ -28,7 +28,7 @@ class Tag:
     def __init__(self,*contents,**attrs):
         assert "id" not in attrs.keys()
         self.id=None
-        self.__tag=self.__class__.tag
+        self.__tag=self.tag
         self.__contents=list(contents)
         self.__attrs=dict(attrs)
 

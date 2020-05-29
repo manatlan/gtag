@@ -27,30 +27,23 @@ def log(*a):
     pass
 
 
-class CSSLink(Tag):
-    tag="link"
-class CSSStyle(Tag):
-    tag="style"
+class CSS(Tag):
+    def __init__(self,content):
+        if content.startswith("http"):
+            self.tag="link"
+            super().__init__(type="text/css",rel="stylesheet",href=content)
+        else:
+            self.tag="style"
+            super().__init__(content,type="text/css")
+
 class JS(Tag):
     tag="script"
-
-def buildCCSTag(o):
-    if o:
-        if o.startswith("http"):
-            return CSSLink(type="text/css",rel="stylesheet",href=o)
+    def __init__(self,content):
+        if content.startswith("http"):
+            super().__init__(type="text/javascript",src=content)
         else:
-            return CSSStyle(o,type="text/css")
-    else:
-        return ""
+            super().__init__(content,type="text/javascript")
 
-def buildJSTag(o):
-    if o:
-        if o.startswith("http"):
-            return JS(type="text/javascript",src=o)
-        else:
-            return JS(o, type="text/javascript")
-    else:
-        return ""
 
 
 
@@ -262,9 +255,9 @@ class GTag:
             tag=self._tag
             if isinstance(tag,ReactiveMethod): tag=tag()    # <- dangerous
             if hasattr(tag,"css"):
-                ll.extend( [buildCCSTag(i) for i in mklist(getattr(tag,"css"))] )
+                ll.extend( [CSS(i) for i in mklist(getattr(tag,"css")) if i] )
             if hasattr(tag,"js"):
-                ll.extend( [buildJSTag(i) for i in mklist(getattr(tag,"js"))] )
+                ll.extend( [JS(i) for i in mklist(getattr(tag,"js")) if i] )
         return ll
 
 
@@ -379,8 +372,8 @@ class GTagApp(guy.Guy):
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script>
-            if(!sessionStorage["gid"]) sessionStorage["gid"]=Math.random().toString(36).substring(2);
-            var GID=sessionStorage["gid"];
+            if(!sessionStorage["gtag"]) sessionStorage["gtag"]=Math.random().toString(36).substring(2);
+            var GID=sessionStorage["gtag"];
 
             async function getSessionId() {return GID}
             async function _render(html,script) {
