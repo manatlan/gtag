@@ -344,23 +344,6 @@ class GTagApp(guy.Guy):
             self._ses=None
         super().__init__()
 
-
-    async def init(self):
-        if self._ses is not None:
-            gid=await self.js.getSessionId()
-            log("CREATE SESSION:",gid)
-            gtag = self._ses.get(gid)
-            if gtag is None:
-                gtag = self._originalGTag._clone()
-                self._ses[gid] = gtag
-        else:
-            gtag = self._originalGTag
-
-        gtag.exit = self.exit
-
-        log("SERVE",repr(gtag),gtag._childs)
-        await self.js._render( str(gtag), gtag._getScripts() )
-
     def render(self,path=None):
         o=self._originalGTag
         if isinstance(o,ReactiveMethod): o=o()  # TODO: not good here !
@@ -394,6 +377,22 @@ class GTagApp(guy.Guy):
     </body>
 </html>
         """ % "\n".join([str(h) for h in hh])
+
+    async def init(self):
+        if self._ses is not None:
+            gid=await self.js.getSessionId()
+            log("CREATE SESSION:",gid)
+            gtag = self._ses.get(gid)
+            if gtag is None:
+                gtag = self._originalGTag._clone()
+                self._ses[gid] = gtag
+        else:
+            gtag = self._originalGTag
+
+        gtag.exit = self.exit
+
+        log("SERVE",repr(gtag),gtag._childs)
+        await self.js._render( str(gtag), gtag._getScripts() )
 
     def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
