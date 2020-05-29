@@ -1,4 +1,4 @@
-from gtag import ReactiveProp
+from gtag.gtag import ReactiveProp
 
 def test_ReactiveProp():
     p=dict(a=12,b=42)

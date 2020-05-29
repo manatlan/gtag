@@ -16,9 +16,9 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-__version__="0.0.4"
+__version__="0.0.5"
 
-from .gtag import GTag,GTagApp,ReactiveMethod,ReactiveProp,bind
+from .gtag import GTag,bind
 from .tag import Tag
 
-__all__ = ['GTag', 'bind' ]
+__all__ = ['GTag', 'bind', 'Tag' ]

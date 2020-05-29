@@ -1,4 +1,5 @@
-from gtag import GTag,ReactiveProp,bind,Tag
+from gtag import GTag,bind,Tag
+from gtag.gtag import ReactiveProp
 from gtag.gui import A,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 
 import types

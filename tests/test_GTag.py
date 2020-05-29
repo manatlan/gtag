@@ -2,7 +2,8 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
-from gtag import GTag,bind,ReactiveMethod,Tag
+from gtag import GTag,bind,Tag
+from gtag.gtag import ReactiveMethod,CSSStyle,JS
 from gtag.gui import Div
 import pytest
 
@@ -50,7 +51,9 @@ def test_GTag_build():
     assert '>hello 12<' in html
 
     m._tag.js="JS FILE" # possible, because _tag is not dynmacally created (not a @bind bulid)
-    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], ['JS FILE'])
+    hh=m._guessHeaders()
+    assert any( [isinstance(i,CSSStyle) for i in hh])
+    assert any( [isinstance(i,JS) for i in hh])
 
 def test_GTag_render():
     class My(GTag):
@@ -71,7 +74,9 @@ def test_GTag_render():
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
-    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], [])
+    hh=m._guessHeaders()
+    assert any( [isinstance(i,CSSStyle) for i in hh])
+
 
 def test_GTag_clone():
     class My(GTag):
@@ -95,7 +100,8 @@ def test_GTag_clone():
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
-    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], [])
+    hh=m._guessHeaders()
+    assert any( [isinstance(i,CSSStyle) for i in hh])
 
     mm=m._clone()
     assert mm.added==42
@@ -107,7 +113,8 @@ def test_GTag_clone():
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
-    assert m._guessCssJs()==(['https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css'], [])
+    hh=m._guessHeaders()
+    assert any( [isinstance(i,CSSStyle) for i in hh])
 
 
 def test_GTag_clone_with_State():

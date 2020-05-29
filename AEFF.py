@@ -6,7 +6,7 @@ class Comp(GTag):
         self.value=value
     def build(self):
         return t.Div(
-            t.Text( "hello ", self.bind.value ),
+            t.Text( "hello", self.bind.value ),
             t.Button( "Click me", onclick=self.bind.clickMe() ),
         )
     def clickMe(self):

@@ -26,6 +26,34 @@ _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 def log(*a):
     pass
 
+
+class CSSLink(Tag):
+    tag="link"
+class CSSStyle(Tag):
+    tag="style"
+class JS(Tag):
+    tag="script"
+
+def buildCCSTag(o):
+    if o:
+        if o.startswith("http"):
+            return CSSLink(type="text/css",rel="stylesheet",href=o)
+        else:
+            return CSSStyle(o,type="text/css")
+    else:
+        return ""
+
+def buildJSTag(o):
+    if o:
+        if o.startswith("http"):
+            return JS(type="text/javascript",src=o)
+        else:
+            return JS(o, type="text/javascript")
+    else:
+        return ""
+
+
+
 class ReactiveProp:
     def __init__(self,dico:dict,attribut:str):
         self.__instance=dico
@@ -223,23 +251,22 @@ class GTag:
         return gtag
 
 
-    def _guessCssJs(self):
-        """ try to found the main tag used by the gtag component, and return its css/js (as a list)
+    def _guessHeaders(self):
+        """ try to found the headers of the main tag used by the gtag component, and return the html elements to include in header
             (downside: importing css/js will depends only on first tag returned by the gtag)
             (downside: as tag can be produce by a reactivemethod, we need to execute it)
         """
-        js=[]
-        css=[]
+        mklist=lambda x: x if isinstance(x,list) else [x]
+        ll=[]
         if self._tag:
             tag=self._tag
             if isinstance(tag,ReactiveMethod): tag=tag()    # <- dangerous
             if hasattr(tag,"css"):
-                css=getattr(tag,"css")
-                css= [css] if isinstance(css,str) else css
+                ll.extend( [buildCCSTag(i) for i in mklist(getattr(tag,"css"))] )
             if hasattr(tag,"js"):
-                js=getattr(tag,"js")
-                js= [js] if isinstance(js,str) else js
-        return (css,js)
+                ll.extend( [buildJSTag(i) for i in mklist(getattr(tag,"js"))] )
+        return ll
+
 
     def init(self,*a,**k):
         """ Override to make inits (replace the __init__(), but same role)"""
@@ -339,63 +366,40 @@ class GTagApp(guy.Guy):
         gtag.exit = self.exit
 
         log("SERVE",repr(gtag),gtag._childs)
-        css,js=gtag._guessCssJs()
-
-        script=gtag._getScripts()
-        await self.js._render( str(gtag),css,js )
-        if script: await self.js.eval(script)
+        await self.js._render( str(gtag), gtag._getScripts() )
 
     def render(self,path=None):
+        o=self._originalGTag
+        if isinstance(o,ReactiveMethod): o=o()  # TODO: not good here !
+        hh=o._guessHeaders()
+
         return """<!DOCTYPE html>
-        <html>
-            <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1">
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script>
+            if(!sessionStorage["gid"]) sessionStorage["gid"]=Math.random().toString(36).substring(2);
+            var GID=sessionStorage["gid"];
 
-                <script>
-                    if(!sessionStorage["gid"]) sessionStorage["gid"]=Math.random().toString(36).substring(2);
-                    var GID=sessionStorage["gid"];
-
-                    async function getSessionId() {return GID}
-                    async function _render(html,css,js) {
-                        document.body.style="visibility:hidden";
-                        document.body.innerHTML=html;
-
-                        function show() {
-                            document.body.style="visibility:visible";
-                        }
-
-                        for(var f of css) {
-                            var t = document.createElement("link");
-                            t.type = "text/css";
-                            t.rel = "stylesheet";
-                            t.href = f;
-                            t.onload=show
-                            document.getElementsByTagName("head")[0].appendChild(t);
-                        }
-
-                        for(var f of js) {
-                            var t = document.createElement("script");
-                            t.type = "text/javascript";
-                            t.src = f;
-                            t.onload=show
-                            document.getElementsByTagName("head")[0].appendChild(t);
-                        }
-                        if(css.length==0 && js.length==0) show()
-                    }
-                </script>
-
-                <script src="guy.js"></script>
-
-                <style>
-                div.hbox {display: flex;flex-flow: row nowrap;align-items:center}
-                div.vbox {display: flex;flex-flow: column nowrap;}
-                div.hbox > *,div.vbox > * {flex: 1 1 50%;margin:1px}
-                </style>
-            </head>
-            <body></body>
-        </html>
-        """
+            async function getSessionId() {return GID}
+            async function _render(html,script) {
+                document.body.innerHTML=html;
+                if(script) eval(script)
+            }
+        </script>
+        %s
+        <style>
+        div.hbox {display: flex;flex-flow: row nowrap;align-items:center}
+        div.vbox {display: flex;flex-flow: column nowrap;}
+        div.hbox > *,div.vbox > * {flex: 1 1 50%%;margin:1px}
+        </style>
+    </head>
+    <body>
+            <script src="guy.js"></script>
+    </body>
+</html>
+        """ % "\n".join([str(h) for h in hh])
 
     def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """

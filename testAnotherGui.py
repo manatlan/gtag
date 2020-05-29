@@ -1,4 +1,4 @@
-from gtag import GTag,ReactiveProp,bind,Tag
+from gtag import GTag,bind,Tag
 
 """
 An exemple of using another set of tags
@@ -9,6 +9,10 @@ Just to show how to build its own gui !
 class MaterializeTag(Tag):
     css="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"  # can be a list of str too
     js="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"     # can be a list of str too
+
+# ^^^ here, it's downloaded from the internet
+# but you can imagine putting files in the "static" folder of guy
+# (see https://guy-docs.glitch.me/server/#static-content)
 
 ###################################################################################################
 ## here are Materialize specific tags
