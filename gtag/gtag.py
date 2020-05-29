@@ -380,6 +380,7 @@ class GTagApp(guy.Guy):
                 document.body.innerHTML=html;
                 if(script) eval(script)
             }
+            function update() { return self.update(GID) /*promise*/ }
         </script>
         %s
         <style>
@@ -398,10 +399,16 @@ class GTagApp(guy.Guy):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
         if self._ses is None:
             gtag=self._originalGTag
+            gid=None
         else:
             gtag=self._ses[gid]
 
         obj=gtag._getChild(id)
         log("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
         r=getattr(obj,method)(*args)
+        return self.update(gid)
+
+    def update(self, gid):
+        """ exposed in guy context (to manually force a refresh) """
+        gtag=self._ses[gid] if gid else self._originalGTag
         return gtag.update() #could update the obj gtag only !
