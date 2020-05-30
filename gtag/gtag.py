@@ -21,7 +21,7 @@ from .tag import Tag
 import typing as T
 
 
-_gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
+_gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x #TODO: rename to value() ?
 
 def log(*a):
     print(*a)
