@@ -10,8 +10,9 @@ class MyBox(GTag):
         self.content=content
 
     def build(self):
-        o = t.Div(klass="modal is-active" if self.content else "")
+        o = t.Div()
         if self.content:
+            o.klass="modal is-active"
             o.add( t.Div(klass="modal-background",onclick=self.bind.close()) )
             o.add( t.Div( t.Box(self.content),klass="modal-content") )
             o.add( t.Div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
@@ -25,12 +26,10 @@ class MyToaster(GTag):
         self.content=content
 
     def build(self):
-        isContent=bool(self.content)
-        o=t.Div(
-            style=isContent and "position:fixed;left:0px;right:0px;bottom:0px" or "",
-            klass=isContent and "notification is-primary" or ""
-        )
-        if isContent:
+        o=t.Div()
+        if bool(self.content):
+            o.style="position:fixed;left:0px;right:0px;bottom:0px"
+            o.klass="notification is-primary"
             o.add( t.Button(klass='delete',onclick="window.hideToast()") )
             o.add( str(self.content) ) # force to render now !
             self.content=None # clear content ! (so gtag object is possible)
