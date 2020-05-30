@@ -409,7 +409,9 @@ class GTagApp(guy.Guy):
 
         #////////////////////////////////////////////////////////////////// THE MAGIC TODO: move to gtag
         obj=gtag._getChild(id)
-        gtag._childs={gtag.id:gtag} # ULTRA IMPORTANT ;-)
+        gtag._childs={gtag.id:gtag,obj.id:obj} # ULTRA IMPORTANT ;-)
+        # keep the main tag, and the current object !
+        # (others will be rebuild during rendering)
 
         log("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
         r=getattr(obj,method)(*args)

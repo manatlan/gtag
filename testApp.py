@@ -25,6 +25,7 @@ class MyInc(GTag):
 
 
 
+
 class Page1(GTag):
 
     def init(self,nb,txt):
@@ -49,8 +50,7 @@ class Page1(GTag):
         )
 
     def aff(self):
-        # self.main.setMBox( self.XXX )
-        self.main.setMBox( "helllllllo" )
+        self.main.setMBox( MyInc(42) )
 
 class Page2(GTag):
 
@@ -85,7 +85,7 @@ class Page3(GTag):
             MyCheckbox(self.cb, "disable all (vv)"),
             HBox(
                 Text("You selected",self.bind.rb),
-                g.MyRadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb),
+                g.MyRadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb,onchange=self.realCallback),
             ),
             HBox(
                 Text("You selected",self.bind.so),
@@ -96,6 +96,9 @@ class Page3(GTag):
                 g.MySelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
             )
         )
+
+    def realCallback(self,x):
+        self.main.setToast("Changed to %s"%x)
 
     @bind
     def renderContent(self):
