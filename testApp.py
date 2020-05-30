@@ -1,5 +1,6 @@
 from gtag import GTag,bind
 from gtag.gui import A,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
+import gtags as g
 
 """
 the most advanced gtag example, in the world ;-)
@@ -21,56 +22,7 @@ class MyInc(GTag):
         self.cpt+=v
 
 
-class MyBox(GTag):
-    def init(self,content):
-        self.content=content
 
-    @bind
-    def build(self):
-        if self.content!=None:
-            o = Div(klass="modal is-active")
-            o.add( Div(klass="modal-background",onclick=self.bind.close()) )
-            o.add( Div( Box(self.content),klass="modal-content") )
-            o.add( Div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
-            return o
-
-    def close(self):
-        self.content=None
-
-
-class MyTabs(GTag):
-    def init(self,selected:int):
-        self.selected=selected
-        self.tabs=[]
-
-    def addTab(self,title):
-        self.tabs.append(title)
-
-    @bind
-    def renderUL(self):
-        u=Ul()
-        for idx,title in enumerate(self.tabs):
-            isActive="is-active" if self.selected==idx+1 else None
-            u.add( Li(A(title,onclick=self.bind.select(idx+1)), klass=isActive ) )
-        return u
-
-    def build(self): # dynamic rendering !
-        return Tabs( self.renderUL() )
-
-    def select(self,idx):
-        self.selected=idx
-
-
-class MyInput(GTag):
-
-    def init(self,txt):
-        self.v=txt
-
-    def build(self):
-        return Input(type="text",value=self.v,onchange=self.bind.onchange("this.value"))
-
-    def onchange(self,txt):
-        self.v = txt
 
 class Page1(GTag):
 
@@ -87,7 +39,7 @@ class Page1(GTag):
 
     def build(self):
         return VBox(
-            HBox(MyInput(self.bind.txt ),Text(self.bind.txt)),
+            HBox(g.MyInput(self.bind.txt ),Text(self.bind.txt)),
             MyInc(self.bind.nb),
             MyInc(self.bind.nb),
             Box(self.bind.nb, self.compute()),
@@ -113,15 +65,24 @@ class Page2(GTag):
 
 class Page3(GTag):
 
-    def init(self,sel):
+    def init(self,sel,rb,sb):
         self.selected=sel
+        self.rb=rb
+        self.sb=sb
 
     def build(self):
-        t=MyTabs(self.bind.selected)
-        t.addTab("tab1")
-        t.addTab("tab2")
-        t.addTab("tab3")
-        return Div(t,Box(self.renderContent()))
+        t=g.MyTabs(self.bind.selected,["tab1","tab2","tab3"])
+
+        return Div(t,Box(self.renderContent()),
+            HBox(
+                Text("You selected",self.bind.rb),
+                g.MyRadioButtons(self.bind.rb,["apple","pear","banana"]),
+            ),
+            HBox(
+                Text("You selected",self.bind.sb),
+                g.MySelect(self.bind.sb,["apple","pear","banana"]),
+            )
+        )
 
     @bind
     def renderContent(self):
@@ -137,7 +98,9 @@ class TestApp(GTag):
         self.nb=12
         self.msg=None
         self.page=1
-        self.selectedTab=1
+        self.selectedTab="tab1"
+        self.rb="banana"
+        self.sb="banana"
 
 
     @bind
@@ -165,14 +128,14 @@ class TestApp(GTag):
         elif self.page==2:
             page=Page2(self.bind.nb)
         elif self.page==3:
-            page=Page3(self.bind.selectedTab)
+            page=Page3(self.bind.selectedTab,self.bind.rb,self.bind.sb)
         else:
             page="no"
 
         return Div(
             Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
             Section( Div( "<br>", page, klass="container") ),
-            MyBox( self.bind.msg )
+            g.MyBox( self.bind.msg )
         )
 
     def doExit(self):
@@ -187,5 +150,6 @@ class TestApp(GTag):
 
 if __name__=="__main__":
     app=TestApp( )
+    # app=Page3("tab2","banana","banana")
     print( app.run(log=False) )
     # print( app.serve(log=False) )

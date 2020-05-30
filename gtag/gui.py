@@ -90,3 +90,8 @@ class Ul(BulmaTag):
 class Li(BulmaTag):
     tag="li"
     klass="li"
+
+class Select(BulmaTag):
+    tag="select"
+class Option(BulmaTag):
+    tag="option"

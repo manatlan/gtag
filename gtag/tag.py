@@ -36,7 +36,7 @@ class Tag:
         self.__contents.extend(elt)
 
     def __str__(self):
-        attrs=self.__attrs
+        attrs=dict(self.__attrs) # clone !
         klass= attrs.get("klass") or self.klass
         if "klass" in attrs: del attrs["klass"]
         if klass: attrs["class"]=klass
