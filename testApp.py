@@ -65,9 +65,10 @@ class Page2(GTag):
 
 class Page3(GTag):
 
-    def init(self,sel,rb,sb):
+    def init(self,sel,rb,so,sb):
         self.selected=sel
         self.rb=rb
+        self.so=so
         self.sb=sb
 
     def build(self):
@@ -79,8 +80,12 @@ class Page3(GTag):
                 g.MyRadioButtons(self.bind.rb,["apple","pear","banana"]),
             ),
             HBox(
+                Text("You selected",self.bind.so),
+                g.MySelect(self.bind.so,["apple","pear","banana"]),
+            ),
+            HBox(
                 Text("You selected",self.bind.sb),
-                g.MySelect(self.bind.sb,["apple","pear","banana"]),
+                g.MySelectButtons(self.bind.sb,["apple","pear","banana"]),
             )
         )
 
@@ -101,6 +106,7 @@ class TestApp(GTag):
         self.selectedTab="tab1"
         self.rb="banana"
         self.sb="banana"
+        self.so="banana"
 
 
     @bind
@@ -109,7 +115,7 @@ class TestApp(GTag):
             "Page1":lambda: self.setPage(1),
             "Page2 (%s)"% int(self.nb):lambda: self.setPage(2),
             "Page3":lambda: self.setPage(3),
-            "exit":lambda: self.doExit(),
+            "exit":lambda: self.exit(-1),
         })
 
         if self.page==1:
@@ -117,7 +123,7 @@ class TestApp(GTag):
         elif self.page==2:
             page=Page2(self.bind.nb)
         elif self.page==3:
-            page=Page3(self.bind.selectedTab,self.bind.rb,self.bind.sb)
+            page=Page3(self.bind.selectedTab,self.bind.rb,self.bind.so,self.bind.sb)
         else:
             page="no"
 
@@ -126,9 +132,6 @@ class TestApp(GTag):
             Section( Div( "<br>", page, klass="container") ),
             g.MyBox( self.bind.msg )
         )
-
-    def doExit(self):
-        self.exit(-1)
 
     def setPage(self,n):
         self.page=n

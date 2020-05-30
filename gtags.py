@@ -64,35 +64,27 @@ class MyNav(GTag):
         callback()
 
 
-class MyTabs(GTag):
-
+class Selector(GTag):
     def init(self,value, choices:list):
         assert value in choices
         self.value=value
         self.choices=choices
-
-    @bind
-    def renderUL(self):
-        u=t.Ul()
-        for idx,name in enumerate(self.choices):
-            isActive="is-active" if self.value==name else None
-            u.add( t.Li(t.A(name,onclick=self.bind.select(idx)), klass=isActive ) )
-        return u
-
-    def build(self): # dynamic rendering !
-        return t.Tabs( self.renderUL() )
 
     def select(self,idx):
-        self.value=self.choices[idx]
+        print("===",idx)
+        self.value=self.choices[int(idx)]
 
-class MyRadioButtons(GTag):
+class MyTabs(Selector):
+    @bind
+    def build(self):
+        u=t.Ul()
+        for idx,i in enumerate(self.choices):
+            isActive="is-active" if self.value==i else None
+            u.add( t.Li(t.A(i,onclick=self.bind.select(idx)), klass=isActive ) )
+        return t.Tabs( u )
 
-    def init(self,value, choices:list):
-        assert value in choices
-        self.value=value
-        self.choices=choices
 
-
+class MyRadioButtons(Selector):
     @bind
     def build(self):
         o=t.Div(klass="control")
@@ -102,30 +94,29 @@ class MyRadioButtons(GTag):
                     type="radio",
                     klass="radio", # override
                     name="r%s"%id(self),
-                    onclick=self.bind.onchange(idx),
-                    checked=(self.value==i) and "true" or "",
+                    onclick=self.bind.select(idx),
+                    checked=(self.value==i),
                     ),
                 i,
                 "</label>"
             )
         return o
 
-    def onchange(self,idx):
-        self.value = self.choices[idx]
 
-class MySelect(GTag):
-
-    def init(self,value, choices:list):
-        assert value in choices
-        self.value=value
-        self.choices=choices
-
+class MySelect(Selector):
     @bind
     def build(self):
-        s=t.Select( onclick=self.bind.onchange("this.value"),style="width:100%" )
+        s=t.Select( onclick=self.bind.select("this.value"),style="width:100%" )
         for idx,i in enumerate(self.choices):
-            s.add( t.Option(i,value=idx,selected=(self.value==i) and "true" or ""))
+            s.add( t.Option(i,value=idx,selected=(self.value==i)))
         return t.Div(s,klass="select")
 
-    def onchange(self,idx):
-        self.value = self.choices[int(idx)]
+class MySelectButtons(Selector):
+    @bind
+    def build(self):
+        h=t.HBox()
+        for idx,i in enumerate(self.choices):
+            isActive="button " + "is-active" if self.value==i else None
+            h.add( t.Button(i,onclick=self.bind.select(idx), klass=isActive ) )
+        return h
+

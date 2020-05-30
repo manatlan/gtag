@@ -3,8 +3,10 @@ from gtag import Tag
 
 def test_Tag():
     assert str(Tag()) == '<div></div>'
+    assert str(Tag(checked=True)) == '<div checked></div>'
+    assert str(Tag(checked=False)) == '<div></div>'
     assert str(Tag("hello")) == '<div>hello</div>'
-    assert str(Tag("hello",klass="john doe")) == '<div class="john doe">hello</div>'
+    assert str(Tag("hello",klass="john doe",value=0)) == '<div value="0" class="john doe">hello</div>'
     assert str(Tag("hello",data_mining="hell")) == '<div data-mining="hell">hello</div>'
     assert str(Tag("hello",42,klass="john doe")) == '<div class="john doe">hello 42</div>'
     assert str(Tag("hello",onclick='alert("bill & john")')) == '<div onclick="alert(&quot;bill &amp; john&quot;)">hello</div>'

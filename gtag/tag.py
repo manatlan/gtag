@@ -41,10 +41,17 @@ class Tag:
         if "klass" in attrs: del attrs["klass"]
         if klass: attrs["class"]=klass
         if self.id: attrs["id"]=self.id
-        attrs=['%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) for k,v in attrs.items() if v]
+        rattrs=[]
+        for k,v in attrs.items():
+            if v is not None:
+                if isinstance(v,bool):
+                    if v: rattrs.append(k)
+                else:
+                    rattrs.append( '%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) )
+
         return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
             tag=self.__tag,
-            attrs=" ".join([""]+attrs) if attrs else "",
+            attrs=" ".join([""]+rattrs) if rattrs else "",
             content=" ".join([str(i) for i in self.__contents]),
         )
 
