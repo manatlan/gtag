@@ -24,7 +24,7 @@ import typing as T
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
 def log(*a):
-    pass
+    print(*a)
 
 
 class CSS(Tag):
@@ -279,7 +279,8 @@ class GTag:
 
     def __str__(self):
         o= self._tag
-        if isinstance(o,ReactiveMethod): o=o()
+        if isinstance(o,ReactiveMethod):
+            o=o()
         if o is None:
             return ""
         else:
@@ -311,9 +312,12 @@ class GTag:
 
 
     def update(self) -> dict:
+        h=str(self)
+        s=self._getScripts()
         log(">>>UPDATE:",repr(self))
+        log("   and childs:",len(self._childs),self._childs.keys())
         return dict(script="""document.querySelector("#%s").innerHTML=`%s`;%s""" % (
-            self.id, self, self._getScripts()
+            self.id, h,s
         ))
 
     def run(self,*a,**k) -> any:
@@ -403,9 +407,13 @@ class GTagApp(guy.Guy):
         else:
             gtag=self._ses[gid]
 
+        #////////////////////////////////////////////////////////////////// THE MAGIC TODO: move to gtag
         obj=gtag._getChild(id)
+        gtag._childs={gtag.id:gtag} # ULTRA IMPORTANT ;-)
+
         log("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
         r=getattr(obj,method)(*args)
+        #////////////////////////////////////////////////////////////////// THE MAGIC
         return self.update(gid)
 
     def update(self, gid):

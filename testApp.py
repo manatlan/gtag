@@ -38,17 +38,19 @@ class Page1(GTag):
             b.add( "⭐" )
         return b
 
+    @bind
     def build(self):
         return VBox(
             HBox(g.MyInput(self.bind.txt ),Text(self.bind.txt)),
             MyInc(self.bind.nb),
             MyInc(self.bind.nb),
             Box(self.bind.nb, self.compute()),
-            Button("Show mbox",onclick=self.bind.aff()) #TODO: find better !!!
+            Button("Show mbox",onclick=self.bind.aff())
         )
 
     def aff(self):
-        self.main.setMBox( MyInc(42) )
+        # self.main.setMBox( self.XXX )
+        self.main.setMBox( "helllllllo" )
 
 class Page2(GTag):
 
@@ -59,10 +61,13 @@ class Page2(GTag):
         return Div(
             Box("A test page, with a binding value:", self.bind.nb),
             MyInc(self.bind.nb),
-            Button("show",onclick=self.bind.kik())
+            Button("show",onclick=self.bind.kik()),
+            Button("show T",onclick=self.bind.kik2()),
         )
     def kik(self):
-        self.main.setMBox("yo")
+        self.main.setMBox("yom")
+    def kik2(self):
+        self.main.setToast("yot")
 
 class Page3(GTag):
 
@@ -104,7 +109,8 @@ class TestApp(GTag):
         self.txt="yolo"
         self.n=12
         self.nb=12
-        self.msg=None
+        self.msg=None #mbox
+        self.toast=None #toast
         self.page=1
         self.selectedTab="tab1"
         self.rb="banana"
@@ -134,14 +140,21 @@ class TestApp(GTag):
         return Div(
             nav,
             Section( Div( "<br>", page, klass="container") ),
-            g.MyBox( self.bind.msg )
+            Button("test toast",onclick=self.bind.setToast(42)),
+            Button("test mm",onclick=self.bind.setMBox(42)),
+            g.MyBox( self.bind.msg ),
+            g.MyToaster( self.bind.toast ),
         )
 
     def setPage(self,n):
         self.page=n
 
-    def setMBox(self,txt):
-        self.msg=txt
+    def setMBox(self,obj):
+        print(">>",obj)
+        self.msg=obj
+    def setToast(self,obj):
+        print(">>>",obj)
+        self.toast=obj
 
 
 if __name__=="__main__":

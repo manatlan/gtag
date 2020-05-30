@@ -9,14 +9,38 @@ class MyBox(GTag):
     def init(self,content):
         self.content=content
 
-    @bind
     def build(self):
-        if self.content!=None:
-            o = t.Div(klass="modal is-active")
+        o = t.Div(klass="modal is-active" if self.content else "")
+        if self.content:
             o.add( t.Div(klass="modal-background",onclick=self.bind.close()) )
             o.add( t.Div( t.Box(self.content),klass="modal-content") )
             o.add( t.Div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
-            return o
+        return o
+
+    def close(self):
+        self.content=None
+
+class MyToaster(GTag):
+    def init(self,content):
+        self.content=content
+
+    def build(self):
+        isContent=bool(self.content)
+        o=t.Div(
+            style=isContent and "position:fixed;left:0px;right:0px;bottom:0px" or "",
+            klass=isContent and "notification is-primary" or ""
+        )
+        if isContent:
+            o.add( t.Button(klass='delete',onclick="window.hideToast()") )
+            o.add( str(self.content) ) # force to render now !
+            self.content=None # clear content ! (so gtag object is possible)
+        return o
+
+    def script(self):
+        return """
+        window.hideToast=function() {if(tag) tag.parentNode.removeChild(tag)}
+        setTimeout(window.hideToast,2000)
+        """
 
     def close(self):
         self.content=None

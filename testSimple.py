@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3 -u
 from gtag import GTag
 import gtag.gui as g
 
@@ -20,4 +20,4 @@ class App(GTag):
 
 
 app=App()
-app.run(log=True)
+app.run()

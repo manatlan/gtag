@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -u
-from gtag import GTag
+from gtag import GTag,bind
 import gtag.gui as g
 
 class Btn(GTag):
@@ -18,6 +18,7 @@ class App(GTag):
     def init(self):
         self.cpt = 0
 
+    @bind
     def build(self):
         return g.VBox(
             self.bind.cpt,
