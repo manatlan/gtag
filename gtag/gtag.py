@@ -24,7 +24,8 @@ import typing as T
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x #TODO: rename to value() ?
 
 def log(*a):
-    print(*a)
+    # print(*a)
+    pass
 
 
 class CSS(Tag):
