@@ -11,6 +11,17 @@ def test_Tag():
     assert str(Tag("hello",42,klass="john doe")) == '<div class="john doe">hello 42</div>'
     assert str(Tag("hello",onclick='alert("bill & john")')) == '<div onclick="alert(&quot;bill &amp; john&quot;)">hello</div>'
 
+def test_Tag_change_props():
+    t=Tag()
+    t.id=1
+    assert str(t)=='<div id="1"></div>'
+    t.id=None
+    assert str(t)=='<div></div>'
+    t.cid=1
+    assert str(t)=='<div cid="1"></div>'
+    t.cid=None
+    assert str(t)=='<div></div>'
+
 def test_Tag_add():
     t=Tag()
     t.add( A("click"))
