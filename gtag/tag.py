@@ -28,15 +28,14 @@ class Tag:
     def __init__(self,*contents,**attrs):
         assert "id" not in attrs.keys()
         self.id=None
-        self.__tag=self.tag
         self.__contents=list(contents)
-        self.__attrs=dict(attrs)
+        self.__dict__.update(attrs)
 
     def add(self,*elt):
         self.__contents.extend(elt)
 
     def __str__(self):
-        attrs=dict(self.__attrs) # clone !
+        attrs={k:v for k,v in self.__dict__.items() if not k.startswith("_")} # clone !
         klass= attrs.get("klass") or self.klass
         if "klass" in attrs: del attrs["klass"]
         if klass: attrs["class"]=klass
@@ -50,11 +49,9 @@ class Tag:
                     rattrs.append( '%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) )
 
         return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
-            tag=self.__tag,
+            tag=self.tag,
             attrs=" ".join([""]+rattrs) if rattrs else "",
             content=" ".join([str(i) for i in self.__contents]),
         )
-
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
-
