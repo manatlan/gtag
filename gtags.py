@@ -23,15 +23,16 @@ class MyBox(GTag):
 
 class MyInput(GTag):
 
-    def init(self,txt,type="text"):
-        self.v=txt
+    def init(self,value,type="text",disabled=False):
+        self.value=value
         self.type=type
+        self.disabled=disabled
 
     def build(self):
-        return t.Input(type=self.type,value=self.v,onchange=self.bind.onchange("this.value"))
+        return t.Input(type=self.type,value=self.value,onchange=self.bind.onchange("this.value"),disabled=bool(self.disabled))
 
-    def onchange(self,txt):
-        self.v = txt
+    def onchange(self,value):
+        self.value = value
 
 
 class MyNav(GTag):
@@ -65,16 +66,16 @@ class MyNav(GTag):
 
 
 class Selector(GTag):
-    def init(self,value, choices:list):
+    def init(self,value, choices:list, disabled=False):
         assert value in choices
         self.value=value
         self.choices=choices
+        self.disabled=disabled
 
     def select(self,idx):
-        print("===",idx)
         self.value=self.choices[int(idx)]
 
-class MyTabs(Selector):
+class MyTabs(Selector): #TODO: implement disabled
     @bind
     def build(self):
         u=t.Ul()
@@ -96,6 +97,7 @@ class MyRadioButtons(Selector):
                     name="r%s"%id(self),
                     onclick=self.bind.select(idx),
                     checked=(self.value==i),
+                    disabled=bool(self.disabled)
                     ),
                 i,
                 "</label>"
@@ -106,7 +108,7 @@ class MyRadioButtons(Selector):
 class MySelect(Selector):
     @bind
     def build(self):
-        s=t.Select( onclick=self.bind.select("this.value"),style="width:100%" )
+        s=t.Select( onclick=self.bind.select("this.value"),style="width:100%",disabled=bool(self.disabled) )
         for idx,i in enumerate(self.choices):
             s.add( t.Option(i,value=idx,selected=(self.value==i)))
         return t.Div(s,klass="select")
@@ -117,6 +119,46 @@ class MySelectButtons(Selector):
         h=t.HBox()
         for idx,i in enumerate(self.choices):
             isActive="button " + "is-active" if self.value==i else None
-            h.add( t.Button(i,onclick=self.bind.select(idx), klass=isActive ) )
+            h.add( t.Button(i,onclick=self.bind.select(idx), klass=isActive,disabled=bool(self.disabled) ) )
         return h
 
+
+
+class MyCheckbox(GTag):
+    def init(self,value:bool,title:str):
+        self.value=value
+        self.title=title
+
+    @bind
+    def build(self):
+        o=t.Div(klass="control")
+        o.add('<label class="checkbox">',
+            t.Input(
+                checked=bool(self.value),
+                type="checkbox",
+                klass="checkbox", # override
+                onclick=self.bind.switch(),
+                ),
+            self.title,
+            "</label>"
+        )
+        return o
+
+    def switch(self):
+        self.value = not self.value
+
+if __name__=="__main__":
+
+    class M(GTag):
+        size=(100,100)
+        def init(self):
+            self.v=False
+        def build(self):
+            return t.Div(
+                MyCheckbox(self.bind.v,"ok ?"),
+                MyRadioButtons(1,[1,2,3],self.bind.v),
+                self.bind.v
+            )
+
+    app=M()
+    app.run()

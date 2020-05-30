@@ -76,14 +76,15 @@ class ReactiveProp:
         return self.get() > _gg(v)
 
 
-    def __int__(self):
-        return int(self.get())
-
     def __iadd__(self,v):
         vv=self.get() + _gg(v)
         self.set( vv )
         return self
 
+    def __int__(self):
+        return int(self.get())
+    def __bool__(self):
+        return bool(self.get())
     def __str__(self):
         return str(self.get())
 

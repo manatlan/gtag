@@ -29,7 +29,13 @@ def test_ReactiveProp():
     a+=b
     assert a == 86
 
+def test_ReactiveProp_bool():
+    p=dict(a=True,b=0)
 
+    assert not ReactiveProp(p,"a") == False
+    assert not ReactiveProp(p,"b") == True
+    assert bool(ReactiveProp(p,"a")) == True
+    assert bool(ReactiveProp(p,"b")) == False
 
 
 def test_WARNING():

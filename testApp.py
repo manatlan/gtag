@@ -1,6 +1,7 @@
 from gtag import GTag,bind
 from gtag.gui import A,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
 import gtags as g
+from gtags import MyCheckbox
 
 """
 the most advanced gtag example, in the world ;-)
@@ -65,27 +66,29 @@ class Page2(GTag):
 
 class Page3(GTag):
 
-    def init(self,sel,rb,so,sb):
+    def init(self,sel,rb,so,sb,cb):
         self.selected=sel
         self.rb=rb
         self.so=so
         self.sb=sb
+        self.cb=cb
 
     def build(self):
         t=g.MyTabs(self.bind.selected,["tab1","tab2","tab3"])
 
         return Div(t,Box(self.renderContent()),
+            MyCheckbox(self.cb, "disable all (vv)"),
             HBox(
                 Text("You selected",self.bind.rb),
-                g.MyRadioButtons(self.bind.rb,["apple","pear","banana"]),
+                g.MyRadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb),
             ),
             HBox(
                 Text("You selected",self.bind.so),
-                g.MySelect(self.bind.so,["apple","pear","banana"]),
+                g.MySelect(self.bind.so,["apple","pear","banana"],disabled=self.bind.cb),
             ),
             HBox(
                 Text("You selected",self.bind.sb),
-                g.MySelectButtons(self.bind.sb,["apple","pear","banana"]),
+                g.MySelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
             )
         )
 
@@ -107,6 +110,7 @@ class TestApp(GTag):
         self.rb="banana"
         self.sb="banana"
         self.so="banana"
+        self.cb=False
 
 
     @bind
@@ -123,7 +127,7 @@ class TestApp(GTag):
         elif self.page==2:
             page=Page2(self.bind.nb)
         elif self.page==3:
-            page=Page3(self.bind.selectedTab,self.bind.rb,self.bind.so,self.bind.sb)
+            page=Page3(self.bind.selectedTab,self.bind.rb,self.bind.so,self.bind.sb,self.bind.cb)
         else:
             page="no"
 
