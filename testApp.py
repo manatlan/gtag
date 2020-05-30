@@ -105,23 +105,12 @@ class TestApp(GTag):
 
     @bind
     def build(self): # DYNAMIC RENDERING HERE !
-        divBrand=Div( klass="navbar-brand" )
-        divBrand.add( A("<b>GTag Test App</b>",klass="navbar-item") )
-        divBrand.add( A('<span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>',
-                        role="button",
-                        klass="navbar-burger burger",
-                        aria_label="menu",
-                        aria_expanded="false",
-                        data_target="navbarBasicExample",
-                        onclick="this.classList.toggle('is-active');document.querySelector('.navbar-menu').classList.toggle('is-active')") )
-
-        menu=Div(klass="navbar-start")
-        menu.add( A("Page1", klass="navbar-item", onclick=self.bind.setPage(1)))
-        menu.add( A("Page2 (%s)"% int(self.nb), klass="navbar-item", onclick=self.bind.setPage(2)))
-        menu.add( A("Page3", klass="navbar-item", onclick=self.bind.setPage(3)))
-        menu.add( A("Exit", klass="navbar-item", onclick=self.bind.doExit() ) )
-
-        divMenu=Div( menu, klass="navbar-menu" )
+        nav= g.MyNav("gtag-demo",{
+            "Page1":lambda: self.setPage(1),
+            "Page2 (%s)"% int(self.nb):lambda: self.setPage(2),
+            "Page3":lambda: self.setPage(3),
+            "exit":lambda: self.doExit(),
+        })
 
         if self.page==1:
             page=Page1(self.bind.n,self.bind.txt)
@@ -133,7 +122,7 @@ class TestApp(GTag):
             page="no"
 
         return Div(
-            Nav( divBrand, divMenu, role="navigation",aria_label="main navigation"),
+            nav,
             Section( Div( "<br>", page, klass="container") ),
             g.MyBox( self.bind.msg )
         )
