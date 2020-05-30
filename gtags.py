@@ -21,18 +21,21 @@ class MyBox(GTag):
     def close(self):
         self.content=None
 
+
 class MyInput(GTag):
 
-    def init(self,value,type="text",disabled=False):
+    def init(self,value,type="text",disabled=False,onchange=None):
         self.value=value
         self.type=type
         self.disabled=disabled
+        self.onchange=onchange
 
     def build(self):
-        return t.Input(type=self.type,value=self.value,onchange=self.bind.onchange("this.value"),disabled=bool(self.disabled))
+        return t.Input(type=self.type,value=self.value,onchange=self.bind.select("this.value"),disabled=bool(self.disabled))
 
-    def onchange(self,value):
+    def select(self,value):
         self.value = value
+        if self.onchange: self.onchange(self.value)
 
 
 class MyNav(GTag):
@@ -66,14 +69,17 @@ class MyNav(GTag):
 
 
 class Selector(GTag):
-    def init(self,value, choices:list, disabled=False):
+    def init(self,value, choices:list, disabled=False, onchange=None):
         assert value in choices
         self.value=value
         self.choices=choices
         self.disabled=disabled
+        self.onchange=onchange
+
 
     def select(self,idx):
         self.value=self.choices[int(idx)]
+        if self.onchange: self.onchange(self.value)
 
 class MyTabs(Selector): #TODO: implement disabled
     @bind
@@ -123,11 +129,12 @@ class MySelectButtons(Selector):
         return h
 
 
-
 class MyCheckbox(GTag):
-    def init(self,value:bool,title:str):
+    def init(self,value:bool,title:str, disabled=False, onchange=None):
         self.value=value
         self.title=title
+        self.disabled=disabled
+        self.onchange=onchange
 
     @bind
     def build(self):
@@ -138,6 +145,7 @@ class MyCheckbox(GTag):
                 type="checkbox",
                 klass="checkbox", # override
                 onclick=self.bind.switch(),
+                disabled=bool(self.disabled)
                 ),
             self.title,
             "</label>"
@@ -146,6 +154,7 @@ class MyCheckbox(GTag):
 
     def switch(self):
         self.value = not self.value
+        if self.onchange: self.onchange(self.value)
 
 if __name__=="__main__":
 
