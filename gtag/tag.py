@@ -42,7 +42,7 @@ class Tag:
         if self.id: attrs["id"]=self.id
         rattrs=[]
         for k,v in attrs.items():
-            if v is not None:
+            if v is not None and k not in ["tag"]:
                 if isinstance(v,bool):
                     if v: rattrs.append(k)
                 else:
