@@ -14,15 +14,13 @@ class MyInc(GTag):
 
     def build(self):
         return HBox(
-                Button("-",onclick=self.bind.addV(-1) ),         #<- bind GuyCompo event
+                Button("-",onclick=self.bind.addV(-1) ),
                 Text(self.bind.cpt,style="text-align:center"),
-                Button("+",onclick=self.bind.addV(1) ),          #<- bind GuyCompo event
+                Button("+",onclick=self.bind.addV(1) ),
             )
 
     def addV(self,v):
         self.cpt+=v
-
-
 
 
 
