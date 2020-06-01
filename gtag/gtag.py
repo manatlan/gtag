@@ -16,7 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-import guy,sys
+import guy,sys,asyncio
 from .tag import Tag
 import typing as T
 
@@ -400,7 +400,7 @@ class GTagApp(guy.Guy):
         log("SERVE",repr(gtag),gtag._childs)
         await self.js._render( str(gtag), gtag._getScripts() )
 
-    def bindUpdate(self,id:str,gid:str,method:str,*args):
+    async def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
         if self._ses is None:
             gtag=self._originalGTag
@@ -415,7 +415,14 @@ class GTagApp(guy.Guy):
         # (others will be rebuild during rendering)
 
         log("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
-        r=getattr(obj,method)(*args)
+        proc=getattr(obj,method)
+
+        if asyncio.iscoroutinefunction( proc ):
+            r=await proc(*args)
+        else:
+            r=proc(*args)
+
+
         #////////////////////////////////////////////////////////////////// THE MAGIC
         return self.update(gid)
 

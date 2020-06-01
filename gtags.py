@@ -145,11 +145,11 @@ class MySelect(Selector):
 class MySelectButtons(Selector):
     @bind
     def build(self):
-        h=t.HBox()
+        u=t.Ul()
         for idx,i in enumerate(self.choices):
-            isActive="button " + "is-active" if self.value==i else None
-            h.add( t.Button(i,onclick=self.bind.select(idx), klass=isActive,disabled=bool(self.disabled) ) )
-        return h
+            isActive="is-active" if self.value==i else None
+            u.add( t.Li(t.A(i,onclick=self.bind.select(idx)), klass=isActive ) )
+        return t.Tabs( u , klass="tabs is-toggle")
 
 
 class MyCheckbox(GTag):

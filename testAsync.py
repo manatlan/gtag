@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -u
 from gtag import GTag
 import gtag.gui as g
-
+import time
 # IN PROGRESS
 # IN PROGRESS
 # IN PROGRESS
@@ -29,7 +29,8 @@ class App(GTag):
     def t1(self):
         self.cpt+=1
 
-    def t2(self):
+    async def t2(self):
+        await longProcess()
         self.cpt+=1
 
 
