@@ -1,5 +1,5 @@
 from gtag import GTag,bind
-from gtag.gui import A,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
+import gtag.gui as t
 import gtags as g
 from gtags import MyCheckbox
 
@@ -13,10 +13,10 @@ class MyInc(GTag):
         self.cpt=v
 
     def build(self):
-        return HBox(
-                Button("-",onclick=self.bind.addV(-1) ),
-                Text(self.bind.cpt,style="text-align:center"),
-                Button("+",onclick=self.bind.addV(1) ),
+        return t.HBox(
+                t.Button("-",onclick=self.bind.addV(-1) ),
+                t.Text(self.bind.cpt,style="text-align:center"),
+                t.Button("+",onclick=self.bind.addV(1) ),
             )
 
     def addV(self,v):
@@ -32,23 +32,23 @@ class Page1(GTag):
 
     @bind
     def compute(self):
-        b=Div()
+        b=t.Div()
         for i in range( int(self.nb) ):
             b.add( "⭐" )
         return b
 
-    @bind
     def build(self):
-        return VBox(
-            HBox(g.MyInput(self.bind.txt ),Text(self.bind.txt)),
+        return t.VBox(
+            t.HBox(g.MyInput(self.bind.txt ),t.Text(self.bind.txt)),
             MyInc(self.bind.nb),
             MyInc(self.bind.nb),
-            Box(self.bind.nb, self.compute()),
-            Button("Show mbox",onclick=self.bind.aff())
+            t.Box(self.bind.nb, self.compute()),
+            t.Button("Show mbox",onclick=self.bind.aff())
         )
 
     def aff(self):
-        self.main.setMBox( MyInc(42) )
+        # self.main.setMBox( MyInc(42) )    #TODO: permit this !
+        self.main.setMBox( "help" )
 
 class Page2(GTag):
 
@@ -56,11 +56,11 @@ class Page2(GTag):
         self.nb=b
 
     def build(self):
-        return Div(
-            Box("A test page, with a binding value:", self.bind.nb),
+        return t.Div(
+            t.Box("A test page, with a binding value:", self.bind.nb),
             MyInc(self.bind.nb),
-            Button("show",onclick=self.bind.kik()),
-            Button("show T",onclick=self.bind.kik2()),
+            t.Button("show",onclick=self.bind.kik()),
+            t.Button("show T",onclick=self.bind.kik2()),
         )
     def kik(self):
         self.main.setMBox("yom")
@@ -77,20 +77,20 @@ class Page3(GTag):
         self.cb=cb
 
     def build(self):
-        t=g.MyTabs(self.bind.selected,["tab1","tab2","tab3"])
+        tabs=g.MyTabs(self.bind.selected,["tab1","tab2","tab3"])
 
-        return Div(t,Box(self.renderContent()),
+        return t.Div(tabs,t.Box(self.renderContent()),
             MyCheckbox(self.cb, "disable all (vv)"),
-            HBox(
-                Text("You selected",self.bind.rb),
+            t.HBox(
+                t.Text("You selected",self.bind.rb),
                 g.MyRadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb,onchange=self.realCallback),
             ),
-            HBox(
-                Text("You selected",self.bind.so),
+            t.HBox(
+                t.Text("You selected",self.bind.so),
                 g.MySelect(self.bind.so,["apple","pear","banana"],disabled=self.bind.cb),
             ),
-            HBox(
-                Text("You selected",self.bind.sb),
+            t.HBox(
+                t.Text("You selected",self.bind.sb),
                 g.MySelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
             )
         )
@@ -100,7 +100,11 @@ class Page3(GTag):
 
     @bind
     def renderContent(self):
-        return "Content %s" % self.selected
+        if self.selected=="tab2":
+            rows=[[1,2,3,4],[1,2,3,4],[1,2,3,4]]
+            return t.Table(rows,["Col1","Col2","Col3","Col4"])
+        else:
+            return "Content %s" % self.selected
 
 
 class TestApp(GTag):
@@ -138,11 +142,11 @@ class TestApp(GTag):
         else:
             page="no"
 
-        return Div(
+        return t.Div(
             nav,
-            Section( Div( "<br>", page, klass="container") ),
-            Button("test toast",onclick=self.bind.setToast(42)),
-            Button("test mm",onclick=self.bind.setMBox(42)),
+            t.Section( t.Div( "<br>", page, klass="container") ),
+            t.Button("test toast",onclick=self.bind.setToast(42)),
+            t.Button("test mm",onclick=self.bind.setMBox(42)),
             g.MyBox( self.bind.msg ),
             g.MyToaster( self.bind.toast ),
         )

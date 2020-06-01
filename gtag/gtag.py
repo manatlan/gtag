@@ -181,12 +181,27 @@ class GTag:
         self._tag = self.build()
 
         # Store the instance in the main._childs
-        main=self._getMain()
-        main._childs[self.id]=self # so, childs should die when main dies, in GC ;-)
+        # main=self._getMain()
+        # main._childs[self.id]=self # so, childs should die when main dies, in GC ;-)
+        if self._parent:
+            self._parent._childs[self.id]=self
+
 
     def _getChild(self,id):
         assert self._parent is None,"You are not on the main instance, you can't get a child"
-        return self._childs[id]
+
+        def _gc(g,lvl=0):
+            d={g.id:g}
+            for id,obj in g._childs.items():
+                if obj._childs:
+                    d.update(_gc(obj,lvl+1) )
+                else:
+                    d[id]=obj
+            return d
+
+        childs=_gc(self)
+
+        return childs[id]
 
     def _getMain(self):
         x=self
@@ -281,6 +296,7 @@ class GTag:
     def __str__(self):
         o= self._tag
         if isinstance(o,ReactiveMethod):
+            self._childs={}
             o=o()
         if o is None:
             return ""
@@ -397,7 +413,7 @@ class GTagApp(guy.Guy):
 
         gtag.exit = self.exit
 
-        log(">>>SERVE",repr(gtag),"and childs:",list(gtag._childs.keys()))
+        log(">>>SERVE",repr(gtag))
         log("   and childs:",len(gtag._childs),list(gtag._childs.keys()))
         await self.js._render( str(gtag), gtag._getScripts() )
 
@@ -411,7 +427,7 @@ class GTagApp(guy.Guy):
 
         #////////////////////////////////////////////////////////////////// THE MAGIC TODO: move to gtag
         obj=gtag._getChild(id)
-        gtag._childs={gtag.id:gtag,obj.id:obj} # ULTRA IMPORTANT ;-)
+        # gtag._childs={gtag.id:gtag,obj.id:obj} # ULTRA IMPORTANT ;-)
         # keep the main tag, and the current object !
         # (others will be rebuild during rendering)
 

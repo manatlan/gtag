@@ -28,7 +28,7 @@ class MyToaster(GTag):
     def build(self):
         o=t.Div()
         if bool(self.content):
-            o.style="position:fixed;left:0px;right:0px;bottom:0px"
+            o.style="position:fixed;left:0px;right:0px;bottom:0px;z-index:1000"
             o.klass="notification is-primary"
             o.add( t.Button(klass='delete',onclick="window.hideToast()") )
             o.add( str(self.content) ) # force to render now !
@@ -203,7 +203,7 @@ if __name__=="__main__":
         size=(100,100)
         def init(self):
             self.v=False
-            
+
         def build(self):
             tt=t.Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
             return t.Div(tt,
