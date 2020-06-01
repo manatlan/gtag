@@ -129,6 +129,8 @@ class GtagProxy:
     def __init__(self,instance):
         self.__instance=instance
     def __getattr__(self,name:str):
+        if name in ["id","main","parent"]:
+            return getattr(self.__instance,name)
         if name in self.__instance.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
             o=self.__instance.__dict__[name]
             if isinstance(o,ReactiveProp):

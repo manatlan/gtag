@@ -1,5 +1,5 @@
 from gtag import GTag,bind,Tag
-from gtags import *
+from gtag.gtags import *
 
 """
 the most advanced gtag example, in the world ;-)
@@ -53,7 +53,7 @@ class Page1(GTag):
 
     def build(self):
         return VBox(
-            HBox(MyInput(self.bind.txt ),Text(self.bind.txt)),
+            HBox(GInput(self.bind.txt ),Text(self.bind.txt)),
             MyInc(self.bind.nb),
             MyInc(self.bind.nb),
             Box(self.bind.nb, self.compute()),
@@ -90,21 +90,21 @@ class Page3(GTag):
         self.cb=cb
 
     def build(self):
-        tabs=MyTabs(self.bind.selected,["tab1","tab2","tab3"])
+        tabs=GTabs(self.bind.selected,["tab1","tab2","tab3"])
 
         return Tag.div(tabs,Box(self.renderContent()),
-            MyCheckbox(self.cb, "disable all (vv)"),
+            GCheckbox(self.cb, "disable all (vv)"),
             HBox(
                 Text("You selected",self.bind.rb),
-                MyRadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb,onchange=self.realCallback),
+                GRadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb,onchange=self.realCallback),
             ),
             HBox(
                 Text("You selected",self.bind.so),
-                MySelect(self.bind.so,["apple","pear","banana"],disabled=self.bind.cb),
+                GSelect(self.bind.so,["apple","pear","banana"],disabled=self.bind.cb),
             ),
             HBox(
                 Text("You selected",self.bind.sb),
-                MySelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
+                GSelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
             )
         )
 
@@ -139,7 +139,7 @@ class TestApp(GTag):
 
     @bind
     def build(self): # DYNAMIC RENDERING HERE !
-        nav= MyNav("gtag-demo",{
+        nav= GNav("gtag-demo",{
             "Page1":lambda: self.setPage(1),
             "Page2 (%s)"% int(self.nb):lambda: self.setPage(2),
             "Page3":lambda: self.setPage(3),
@@ -160,8 +160,8 @@ class TestApp(GTag):
             Section( Tag.div( "<br>", page, klass="container") ),
             Button("test toast",onclick=self.bind.setToast(42)),
             Button("test mm",onclick=self.bind.setMBox(42)),
-            MyBox( self.bind.msg ),
-            MyToaster( self.bind.toast ),
+            GBox( self.bind.msg ),
+            GToaster( self.bind.toast ),
         )
 
     def setPage(self,n):

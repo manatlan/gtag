@@ -13,6 +13,7 @@ div.vbox > * {flex: 1 1 50%;margin:1px}
     """
     def build(self):
         return Tag.div(*self._args,**self._kargs,klass="vbox")
+
 class HBox(GTag):
     css="""
 div.hbox {display: flex;flex-flow: row nowrap;align-items:center}
@@ -36,6 +37,7 @@ class Button(GTag):
         if "klass" not in self._kargs:
             self._kargs["klass"]="button is-light"
         return Tag.button(*self._args,**self._kargs)
+
 class Input(GTag):
     def build(self):
         if "klass" not in self._kargs:
@@ -75,7 +77,7 @@ class Table(GTag):
             ll.append( Tag.tr( *[Tag.td(col) for col in row] ))
         return Tag.table(h,Tag.tbody(*ll),klass="table is-bordered is-striped is-narrow is-hoverable is-fullwidth")
 
-class MyBox(GTag):
+class GBox(GTag):
     def init(self,content):
         self.content=content
 
@@ -91,7 +93,7 @@ class MyBox(GTag):
     def close(self):
         self.content=None
 
-class MyToaster(GTag):
+class GToaster(GTag):
     def init(self,content):
         self.content=content
 
@@ -115,7 +117,7 @@ class MyToaster(GTag):
         self.content=None
 
 
-class MyInput(GTag):
+class GInput(GTag):
 
     def init(self,value,type="text",disabled=False,onchange=None):
         self.value=value
@@ -133,7 +135,7 @@ class MyInput(GTag):
 
 
 
-class MyTextArea(GTag):
+class GTextArea(GTag):
 
     def init(self,value,disabled=False,onchange=None):
         self.value=value
@@ -149,7 +151,7 @@ class MyTextArea(GTag):
         if self.onchange: self.onchange(self.value)
 
 
-class MyNav(GTag):
+class GNav(GTag):
     def init(self,title,entries:dict={}):
         self.title=title
         self.entries=entries
@@ -179,7 +181,7 @@ class MyNav(GTag):
         callback()
 
 
-class Selector(GTag):
+class _Selector(GTag):
     def init(self,value, choices:list, disabled=False, onchange=None):
         assert value in choices
         self.value=value
@@ -192,7 +194,7 @@ class Selector(GTag):
         self.value=self.choices[int(idx)]
         if self.onchange: self.onchange(self.value)
 
-class MyTabs(Selector): #TODO: implement disabled
+class GTabs(_Selector): #TODO: implement disabled
     @bind
     def build(self):
         u=Tag.ul()
@@ -202,7 +204,7 @@ class MyTabs(Selector): #TODO: implement disabled
         return Tag.div( u , klass="tabs is-centered")
 
 
-class MyRadioButtons(Selector):
+class GRadioButtons(_Selector):
     @bind
     def build(self):
         o=Tag.div(klass="control")
@@ -222,7 +224,7 @@ class MyRadioButtons(Selector):
         return o
 
 
-class MySelect(Selector):
+class GSelect(_Selector):
     @bind
     def build(self):
         s=Tag.select( onclick=self.bind.select("this.value"),style="width:100%",disabled=bool(self.disabled) )
@@ -230,7 +232,7 @@ class MySelect(Selector):
             s.add( Tag.option(i,value=idx,selected=(self.value==i)))
         return Tag.div(s,klass="select")
 
-class MySelectButtons(Selector):    #TODO: add disabled
+class GSelectButtons(_Selector):    #TODO: add disabled
     @bind
     def build(self):
         u=Tag.ul()
@@ -240,7 +242,7 @@ class MySelectButtons(Selector):    #TODO: add disabled
         return Tag.div( u , klass="tabs is-toggle")
 
 
-class MyCheckbox(GTag):
+class GCheckbox(GTag):
     def init(self,value:bool,title:str, disabled=False, onchange=None):
         self.value=value
         self.title=title
@@ -275,13 +277,12 @@ if __name__=="__main__":
             self.v=False
 
         def build(self):
-            # tt=t.Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
-            tt="kk"
+            tt=t.Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
             return Div(tt,
-                MyCheckbox(self.bind.v,"ok ?"),
-                MyRadioButtons(1,[1,2,3],self.bind.v),
-                MyInput("hekk",disabled=self.bind.v),
-                MyTextArea("hekk",disabled=self.bind.v),
+                GCheckbox(self.bind.v,"ok ?"),
+                GRadioButtons(1,[1,2,3],self.bind.v),
+                GInput("hekk",disabled=self.bind.v),
+                GTextArea("hekk",disabled=self.bind.v),
                 self.bind.v,
             )
 

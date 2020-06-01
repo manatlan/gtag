@@ -1,5 +1,5 @@
 from gtag import GTag,bind,Tag
-from gtags import *
+from gtag.gtags import *
 
 class ShareState(GTag):
 

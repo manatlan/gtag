@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -u
 from gtag import GTag
-from gtags import *
+from gtag.gtags import *
 import time
 
 

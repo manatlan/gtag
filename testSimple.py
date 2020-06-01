@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -u
 from gtag import GTag,Tag
-from gtags import *
+from gtag.gtags import *
 
 class App(GTag):
     size=(400,150)

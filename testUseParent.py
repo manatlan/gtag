@@ -1,11 +1,11 @@
 #!/usr/bin/python3 -u
 from gtag import GTag,bind
-from gtags import *
+from gtag.gtags import *
 
 class Btn(GTag):
     def build(self):
         return VBox(
-            self.parent.cpt,
+            self.parent.cpt,self.main.id,
             Button("++",onclick=self.bind.add())
         )
     def add(self):
