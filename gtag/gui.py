@@ -34,6 +34,9 @@ class BulmaTag(Tag):
 class Input(BulmaTag):
     tag="input"
     klass="input"
+class TextArea(BulmaTag):
+    tag="textarea"
+    klass="textarea"
 
 class A(BulmaTag):
     tag="a"
@@ -54,6 +57,30 @@ class VBox(BulmaTag):   # not really a bulma tag ;-)
 class HBox(BulmaTag):   # not really a bulma tag ;-)
     tag="div"
     klass="hbox"
+
+
+class Icon(BulmaTag):
+    tag="span"
+    klass="icon"
+    def __init__(self,icon,**attrs):
+        super().__init__( Tag.i(klass="fas %s"%icon),**attrs)
+
+class Table(BulmaTag):
+    tag="table"
+    klass="table is-bordered is-striped is-narrow is-hoverable is-fullwidth"
+    def __init__(self,rows:list,cols:list=None,**attrs):
+        if cols:
+            h=Tag.thead(*[Tag.th(col) for col in cols])
+        else:
+            h=None
+        ll=[]
+        for row in rows:
+            row=row if hasattr(row,"__iter__") else [row]
+            ll.append( Tag.tr( *[Tag.td(col) for col in row] ))
+        super().__init__(h,Tag.tbody(*ll),**attrs)
+
+
+
 # class HBox(Tag):
 #     tag="div"
 #     klass="columns is-mobile"

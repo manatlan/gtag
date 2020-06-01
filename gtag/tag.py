@@ -17,7 +17,16 @@
 # #############################################################################
 import html
 
-class Tag:
+class MyMetaclass(type):
+    def __getattr__(self,name:str):
+        def _(*a,**k):
+            t=Tag(*a,**k)
+            t.tag=name
+            return t
+        return _
+
+class Tag(metaclass=MyMetaclass):
+    __metaclass__ = MyMetaclass
     """
         This is a helper to produce "HTML TAG"
         This is completly css agnostic
@@ -55,3 +64,7 @@ class Tag:
         )
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
+
+
+if __name__=="__main__":
+    print( Tag.span("hello") )

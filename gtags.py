@@ -53,8 +53,26 @@ class MyInput(GTag):
         self.disabled=disabled
         self.onchange=onchange
 
+    @bind
     def build(self):
         return t.Input(type=self.type,value=self.value,onchange=self.bind.select("this.value"),disabled=bool(self.disabled))
+
+    def select(self,value):
+        self.value = value
+        if self.onchange: self.onchange(self.value)
+
+
+
+class MyTextArea(GTag):
+
+    def init(self,value,disabled=False,onchange=None):
+        self.value=value
+        self.disabled=disabled
+        self.onchange=onchange
+
+    @bind
+    def build(self):
+        return t.TextArea(self.value,onchange=self.bind.select("this.value"),disabled=bool(self.disabled))
 
     def select(self,value):
         self.value = value
@@ -185,11 +203,15 @@ if __name__=="__main__":
         size=(100,100)
         def init(self):
             self.v=False
+            
         def build(self):
-            return t.Div(
+            tt=t.Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
+            return t.Div(tt,
                 MyCheckbox(self.bind.v,"ok ?"),
                 MyRadioButtons(1,[1,2,3],self.bind.v),
-                self.bind.v
+                MyInput("hekk",disabled=self.bind.v),
+                MyTextArea("hekk",disabled=self.bind.v),
+                self.bind.v,
             )
 
     app=M()

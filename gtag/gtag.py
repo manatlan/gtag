@@ -24,8 +24,8 @@ import typing as T
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x #TODO: rename to value() ?
 
 def log(*a):
-    # print(*a)
-    pass
+    print(*a)
+    # pass
 
 
 class CSS(Tag):
@@ -316,7 +316,7 @@ class GTag:
         h=str(self)
         s=self._getScripts()
         log(">>>UPDATE:",repr(self))
-        log("   and childs:",len(self._childs),self._childs.keys())
+        log("   and childs:",len(self._childs),list(self._childs.keys()))
         return dict(script="""document.querySelector("#%s").innerHTML=`%s`;%s""" % (
             self.id, h,s
         ))
@@ -369,7 +369,7 @@ class GTagApp(guy.Guy):
                 document.body.innerHTML=html;
                 if(script) eval(script)
             }
-            function update() { return self.update(GID) /*promise*/ }
+            /*function update() { return self.update(GID) } promise */
         </script>
         %s
         <style>
@@ -397,7 +397,8 @@ class GTagApp(guy.Guy):
 
         gtag.exit = self.exit
 
-        log("SERVE",repr(gtag),gtag._childs)
+        log(">>>SERVE",repr(gtag),"and childs:",list(gtag._childs.keys()))
+        log("   and childs:",len(gtag._childs),list(gtag._childs.keys()))
         await self.js._render( str(gtag), gtag._getScripts() )
 
     async def bindUpdate(self,id:str,gid:str,method:str,*args):
@@ -424,9 +425,4 @@ class GTagApp(guy.Guy):
 
 
         #////////////////////////////////////////////////////////////////// THE MAGIC
-        return self.update(gid)
-
-    def update(self, gid):
-        """ exposed in guy context (to manually force a refresh) """
-        gtag=self._ses[gid] if gid else self._originalGTag
         return gtag.update() #could update the obj gtag only !
