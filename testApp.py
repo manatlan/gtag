@@ -1,7 +1,5 @@
-from gtag import GTag,bind
-import gtag.gui as t
-import gtags as g
-from gtags import MyCheckbox
+from gtag import GTag,bind,Tag
+from gtags import *
 
 """
 the most advanced gtag example, in the world ;-)
@@ -13,10 +11,10 @@ class MyInc(GTag):
         self.cpt=v
 
     def build(self):
-        return t.HBox(
-                t.Button("-",onclick=self.bind.addV(-1) ),
-                t.Text(self.bind.cpt,style="text-align:center"),
-                t.Button("+",onclick=self.bind.addV(1) ),
+        return HBox(
+                Button("-",onclick=self.bind.addV(-1) ),
+                Text(self.bind.cpt,style="text-align:center"),
+                Button("+",onclick=self.bind.addV(1) ),
             )
 
     def addV(self,v):
@@ -28,10 +26,10 @@ class MyXXX(GTag):
         self.cpt=v
 
     def build(self):
-        return t.HBox(
-                t.Button("-",onclick=self.bind.addV(-1) ),
-                t.Text(self.bind.cpt,style="text-align:center"),
-                t.Button("+",onclick=self.bind.addV(1) ),
+        return HBox(
+                Button("-",onclick=self.bind.addV(-1) ),
+                Text(self.bind.cpt,style="text-align:center"),
+                Button("+",onclick=self.bind.addV(1) ),
             )
 
     def addV(self,v):
@@ -48,18 +46,18 @@ class Page1(GTag):
 
     @bind
     def compute(self):
-        b=t.Div()
+        b=Tag.div()
         for i in range( int(self.nb) ):
             b.add( "⭐" )
         return b
 
     def build(self):
-        return t.VBox(
-            t.HBox(g.MyInput(self.bind.txt ),t.Text(self.bind.txt)),
+        return VBox(
+            HBox(MyInput(self.bind.txt ),Text(self.bind.txt)),
             MyInc(self.bind.nb),
             MyInc(self.bind.nb),
-            t.Box(self.bind.nb, self.compute()),
-            t.Button("Show mbox",onclick=self.bind.aff())
+            Box(self.bind.nb, self.compute()),
+            Button("Show mbox",onclick=self.bind.aff())
         )
 
     def aff(self):
@@ -71,11 +69,11 @@ class Page2(GTag):
         self.nb=b
 
     def build(self):
-        return t.Div(
-            t.Box("A test page, with a binding value:", self.bind.nb),
+        return Tag.div(
+            Box("A test page, with a binding value:", self.bind.nb),
             MyInc(self.bind.nb),
-            t.Button("show",onclick=self.bind.kik()),
-            t.Button("show T",onclick=self.bind.kik2()),
+            Button("show",onclick=self.bind.kik()),
+            Button("show T",onclick=self.bind.kik2()),
         )
     def kik(self):
         self.main.setMBox("yom")
@@ -92,21 +90,21 @@ class Page3(GTag):
         self.cb=cb
 
     def build(self):
-        tabs=g.MyTabs(self.bind.selected,["tab1","tab2","tab3"])
+        tabs=MyTabs(self.bind.selected,["tab1","tab2","tab3"])
 
-        return t.Div(tabs,t.Box(self.renderContent()),
+        return Tag.div(tabs,Box(self.renderContent()),
             MyCheckbox(self.cb, "disable all (vv)"),
-            t.HBox(
-                t.Text("You selected",self.bind.rb),
-                g.MyRadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb,onchange=self.realCallback),
+            HBox(
+                Text("You selected",self.bind.rb),
+                MyRadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb,onchange=self.realCallback),
             ),
-            t.HBox(
-                t.Text("You selected",self.bind.so),
-                g.MySelect(self.bind.so,["apple","pear","banana"],disabled=self.bind.cb),
+            HBox(
+                Text("You selected",self.bind.so),
+                MySelect(self.bind.so,["apple","pear","banana"],disabled=self.bind.cb),
             ),
-            t.HBox(
-                t.Text("You selected",self.bind.sb),
-                g.MySelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
+            HBox(
+                Text("You selected",self.bind.sb),
+                MySelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
             )
         )
 
@@ -117,7 +115,7 @@ class Page3(GTag):
     def renderContent(self):
         if self.selected=="tab2":
             rows=[[1,2,3,4],[1,2,3,4],[1,2,3,4]]
-            return t.Table(rows,["Col1","Col2","Col3","Col4"])
+            return Table(rows,["Col1","Col2","Col3","Col4"])
         else:
             return "Content %s" % self.selected
 
@@ -141,7 +139,7 @@ class TestApp(GTag):
 
     @bind
     def build(self): # DYNAMIC RENDERING HERE !
-        nav= g.MyNav("gtag-demo",{
+        nav= MyNav("gtag-demo",{
             "Page1":lambda: self.setPage(1),
             "Page2 (%s)"% int(self.nb):lambda: self.setPage(2),
             "Page3":lambda: self.setPage(3),
@@ -157,13 +155,13 @@ class TestApp(GTag):
         else:
             page="no"
 
-        return t.Div(
+        return Tag.div(
             nav,
-            t.Section( t.Div( "<br>", page, klass="container") ),
-            t.Button("test toast",onclick=self.bind.setToast(42)),
-            t.Button("test mm",onclick=self.bind.setMBox(42)), 
-            g.MyBox( self.bind.msg ),
-            g.MyToaster( self.bind.toast ),
+            Section( Tag.div( "<br>", page, klass="container") ),
+            Button("test toast",onclick=self.bind.setToast(42)),
+            Button("test mm",onclick=self.bind.setMBox(42)),
+            MyBox( self.bind.msg ),
+            MyToaster( self.bind.toast ),
         )
 
     def setPage(self,n):

@@ -4,7 +4,6 @@ if __name__=="__main__":
 
 from gtag import GTag,bind,Tag
 from gtag.gtag import ReactiveMethod,CSS,JS
-from gtag.gui import Div
 import pytest
 
 def test_GTag():
@@ -34,10 +33,12 @@ def test_GTag():
 
 def test_GTag_build():
     class My(GTag):
+        css="x"
+        js="x"
         def init(self):
             self.v=12
         def build(self):
-            return Div("hello",self.bind.v,onclick=self.bind.onclick())
+            return Tag.div("hello",self.bind.v,onclick=self.bind.onclick())
         def onclick(self):
             pass
 
@@ -50,7 +51,6 @@ def test_GTag_build():
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
-    m._tag.js="JS FILE" # possible, because _tag is not dynmacally created (not a @bind bulid)
     hh=m._guessHeaders()
     assert any( [isinstance(i,CSS) for i in hh])
     assert any( [isinstance(i,JS) for i in hh])
@@ -61,7 +61,7 @@ def test_GTag_render():
             self.v=12
         @bind
         def build(self):
-            return Div("hello",self.bind.v,onclick=self.bind.onclick(42))
+            return Tag.div("hello",self.bind.v,onclick=self.bind.onclick(42))
         def onclick(self,anArg=None):
             pass
 
@@ -86,7 +86,7 @@ def test_GTag_clone():
 
         @bind
         def build(self):
-            return Div("hello",self.bind.v,onclick=self.bind.onclick(42))
+            return Tag.div("hello",self.bind.v,onclick=self.bind.onclick(42))
         def onclick(self,anArg=None):
             pass
 
@@ -123,7 +123,7 @@ def test_GTag_clone_with_State():
             self.v=v
         @bind
         def build(self):
-            return Div("hello",self.bind.v,onclick=self.bind.onclick(42))
+            return Tag.div("hello",self.bind.v,onclick=self.bind.onclick(42))
         def onclick(self,anArg=None):
             pass
 
@@ -179,14 +179,14 @@ def test_ReactiveMethod():
 def test_GTag_with_childs():
     class C(GTag):
         def build(self):
-            return Div("hello")
+            return Tag.div("hello")
 
     class MTag(GTag):
         def init(self):
             self.prop=1
         def build(self):
             self.child=C()
-            return Div( self.child )
+            return Tag.div( self.child )
         def test(self):
             return 1
 
@@ -217,7 +217,7 @@ def test_GTag_with_childs():
 def test_GTagDyn_with_childs():
     class C(GTag):
         def build(self):
-            return Div("hello")
+            return Tag.div("hello")
 
     class MTag(GTag):
         def init(self):
@@ -225,7 +225,7 @@ def test_GTagDyn_with_childs():
         @bind
         def build(self):
             self.child=C()
-            return Div( self.child )
+            return Tag.div( self.child )
         def test(self):
             return 1
 

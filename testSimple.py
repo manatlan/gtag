@@ -1,18 +1,18 @@
 #!/usr/bin/python3 -u
-from gtag import GTag
-import gtag.gui as g
-
+from gtag import GTag,Tag
+from gtags import *
 
 class App(GTag):
     size=(400,150)
+    css="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css"
 
     def init(self):
         self.cpt = 0
 
     def build(self):
-        return g.VBox(
+        return VBox(
             self.bind.cpt,
-            g.Button("++",onclick=self.bind.add())
+            Button("++",onclick=self.bind.add())
         )
 
     def add(self):

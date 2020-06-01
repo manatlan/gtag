@@ -1,6 +1,6 @@
 from gtag import GTag,bind,Tag
 from gtag.gtag import ReactiveProp
-from gtag.gui import A,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
+
 
 import types
 
@@ -25,7 +25,7 @@ class Static(GTag):
         return [Star(i) for i in range( int(self.n) )]
 
     def build(self):
-        return Text(self.n, *self.stars())
+        return Tag.text(self.n, *self.stars())
 
 class StaticBinded(GTag):
     """ A gtag component with its property bind'ed ! """
@@ -37,7 +37,7 @@ class StaticBinded(GTag):
         return [Star(i) for i in range(int(self.n))]
 
     def build(self):
-        return Text(self.bind.n, *self.stars())
+        return Tag.text(self.bind.n, *self.stars())
 
 
 class StaticComputed(GTag): # GOOD PRATICE !!
@@ -48,10 +48,10 @@ class StaticComputed(GTag): # GOOD PRATICE !!
 
     @bind
     def stars(self):
-        return Text( *[Star(i) for i in range(int(self.n))] )
+        return Tag.text( *[Star(i) for i in range(int(self.n))] )
 
     def build(self):
-        return Text(self.bind.n, self.stars() )
+        return Tag.text(self.bind.n, self.stars() )
 
 
 class StaticBuildBinded(GTag): # BAD PRACTICE
@@ -63,7 +63,7 @@ class StaticBuildBinded(GTag): # BAD PRACTICE
     @bind
     def build(self):
         ll=[Star(i) for i in range(int(self.n))]
-        return Text(self.n, *ll )
+        return Tag.text(self.n, *ll )
 
 
 
@@ -146,10 +146,10 @@ def test_DANGEROUS():
 
         @bind # -> Str'Able
         def stars(self):
-            return Text( *[Star(i) for i in range(int(self.n))] )
+            return Tag.text( *[Star(i) for i in range(int(self.n))] )
 
         def build(self):
-            return Text("-%s-" % self.bind.n, self.stars() ) # <---- DANGEROUS the binded is str'ised at build !!!!
+            return Tag.text("-%s-" % self.bind.n, self.stars() ) # <---- DANGEROUS the binded is str'ised at build !!!!
 
     t=StaticComputed(2)
     assert "-2-" in str(t)
@@ -166,14 +166,14 @@ def test_DANGEROUS_workaround1():
 
         @bind # -> Str'Able
         def stars(self):
-            return Text( *[Star(i) for i in range(int(self.n))] )
+            return Tag.text( *[Star(i) for i in range(int(self.n))] )
 
         @bind
         def compute(self):
-            return Text("-%s-" % self.n)
+            return Tag.text("-%s-" % self.n)
 
         def build(self):
-            return Text( self.compute(), self.stars() ) # <---- DANGEROUS the binded is str'ised at build !!!!
+            return Tag.text( self.compute(), self.stars() ) # <---- DANGEROUS the binded is str'ised at build !!!!
 
     t=StaticComputed(2)
     assert "-2-" in str(t)
@@ -193,7 +193,7 @@ def test_DANGEROUS_workaround2():
         @bind
         def build(self):
             ll=[Star(i) for i in range(int(self.n))]
-            return Text("-%s-"%self.n, *ll )
+            return Tag.text("-%s-"%self.n, *ll )
 
     t=StaticBuildBinded(2)
     assert "-2-" in str(t)

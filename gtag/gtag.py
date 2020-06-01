@@ -16,7 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-import guy,sys,asyncio
+import guy,sys,asyncio,hashlib
 from .tag import Tag
 import typing as T
 
@@ -30,6 +30,7 @@ def log(*a):
 
 class CSS(Tag):
     def __init__(self,content):
+        self._md5=hashlib.md5("css:".encode()+content.encode()).hexdigest()
         if content.startswith("http"):
             self.tag="link"
             super().__init__(type="text/css",rel="stylesheet",href=content)
@@ -40,6 +41,7 @@ class CSS(Tag):
 class JS(Tag):
     tag="script"
     def __init__(self,content):
+        self._md5=hashlib.md5("js:".encode()+content.encode()).hexdigest()
         if content.startswith("http"):
             super().__init__(type="text/javascript",src=content)
         else:
@@ -281,15 +283,26 @@ class GTag:
             (downside: importing css/js will depends only on first tag returned by the gtag)
             (downside: as tag can be produce by a reactivemethod, we need to execute it)
         """
+        assert self._parent is None,"You are not on the main instance, you can't get a child"
+
         mklist=lambda x: x if isinstance(x,list) else [x]
+
+
+
         ll=[]
-        if self._tag:
-            tag=self._tag
-            if isinstance(tag,ReactiveMethod): tag=tag()    # <- dangerous
-            if hasattr(tag,"css"):
-                ll.extend( [CSS(i) for i in mklist(getattr(tag,"css")) if i] )
-            if hasattr(tag,"js"):
-                ll.extend( [JS(i) for i in mklist(getattr(tag,"js")) if i] )
+        for g in GTag.__subclasses__():
+            if hasattr(g,"css"):
+                for i in mklist(getattr(g,"css")):
+                    if i:
+                        c=CSS(i)
+                        if c._md5 not in [l._md5 for l in ll]:
+                            ll.append( c )
+            if hasattr(g,"js"):
+                for i in mklist(getattr(g,"js")):
+                    if i:
+                        c=JS(i)
+                        if c._md5 not in [l._md5 for l in ll]:
+                            ll.append( c )
         return ll
 
 
@@ -330,8 +343,13 @@ class GTag:
         if o is None:
             return ""
         else:
-            assert isinstance(o,Tag), "'%s' doesn't produce a Tag, wtf?!" % self.__class__.__name__ # can't produce a gtag (non-sense !)
-            o.id=self.id # set an id for js interactions (cf update()/bindUpdate())
+            if isinstance(o,Tag) or (".Tag" in str(type(o))): #TODO: wtf
+                o.id=self.id
+            elif isinstance(o,GTag):
+                o=Tag.div(o)
+                o.id=self.id
+            else:
+                raise Exception("%s --build--> ???%s???" % (repr(self),type(o)))
             return str(o)
 
     def __repr__(self):
@@ -408,7 +426,7 @@ class GTagApp(guy.Guy):
 
     def render(self,path=None):
         o=self._originalGTag
-        if isinstance(o,ReactiveMethod): o=o()  # TODO: not good here !
+        # if isinstance(o,ReactiveMethod): o=o()  # TODO: not good here !
         hh=o._guessHeaders()
 
         return """<!DOCTYPE html>
@@ -428,11 +446,6 @@ class GTagApp(guy.Guy):
             /*function update() { return self.update(GID) } promise */
         </script>
         %s
-        <style>
-        div.hbox {display: flex;flex-flow: row nowrap;align-items:center}
-        div.vbox {display: flex;flex-flow: column nowrap;}
-        div.hbox > *,div.vbox > * {flex: 1 1 50%%;margin:1px}
-        </style>
     </head>
     <body>
             <script src="guy.js"></script>

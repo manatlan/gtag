@@ -1,4 +1,4 @@
-from gtag.gui import A,Box,Button,Div,HBox,Input,Li,Nav,Section,Tabs,Text,Ul,VBox
+
 from gtag import Tag
 
 def test_Tag():
@@ -31,12 +31,12 @@ def test_Tag_change_props():
 
 def test_Tag_add():
     t=Tag()
-    t.add( A("click"))
+    t.add( Tag.a("click",klass="a"))
     assert str(t)=='<div><a class="a">click</a></div>'
 
 def test_Tag_repr():
     t=Tag()
-    t.add( A("click"))
+    t.add( Tag.a("click"))
     assert repr(t)=='<Tag>'
 
 

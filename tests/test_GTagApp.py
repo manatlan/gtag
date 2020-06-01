@@ -1,5 +1,4 @@
 from gtag import GTag,Tag
-from gtag.gui import Div
 
 # def test_GTagApp_run():
 #     class My(GTag):

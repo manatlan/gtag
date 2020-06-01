@@ -35,7 +35,7 @@ class Tag(metaclass=MyMetaclass):
     klass=None
 
     def __init__(self,*contents,**attrs):
-        assert "id" not in attrs.keys()
+        #~ assert "id" not in attrs.keys()
         self.id=None
         self.__contents=list(contents)
         self.__dict__.update(attrs)

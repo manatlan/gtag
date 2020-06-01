@@ -1,12 +1,8 @@
 #!/usr/bin/python3 -u
 from gtag import GTag
-import gtag.gui as g
+from gtags import *
 import time
-# IN PROGRESS
-# IN PROGRESS
-# IN PROGRESS
-# IN PROGRESS
-# IN PROGRESS
+
 
 import asyncio
 async def longProcess(time=2):
@@ -20,10 +16,10 @@ class App(GTag):
         self.cpt = 0
 
     def build(self):
-        return g.VBox(
+        return VBox(
             self.bind.cpt,
-            g.Button("t1",onclick=self.bind.t1()),
-            g.Button("t2",onclick=self.bind.t2()),
+            Button("t1",onclick=self.bind.t1()),
+            Button("t2",onclick=self.bind.t2()),
         )
 
     def t1(self):

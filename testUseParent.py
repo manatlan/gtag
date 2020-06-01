@@ -1,12 +1,12 @@
 #!/usr/bin/python3 -u
 from gtag import GTag,bind
-import gtag.gui as g
+from gtags import *
 
 class Btn(GTag):
     def build(self):
-        return g.VBox(
+        return VBox(
             self.parent.cpt,
-            g.Button("++",onclick=self.bind.add())
+            Button("++",onclick=self.bind.add())
         )
     def add(self):
         self.parent.cpt+=1
@@ -20,7 +20,7 @@ class App(GTag):
 
     @bind
     def build(self):
-        return g.VBox(
+        return VBox(
             self.bind.cpt,
             Btn()
         )

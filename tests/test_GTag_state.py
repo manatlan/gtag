@@ -2,12 +2,12 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
-from gtag import GTag,bind
-from gtag.gui import Div,Button
+from gtag import GTag,bind,Tag
+
 
 class ShareState(GTag):
     def build(self):
-        return Div( "hello",
+        return Tag.div( "hello",
             self.main.a,
             self.parent.v
         )
@@ -18,7 +18,7 @@ class Page2(GTag):
         self.v=42
 
     def build(self):
-        return Div(
+        return Tag.div(
             ShareState() ,
         )
 
