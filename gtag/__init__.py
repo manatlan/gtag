@@ -16,7 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-__version__="0.0.7"
+__version__="0.0.8"
 
 from .gtag import GTag,bind
 from .tag import Tag
