@@ -11,6 +11,13 @@ def test_Tag():
     assert str(Tag("hello",42,klass="john doe")) == '<div class="john doe">hello 42</div>'
     assert str(Tag("hello",onclick='alert("bill & john")')) == '<div onclick="alert(&quot;bill &amp; john&quot;)">hello</div>'
 
+def test_Tag_metaclass():
+    s=Tag.form(42,klass="jo",checked=True)
+    assert str(s) == '<form checked class="jo">42</form>'
+    s.klass="jack"
+    assert str(s) == '<form checked class="jack">42</form>'
+
+
 def test_Tag_change_props():
     t=Tag()
     t.id=1

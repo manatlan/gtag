@@ -23,6 +23,22 @@ class MyInc(GTag):
         self.cpt+=v
 
 
+class MyXXX(GTag):
+    def init(self,v=0):
+        self.cpt=v
+
+    def build(self):
+        return t.HBox(
+                t.Button("-",onclick=self.bind.addV(-1) ),
+                t.Text(self.bind.cpt,style="text-align:center"),
+                t.Button("+",onclick=self.bind.addV(1) ),
+            )
+
+    def addV(self,v):
+        self.cpt+=v
+
+
+
 
 class Page1(GTag):
 
@@ -47,8 +63,7 @@ class Page1(GTag):
         )
 
     def aff(self):
-        # self.main.setMBox( MyInc(42) )    #TODO: permit this !
-        self.main.setMBox( "help" )
+        self.main.setMBox( MyXXX(42) )
 
 class Page2(GTag):
 
@@ -146,7 +161,7 @@ class TestApp(GTag):
             nav,
             t.Section( t.Div( "<br>", page, klass="container") ),
             t.Button("test toast",onclick=self.bind.setToast(42)),
-            t.Button("test mm",onclick=self.bind.setMBox(42)),
+            t.Button("test mm",onclick=self.bind.setMBox(42)), 
             g.MyBox( self.bind.msg ),
             g.MyToaster( self.bind.toast ),
         )
@@ -155,10 +170,8 @@ class TestApp(GTag):
         self.page=n
 
     def setMBox(self,obj):
-        print(">>",obj)
         self.msg=obj
     def setToast(self,obj):
-        print(">>>",obj)
         self.toast=obj
 
 

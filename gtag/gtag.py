@@ -24,8 +24,8 @@ import typing as T
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x #TODO: rename to value() ?
 
 def log(*a):
-    print(*a)
-    # pass
+    # print(*a)
+    pass
 
 
 class CSS(Tag):
@@ -153,6 +153,7 @@ class GTag:
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
+        self._tag=None
         if "dontGuessParent" in k.keys(): # clonage (only main tags, so parent is None)
             del k["dontGuessParent"]
             parent=None
@@ -187,20 +188,34 @@ class GTag:
             self._parent._childs[self.id]=self
 
 
+    def _tree(self):
+        assert self._parent is None,"You are not on the main instance, you can't get tree"
+        ll=["+"+repr(self)]
+        def _gc(g,lvl=0):
+            ll=[]
+            for id,obj in g._childs.items():
+                if obj._childs:
+                    ll.extend( _gc(obj,lvl+1) )
+                else:
+                    ll.append( "+" + ("   "*lvl) + repr(obj))
+            return ll
+
+        ll.extend(_gc(self,1))
+        return "\n".join(ll)
+
     def _getChild(self,id):
         assert self._parent is None,"You are not on the main instance, you can't get a child"
 
-        def _gc(g,lvl=0):
+        def _gc(g):
             d={g.id:g}
             for id,obj in g._childs.items():
                 if obj._childs:
-                    d.update(_gc(obj,lvl+1) )
+                    d.update(_gc(obj) )
                 else:
                     d[id]=obj
             return d
 
         childs=_gc(self)
-
         return childs[id]
 
     def _getMain(self):
@@ -295,9 +310,23 @@ class GTag:
 
     def __str__(self):
         o= self._tag
+        log("___redraw",repr(self))
         if isinstance(o,ReactiveMethod):
-            self._childs={}
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            self._childs={k:v for k,v in self._childs.items() if hasattr(v,"persist")}
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             o=o()
+
         if o is None:
             return ""
         else:
@@ -306,7 +335,18 @@ class GTag:
             return str(o)
 
     def __repr__(self):
-        return "<GTAG:%s %s (parent:%s)>" % (self.__class__.__name__, self.id,self._parent.id if self._parent else "no")
+        if self._tag:
+            if isinstance(self._tag,ReactiveMethod):
+                s="DYNAMIC"
+            else:
+                s="STATIC"
+        else:
+            s="???"
+        return "<GTAG:%s.%s  [%s]>" % (
+            self._parent.id if self._parent else "MAIN",
+            self.id,
+            s
+        )
 
     def __setattr__(self,k,v):
         # current="%s_%s" % (self.__class__.__name__,id(self))
@@ -332,7 +372,7 @@ class GTag:
         h=str(self)
         s=self._getScripts()
         log(">>>UPDATE:",repr(self))
-        log("   and childs:",len(self._childs),list(self._childs.keys()))
+        log(self._tree())
         return dict(script="""document.querySelector("#%s").innerHTML=`%s`;%s""" % (
             self.id, h,s
         ))
@@ -414,7 +454,7 @@ class GTagApp(guy.Guy):
         gtag.exit = self.exit
 
         log(">>>SERVE",repr(gtag))
-        log("   and childs:",len(gtag._childs),list(gtag._childs.keys()))
+        log(gtag._tree())
         await self.js._render( str(gtag), gtag._getScripts() )
 
     async def bindUpdate(self,id:str,gid:str,method:str,*args):
@@ -427,17 +467,23 @@ class GTagApp(guy.Guy):
 
         #////////////////////////////////////////////////////////////////// THE MAGIC TODO: move to gtag
         obj=gtag._getChild(id)
-        # gtag._childs={gtag.id:gtag,obj.id:obj} # ULTRA IMPORTANT ;-)
         # keep the main tag, and the current object !
         # (others will be rebuild during rendering)
 
-        log("BINDUPDATE on",repr(gtag),"---obj-->",repr(obj))
+        log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s)"% (method,args))
+        BEFORE=set(obj._childs.keys())
         proc=getattr(obj,method)
 
         if asyncio.iscoroutinefunction( proc ):
             r=await proc(*args)
         else:
             r=proc(*args)
+        AFTER=set(obj._childs.keys())
+        for newly in list(AFTER - BEFORE):
+            g=gtag._getChild(newly)
+            g.persist=True              # <-- the trick
+            gtag._childs[g.id]=g
+            log("NEWLY GTAG IN METHOD:",g.id)
 
 
         #////////////////////////////////////////////////////////////////// THE MAGIC
