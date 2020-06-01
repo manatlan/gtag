@@ -427,9 +427,7 @@ class GTagApp(guy.Guy):
         super().__init__()
 
     def render(self,path=None):
-        o=self._originalGTag
-        # if isinstance(o,ReactiveMethod): o=o()  # TODO: not good here !
-        hh=o._guessHeaders()
+        hh=self._originalGTag._guessHeaders()
 
         return """<!DOCTYPE html>
 <html>
@@ -496,7 +494,7 @@ class GTagApp(guy.Guy):
         AFTER=set(obj._childs.keys())
         for newly in list(AFTER - BEFORE):
             g=gtag._getChild(newly)
-            g.persist=True              # <-- the trick
+            g.persist=True              # <-- the trick #TODO: do better here !
             gtag._childs[g.id]=g
             log("NEWLY GTAG IN METHOD:",g.id)
 

@@ -18,8 +18,8 @@
 import html
 
 class MyMetaclass(type):
-    def __getattr__(self,name:str):
-        def _(*a,**k):
+    def __getattr__(self,name:str) -> any:
+        def _(*a,**k) -> Tag:
             t=Tag(*a,**k)
             t.tag=name
             return t
