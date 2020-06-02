@@ -21,6 +21,21 @@ class MyInc(GTag):
         self.cpt+=v
 
 
+class Login(GTag):
+  def init(self,callback):
+    self.passwd=""
+    self.callback=callback
+
+  def build(self):
+    return VBox(
+      HBox( Text("Password"), InputText(self.bind.passwd,type="password") ),self.bind.passwd,
+      Button("OK",onclick=self.bind.check())
+    )
+
+  def check(self):
+    self.callback(self.passwd)
+
+
 class Page1(GTag):
 
     def init(self,nb,txt):
@@ -123,6 +138,7 @@ class TestApp(GTag):
             "Page1":lambda: self.setPage(1),
             "Page2 (%s)"% int(self.nb):lambda: self.setPage(2),
             "Page3":lambda: self.setPage(3),
+            "Login":lambda: self.doLogin(),
             "exit":lambda: self.exit(-1),
         })
 
@@ -152,6 +168,21 @@ class TestApp(GTag):
     def setToast(self,obj):
         self.toast=obj
 
+    def doLogin(self):
+        self.setMBox( Login( self.check ) )
+
+    def check(self,p):
+        print("====>",p)
+        print("====>",p)
+        print("====>",p)
+        print("====>",p)
+        print("====>",p)
+        print("====>",p)
+        print("====>",p)
+        print("====>",p)
+        print("====>",p)
+        print("====>",p)
+        print("====>",p)
 
 if __name__=="__main__":
     app=TestApp( )

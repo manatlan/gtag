@@ -236,8 +236,10 @@ class GTag:
     def _tree(self):
         assert self._parent is None,"You are not on the main instance, you can't get tree"
         def _gc(g,lvl=0) -> list: #TODO: SOME innerchilds are not visible (vv) do better
-            ll=[]
-            ll.append( "+" + ("   "*lvl) + repr(g))
+            ll=["+" + ("   "*lvl) + repr(g)]
+            for obj in g.innerChilds:
+                inners=_gc(obj,lvl+1)
+                ll.extend( [i+' (INNER)' for i in inners] )
             for obj in g._childs:
                 ll.extend( _gc(obj,lvl+1) )
             return ll
@@ -253,12 +255,20 @@ class GTag:
 
         def _gc(g) -> dict:
             d={g.id:g}
-            innerchilds={i.id:i for i in self.innerChilds}
-            d.update(innerchilds)
-            for obj in g._childs + list(innerchilds.values()):
-                if obj.id not in d.keys(): #TODO: avoid obscur recursion
-                    d.update(_gc(obj) )
+            for obj in g.innerChilds:
+                d.update( _gc(obj) )
+            for obj in g._childs:
+                d.update( _gc(obj) )
             return d
+
+        # def _gc(g) -> dict:
+        #     d={g.id:g}
+        #     innerchilds={i.id:i for i in self.innerChilds}
+        #     d.update(innerchilds)
+        #     for obj in g._childs + list(innerchilds.values()):
+        #         if obj.id not in d.keys(): #TODO: avoid obscur recursion
+        #             d.update(_gc(obj) )
+        #     return d
 
         return _gc(self)
 
@@ -403,10 +413,10 @@ class GTag:
                 s="STATIC"
         else:
             s="???"
-        return "<GTag:%s%s  [%s] (INNERS=%s)>" % (
-            self._parent.id+"." if self._parent else "[MAIN]",
+        return "<GTag: %s [%s] [parent:%s] (innerchilds=%s)>" % (
             self.id,
             s,
+            self._parent.id if self._parent else "None",
             [i.id for i in self.innerChilds]
         )
 

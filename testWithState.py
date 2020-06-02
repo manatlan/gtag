@@ -14,6 +14,7 @@ class Page2(GTag):
     def init(self):
         self.a=12
 
+    @bind
     def build(self):
         return Tag.div(
             ShareState() , self.bind.a,

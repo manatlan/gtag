@@ -211,7 +211,7 @@ def test_GTag_with_childs():
     assert p.child.parent.prop == 1
     assert p.child.parent.test() == 1
 
-    assert p._getChild( p.child.id ) is p.child
+    assert p._getRef( p.child.id ) is p.child
 
 
 def test_GTagDyn_with_childs():
@@ -251,7 +251,7 @@ def test_GTagDyn_with_childs():
     assert p.child.parent.prop == 1
     assert p.child.parent.test() == 1
 
-    assert p._getChild( p.child.id ) is p.child
+    assert p._getRef( p.child.id ) is p.child
 
 def test_ReactiveProp():
     class MTag(GTag):
