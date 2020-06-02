@@ -18,7 +18,6 @@
 
 __version__="0.0.8"
 
-from .gtag import GTag,bind
-from .tag import Tag
+from .gtag import GTag,bind,Tag
 
 __all__ = ['GTag', 'bind', 'Tag' ]

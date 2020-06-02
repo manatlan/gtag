@@ -16,16 +16,61 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-import guy,sys,asyncio,hashlib
-from .tag import Tag
+import guy,sys,asyncio,hashlib,html
 import typing as T
 
 
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x #TODO: rename to value() ?
 
 def log(*a):
-    # print(*a)
+    #~ print(*a)
     pass
+
+
+class MyMetaclass(type):
+    def __getattr__(self,name:str) -> any:
+        def _(*a,**k) -> Tag:
+            t=Tag(*a,**k)
+            t.tag=name
+            return t
+        return _
+
+class Tag(metaclass=MyMetaclass):
+    __metaclass__ = MyMetaclass
+    """ This is a helper to produce a "HTML TAG" """
+    tag="div" # default one
+    klass=None
+
+    def __init__(self,*contents,**attrs):
+        #~ assert "id" not in attrs.keys()
+        self.id=None
+        self.__contents=list(contents)
+        self.__dict__.update(attrs)
+
+    def add(self,*elt):
+        self.__contents.extend(elt)
+
+    def __str__(self):
+        attrs={k:v for k,v in self.__dict__.items() if not k.startswith("_")} # clone the dict (important)!
+        klass= attrs.get("klass") or self.klass
+        if "klass" in attrs: del attrs["klass"]
+        if klass: attrs["class"]=klass
+        if self.id: attrs["id"]=self.id
+        rattrs=[]
+        for k,v in attrs.items():
+            if v is not None and k not in ["tag"]:
+                if isinstance(v,bool):
+                    if v: rattrs.append(k)
+                else:
+                    rattrs.append( '%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) )
+
+        return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
+            tag=self.tag,
+            attrs=" ".join([""]+rattrs) if rattrs else "",
+            content=" ".join([str(i) for i in self.__contents if i is not None]),
+        )
+    def __repr__(self):
+        return "<%s>" % self.__class__.__name__
 
 
 class CSS(Tag):
@@ -46,9 +91,6 @@ class JS(Tag):
             super().__init__(type="text/javascript",src=content)
         else:
             super().__init__(content,type="text/javascript")
-
-
-
 
 class ReactiveProp:
     def __init__(self,dico:dict,attribut:str):
@@ -131,7 +173,7 @@ class GtagProxy:
     def __getattr__(self,name:str):
         if name in ["id","main","parent"]:
             return getattr(self.__instance,name)
-        if name in self.__instance.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
+        elif name in self.__instance.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
             o=self.__instance.__dict__[name]
             if isinstance(o,ReactiveProp):
                 return o
@@ -158,6 +200,7 @@ class GTag:
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
         self._tag=None
+
         if "dontGuessParent" in k.keys(): # clonage (only main tags, so parent is None)
             del k["dontGuessParent"]
             parent=None
@@ -174,30 +217,30 @@ class GTag:
                 if parent is self: parent=None  #for TU only
 
         self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
-        self._childs={}
-
+        self._childs=[]     #<- this is cleared at each rendering
         self._args=a
         self._kargs=k
-
         self._parent=parent
 
         log("INIT",repr(self))
         self.init(*self._args,**self._kargs)
-        self._tag = self.build()
 
-        # Store the instance in the main._childs
-        # main=self._getMain()
-        # main._childs[self.id]=self # so, childs should die when main dies, in GC ;-)
+        self._tag = self.build() # can be a Tag or ReactiveMethod
+
+        # Store the instance in the parent._childs
         if self._parent:
-            self._parent._childs[self.id]=self
+            self._parent._childs.append(self)
 
 
     def _tree(self):
         assert self._parent is None,"You are not on the main instance, you can't get tree"
         ll=["+"+repr(self)]
-        def _gc(g,lvl=0):
+        def _gc(g,lvl=0) -> list: #TODO: SOME innerchilds are not visible (vv) do better
             ll=[]
-            for id,obj in g._childs.items():
+            innerchilds={i.id:i for i in self.__dict__.values() if isinstance(i,GTag)}
+            if innerchilds:
+                ll.append( "+" + ("   "*lvl) +g.id+" innerCHIDS:"+ str(list(innerchilds.keys())))
+            for obj in g._childs:
                 if obj._childs:
                     ll.extend( _gc(obj,lvl+1) )
                 else:
@@ -207,19 +250,22 @@ class GTag:
         ll.extend(_gc(self,1))
         return "\n".join(ll)
 
-    def _getChild(self,id):
+    def _getChilds(self) -> dict:
         assert self._parent is None,"You are not on the main instance, you can't get a child"
 
-        def _gc(g):
+        def _gc(g) -> dict:
             d={g.id:g}
-            for id,obj in g._childs.items():
-                if obj._childs:
-                    d.update(_gc(obj) )
-                else:
-                    d[id]=obj
+            innerchilds={i.id:i for i in self.__dict__.values() if isinstance(i,GTag)}
+            d.update(innerchilds)
+            for obj in g._childs + list(innerchilds.values()):
+                if obj.id in d.keys(): continue #TODO: avoid obscur recursion
+                d.update(_gc(obj) )
             return d
 
-        childs=_gc(self)
+        return _gc(self)
+
+    def _getRef(self,id): # -> GTag
+        childs=self._getChilds()
         return childs[id]
 
     def _getMain(self):
@@ -234,7 +280,7 @@ class GTag:
 
 
     @property
-    def parent(self)-> any:
+    def parent(self)-> any: #GTag
         """ return caller/binder to parent instance (None if gtag is the main) """
         if self._parent is None:
             return None
@@ -243,7 +289,7 @@ class GTag:
 
 
     @property
-    def main(self)-> any:
+    def main(self)-> any: #GTag
         """ return caller/binder to main instance """
         return GtagProxy( self._getMain() )
 
@@ -281,15 +327,11 @@ class GTag:
 
 
     def _guessHeaders(self):
-        """ try to found the headers of the main tag used by the gtag component, and return the html elements to include in header
-            (downside: importing css/js will depends only on first tag returned by the gtag)
-            (downside: as tag can be produce by a reactivemethod, we need to execute it)
+        """ try to found the headers, based of declarations of each gtag, and return the html elements to include in header
         """
         assert self._parent is None,"You are not on the main instance, you can't get a child"
 
         mklist=lambda x: x if isinstance(x,list) else [x]
-
-
 
         ll=[]
         for g in GTag.__subclasses__():
@@ -324,8 +366,8 @@ class GTag:
 
 
     def __str__(self):
+        log("___rendering",repr(self))
         o= self._tag
-        log("___redraw",repr(self))
         if isinstance(o,ReactiveMethod):
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -333,7 +375,7 @@ class GTag:
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            self._childs={k:v for k,v in self._childs.items() if hasattr(v,"persist")}
+            self._childs=[] # clear the (builded) childs (from build()) .
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -348,7 +390,8 @@ class GTag:
             if isinstance(o,Tag) or (".Tag" in str(type(o))): #TODO: wtf
                 o.id=self.id
             elif isinstance(o,GTag):
-                o=Tag.div(o)
+                assert isinstance(o._tag,Tag)
+                o=o._tag        #TODO: recursivity here ... wtf if gtag return a gtag
                 o.id=self.id
             else:
                 raise Exception("%s --build--> ???%s???" % (repr(self),type(o)))
@@ -362,8 +405,8 @@ class GTag:
                 s="STATIC"
         else:
             s="???"
-        return "<GTAG:%s.%s  [%s]>" % (
-            self._parent.id if self._parent else "MAIN",
+        return "<GTAG:%s%s  [%s]>" % (
+            self._parent.id+"." if self._parent else "[MAIN]",
             self.id,
             s
         )
@@ -380,11 +423,11 @@ class GTag:
 
     def _getScripts(self) -> str:
         ll=[]
-        for k,v in self._childs.items():
+        for v in self._getChilds().values():
             js=v and v.script() or None
             if js:
                 if isinstance(js,ReactiveMethod): js=js() # dangerous ?
-                ll.append( "(function(tag){%s})(document.getElementById('%s'))" % (str(js),k) )
+                ll.append( "(function(tag){%s})(document.getElementById('%s'))" % (str(js),v.id) )
         return ";".join(ll)
 
 
@@ -479,25 +522,17 @@ class GTagApp(guy.Guy):
             gtag=self._ses[gid]
 
         #////////////////////////////////////////////////////////////////// THE MAGIC TODO: move to gtag
-        obj=gtag._getChild(id)
+        obj=gtag._getRef(id)
         # keep the main tag, and the current object !
         # (others will be rebuild during rendering)
 
         log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s)"% (method,args))
-        BEFORE=set(obj._childs.keys())
         proc=getattr(obj,method)
 
         if asyncio.iscoroutinefunction( proc ):
             r=await proc(*args)
         else:
             r=proc(*args)
-        AFTER=set(obj._childs.keys())
-        for newly in list(AFTER - BEFORE):
-            g=gtag._getChild(newly)
-            g.persist=True              # <-- the trick #TODO: do better here !
-            gtag._childs[g.id]=g
-            log("NEWLY GTAG IN METHOD:",g.id)
-
 
         #////////////////////////////////////////////////////////////////// THE MAGIC
         return gtag.update() #could update the obj gtag only !

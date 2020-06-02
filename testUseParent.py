@@ -18,7 +18,6 @@ class App(GTag):
     def init(self):
         self.cpt = 0
 
-    @bind
     def build(self):
         return VBox(
             self.bind.cpt,

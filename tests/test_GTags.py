@@ -33,7 +33,7 @@ def test_basics():
 
 def test_Selectors():
     choices=["XXX",1]
-    for o in [GRadioButtons,GSelect,GSelectButtons,GTabs]:
+    for o in [RadioButtons,Select,SelectButtons,Tabs]:
         str(o("XXX",choices))
         # assert ">XXX<" in str(o("XXX",choices))
         # assert "> 1 <" in str(o(p.prop1,choices))

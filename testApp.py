@@ -12,30 +12,13 @@ class MyInc(GTag):
 
     def build(self):
         return HBox(
-                Button("-",onclick=self.bind.addV(-1) ),
-                Text(self.bind.cpt,style="text-align:center"),
-                Button("+",onclick=self.bind.addV(1) ),
-            )
+            Button("-",onclick=self.bind.addV(-1) ),
+            Text(self.bind.cpt,style="text-align:center"),
+            Button("+",onclick=self.bind.addV(1) ),
+        )
 
     def addV(self,v):
         self.cpt+=v
-
-
-class MyXXX(GTag):
-    def init(self,v=0):
-        self.cpt=v
-
-    def build(self):
-        return HBox(
-                Button("-",onclick=self.bind.addV(-1) ),
-                Text(self.bind.cpt,style="text-align:center"),
-                Button("+",onclick=self.bind.addV(1) ),
-            )
-
-    def addV(self,v):
-        self.cpt+=v
-
-
 
 
 class Page1(GTag):
@@ -46,14 +29,11 @@ class Page1(GTag):
 
     @bind
     def compute(self):
-        b=Tag.div()
-        for i in range( int(self.nb) ):
-            b.add( "⭐" )
-        return b
+        return Tag.div( "⭐"* int(self.nb))
 
     def build(self):
         return VBox(
-            HBox(GInput(self.bind.txt ),Text(self.bind.txt)),
+            HBox(InputText(self.bind.txt ),Text(self.bind.txt)),
             MyInc(self.bind.nb),
             MyInc(self.bind.nb),
             Box(self.bind.nb, self.compute()),
@@ -61,7 +41,7 @@ class Page1(GTag):
         )
 
     def aff(self):
-        self.main.setMBox( MyXXX(42) )
+        self.main.setMBox( MyInc(12) )  #<-- auto-innerChild !
 
 class Page2(GTag):
 
@@ -90,21 +70,21 @@ class Page3(GTag):
         self.cb=cb
 
     def build(self):
-        tabs=GTabs(self.bind.selected,["tab1","tab2","tab3"])
+        tabs=Tabs(self.bind.selected,["tab1","tab2","tab3"])
 
         return Tag.div(tabs,Box(self.renderContent()),
-            GCheckbox(self.cb, "disable all (vv)"),
+            Checkbox(self.cb, "disable all (vv)"),
             HBox(
                 Text("You selected",self.bind.rb),
-                GRadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb,onchange=self.realCallback),
+                RadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb,onchange=self.realCallback),
             ),
             HBox(
                 Text("You selected",self.bind.so),
-                GSelect(self.bind.so,["apple","pear","banana"],disabled=self.bind.cb),
+                Select(self.bind.so,["apple","pear","banana"],disabled=self.bind.cb),
             ),
             HBox(
                 Text("You selected",self.bind.sb),
-                GSelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
+                SelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
             )
         )
 
@@ -139,7 +119,7 @@ class TestApp(GTag):
 
     @bind
     def build(self): # DYNAMIC RENDERING HERE !
-        nav= GNav("gtag-demo",{
+        nav= Nav("gtag-demo",{
             "Page1":lambda: self.setPage(1),
             "Page2 (%s)"% int(self.nb):lambda: self.setPage(2),
             "Page3":lambda: self.setPage(3),
@@ -158,10 +138,10 @@ class TestApp(GTag):
         return Tag.div(
             nav,
             Section( Tag.div( "<br>", page, klass="container") ),
+            Button("test mbox",onclick=self.bind.setMBox(42)),
             Button("test toast",onclick=self.bind.setToast(42)),
-            Button("test mm",onclick=self.bind.setMBox(42)),
             GBox( self.bind.msg ),
-            GToaster( self.bind.toast ),
+            Toaster( self.bind.toast ),
         )
 
     def setPage(self,n):
@@ -175,6 +155,6 @@ class TestApp(GTag):
 
 if __name__=="__main__":
     app=TestApp( )
-    # app=Page3("tab2","banana","banana")
+    #~ app=Page1(1,"kkk")
     print( app.run(log=False) )
     # print( app.serve(log=False) )

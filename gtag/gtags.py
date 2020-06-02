@@ -82,30 +82,30 @@ class GBox(GTag):
         self.content=content
 
     def build(self):
-        o = Tag.div()
         if self.content:
-            o.klass="modal is-active"
+            o = Tag.div(klass="modal is-active")
             o.add( Tag.div(klass="modal-background",onclick=self.bind.close()) )
             o.add( Tag.div( Box(self.content),klass="modal-content") )
             o.add( Tag.div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
-        return o
+            return o
 
     def close(self):
         self.content=None
 
-class GToaster(GTag):
+class Toaster(GTag):
     def init(self,content):
         self.content=content
 
     def build(self):
-        o=Tag.div()
-        if bool(self.content):
-            o.style="position:fixed;left:0px;right:0px;bottom:0px;z-index:1000"
-            o.klass="notification is-primary"
-            o.add( Button(klass='delete',onclick="window.hideToast()") )
-            o.add( str(self.content) ) # force to render now !
+        try:
+            if self.content:
+                o=Tag.div(klass="notification is-primary")
+                o.style="position:fixed;left:0px;right:0px;bottom:0px;z-index:1000"
+                o.add( Button(klass='delete',onclick="window.hideToast()") )
+                o.add( str(self.content) ) # force to render now ! (because it will be cleared next op)
+                return o
+        finally:
             self.content=None # clear content ! (so gtag object is possible)
-        return o
 
     def script(self):
         return """
@@ -117,7 +117,7 @@ class GToaster(GTag):
         self.content=None
 
 
-class GInput(GTag):
+class InputText(GTag):
 
     def init(self,value,type="text",disabled=False,onchange=None):
         self.value=value
@@ -135,7 +135,7 @@ class GInput(GTag):
 
 
 
-class GTextArea(GTag):
+class TextArea(GTag):
 
     def init(self,value,disabled=False,onchange=None):
         self.value=value
@@ -151,7 +151,7 @@ class GTextArea(GTag):
         if self.onchange: self.onchange(self.value)
 
 
-class GNav(GTag):
+class Nav(GTag):
     def init(self,title,entries:dict={}):
         self.title=title
         self.entries=entries
@@ -159,8 +159,8 @@ class GNav(GTag):
     @bind
     def build(self): # DYNAMIC RENDERING HERE !
         divBrand=Tag.div( klass="navbar-brand" )
-        divBrand.add( A("<b>"+self.title+"</b>",klass="navbar-item",href="/") )
-        divBrand.add( A('<span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>',
+        divBrand.add( A( Tag.b(self.title), klass="navbar-item", href="/") )
+        divBrand.add( A( Tag.span(aria_hidden=True),Tag.span(aria_hidden=True),Tag.span(aria_hidden=True),
                         role="button",
                         klass="navbar-burger burger",
                         aria_label="menu",
@@ -194,7 +194,7 @@ class _Selector(GTag):
         self.value=self.choices[int(idx)]
         if self.onchange: self.onchange(self.value)
 
-class GTabs(_Selector): #TODO: implement disabled
+class Tabs(_Selector): #TODO: implement disabled
     @bind
     def build(self):
         u=Tag.ul()
@@ -204,12 +204,12 @@ class GTabs(_Selector): #TODO: implement disabled
         return Tag.div( u , klass="tabs is-centered")
 
 
-class GRadioButtons(_Selector):
+class RadioButtons(_Selector):
     @bind
     def build(self):
         o=Tag.div(klass="control")
         for idx,i in enumerate(self.choices):
-            o.add('<label class="radio">',
+            o.add( Tag.label(
                 Input(
                     type="radio",
                     klass="radio", # override
@@ -219,12 +219,12 @@ class GRadioButtons(_Selector):
                     disabled=bool(self.disabled)
                     ),
                 i,
-                "</label>"
-            )
+                klass="radio"
+            ))
         return o
 
 
-class GSelect(_Selector):
+class Select(_Selector):
     @bind
     def build(self):
         s=Tag.select( onclick=self.bind.select("this.value"),style="width:100%",disabled=bool(self.disabled) )
@@ -232,7 +232,7 @@ class GSelect(_Selector):
             s.add( Tag.option(i,value=idx,selected=(self.value==i)))
         return Tag.div(s,klass="select")
 
-class GSelectButtons(_Selector):    #TODO: add disabled
+class SelectButtons(_Selector):    #TODO: add disabled
     @bind
     def build(self):
         u=Tag.ul()
@@ -242,7 +242,7 @@ class GSelectButtons(_Selector):    #TODO: add disabled
         return Tag.div( u , klass="tabs is-toggle")
 
 
-class GCheckbox(GTag):
+class Checkbox(GTag):
     def init(self,value:bool,title:str, disabled=False, onchange=None):
         self.value=value
         self.title=title
@@ -279,10 +279,10 @@ if __name__=="__main__":
         def build(self):
             tt=t.Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
             return Div(tt,
-                GCheckbox(self.bind.v,"ok ?"),
-                GRadioButtons(1,[1,2,3],self.bind.v),
+                Checkbox(self.bind.v,"ok ?"),
+                RadioButtons(1,[1,2,3],self.bind.v),
                 GInput("hekk",disabled=self.bind.v),
-                GTextArea("hekk",disabled=self.bind.v),
+                TextArea("hekk",disabled=self.bind.v),
                 self.bind.v,
             )
 
