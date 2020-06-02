@@ -77,7 +77,7 @@ class Table(GTag):
             ll.append( Tag.tr( *[Tag.td(col) for col in row] ))
         return Tag.table(h,Tag.tbody(*ll),klass="table is-bordered is-striped is-narrow is-hoverable is-fullwidth")
 
-class GBox(GTag):
+class MBox(GTag):
     def init(self,content):
         self.content=content
 

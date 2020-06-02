@@ -23,8 +23,8 @@ import typing as T
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x #TODO: rename to value() ?
 
 def log(*a):
-    #~ print(*a)
-    pass
+    print(*a)
+    # pass
 
 
 class MyMetaclass(type):
@@ -232,34 +232,32 @@ class GTag:
             self._parent._childs.append(self)
 
 
+
     def _tree(self):
         assert self._parent is None,"You are not on the main instance, you can't get tree"
-        ll=["+"+repr(self)]
         def _gc(g,lvl=0) -> list: #TODO: SOME innerchilds are not visible (vv) do better
             ll=[]
-            innerchilds={i.id:i for i in self.__dict__.values() if isinstance(i,GTag)}
-            if innerchilds:
-                ll.append( "+" + ("   "*lvl) +g.id+" innerCHIDS:"+ str(list(innerchilds.keys())))
+            ll.append( "+" + ("   "*lvl) + repr(g))
             for obj in g._childs:
-                if obj._childs:
-                    ll.extend( _gc(obj,lvl+1) )
-                else:
-                    ll.append( "+" + ("   "*lvl) + repr(obj))
+                ll.extend( _gc(obj,lvl+1) )
             return ll
+        return "\n".join(_gc(self,0))
 
-        ll.extend(_gc(self,1))
-        return "\n".join(ll)
+
+    @property
+    def innerChilds(self):
+        return [v for k,v in self.__dict__.items() if k not in ["_tag","_parent"] and isinstance(v,GTag)]
 
     def _getChilds(self) -> dict:
         assert self._parent is None,"You are not on the main instance, you can't get a child"
 
         def _gc(g) -> dict:
             d={g.id:g}
-            innerchilds={i.id:i for i in self.__dict__.values() if isinstance(i,GTag)}
+            innerchilds={i.id:i for i in self.innerChilds}
             d.update(innerchilds)
             for obj in g._childs + list(innerchilds.values()):
-                if obj.id in d.keys(): continue #TODO: avoid obscur recursion
-                d.update(_gc(obj) )
+                if obj.id not in d.keys(): #TODO: avoid obscur recursion
+                    d.update(_gc(obj) )
             return d
 
         return _gc(self)
@@ -405,10 +403,11 @@ class GTag:
                 s="STATIC"
         else:
             s="???"
-        return "<GTAG:%s%s  [%s]>" % (
+        return "<GTag:%s%s  [%s] (INNERS=%s)>" % (
             self._parent.id+"." if self._parent else "[MAIN]",
             self.id,
-            s
+            s,
+            [i.id for i in self.innerChilds]
         )
 
     def __setattr__(self,k,v):

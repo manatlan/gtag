@@ -29,7 +29,7 @@ class Page1(GTag):
 
     @bind
     def compute(self):
-        return Tag.div( "⭐"* int(self.nb))
+        return Tag.div( "⭐" * int(self.nb) )
 
     def build(self):
         return VBox(
@@ -140,7 +140,7 @@ class TestApp(GTag):
             Section( Tag.div( "<br>", page, klass="container") ),
             Button("test mbox",onclick=self.bind.setMBox(42)),
             Button("test toast",onclick=self.bind.setToast(42)),
-            GBox( self.bind.msg ),
+            MBox( self.bind.msg ),
             Toaster( self.bind.toast ),
         )
 
