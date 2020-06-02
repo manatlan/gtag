@@ -152,9 +152,10 @@ class TextArea(GTag):
 
 
 class Nav(GTag):
-    def init(self,title,entries:dict={}):
+    def init(self,title,entries:dict={},more:dict={}):
         self.title=title
         self.entries=entries
+        self.more=more
 
     @bind
     def build(self): # DYNAMIC RENDERING HERE !
@@ -172,12 +173,22 @@ class Nav(GTag):
         for k,v in self.entries.items():
             menu.add( A(k, klass="navbar-item", onclick=self.bind.evtSelectEntry("'%s'"%k)))
 
-        divMenu=Tag.div( menu, klass="navbar-menu" )
+        if self.more:
+            menuEnd=Tag.div(klass="navbar-end")
+            for k,v in self.more.items():
+                menuEnd.add( A(k, klass="navbar-item", onclick=self.bind.evtSelectEntry("'%s'"%k)))
+        else:
+            menuEnd=None
+
+        divMenu=Tag.div( menu,menuEnd, klass="navbar-menu" )
+
 
         return Tag.nav( divBrand, divMenu, role="navigation",aria_label="main navigation",klass="navbar is-fixed-top is-black")
 
     def evtSelectEntry(self,name):
-        callback=self.entries[name]
+        entries=dict(self.entries)
+        entries.update(self.more)
+        callback=entries[name]
         callback()
 
 

@@ -28,7 +28,7 @@ class Login(GTag):
 
   def build(self):
     return VBox(
-      HBox( Text("Password"), InputText(self.bind.passwd,type="password") ),self.bind.passwd,
+      HBox( Text("Password"), InputText(self.bind.passwd,type="password") ),
       Button("OK",onclick=self.bind.check())
     )
 
@@ -139,6 +139,7 @@ class TestApp(GTag):
             "Page2 (%s)"% int(self.nb):lambda: self.setPage(2),
             "Page3":lambda: self.setPage(3),
             "Login":lambda: self.doLogin(),
+        },{
             "exit":lambda: self.exit(-1),
         })
 
@@ -173,16 +174,7 @@ class TestApp(GTag):
 
     def check(self,p):
         print("====>",p)
-        print("====>",p)
-        print("====>",p)
-        print("====>",p)
-        print("====>",p)
-        print("====>",p)
-        print("====>",p)
-        print("====>",p)
-        print("====>",p)
-        print("====>",p)
-        print("====>",p)
+        self.setMBox( None )
 
 if __name__=="__main__":
     app=TestApp( )

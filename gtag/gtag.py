@@ -23,8 +23,8 @@ import typing as T
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x #TODO: rename to value() ?
 
 def log(*a):
-    print(*a)
-    # pass
+    # print(*a)
+    pass
 
 
 class MyMetaclass(type):
@@ -235,7 +235,7 @@ class GTag:
 
     def _tree(self):
         assert self._parent is None,"You are not on the main instance, you can't get tree"
-        def _gc(g,lvl=0) -> list: #TODO: SOME innerchilds are not visible (vv) do better
+        def _gc(g,lvl=0) -> list:
             ll=["+" + ("   "*lvl) + repr(g)]
             for obj in g.innerChilds:
                 inners=_gc(obj,lvl+1)
@@ -260,15 +260,6 @@ class GTag:
             for obj in g._childs:
                 d.update( _gc(obj) )
             return d
-
-        # def _gc(g) -> dict:
-        #     d={g.id:g}
-        #     innerchilds={i.id:i for i in self.innerChilds}
-        #     d.update(innerchilds)
-        #     for obj in g._childs + list(innerchilds.values()):
-        #         if obj.id not in d.keys(): #TODO: avoid obscur recursion
-        #             d.update(_gc(obj) )
-        #     return d
 
         return _gc(self)
 
@@ -395,11 +386,11 @@ class GTag:
         if o is None:
             return ""
         else:
-            if isinstance(o,Tag) or (".Tag" in str(type(o))): #TODO: wtf
+            if isinstance(o,Tag):
                 o.id=self.id
             elif isinstance(o,GTag):
                 assert isinstance(o._tag,Tag)
-                o=o._tag        #TODO: recursivity here ... wtf if gtag return a gtag
+                o=o._tag        #TODO: recursivity here ?!... wtf if gtag return a gtag
                 o.id=self.id
             else:
                 raise Exception("%s --build--> ???%s???" % (repr(self),type(o)))
@@ -421,13 +412,10 @@ class GTag:
         )
 
     def __setattr__(self,k,v):
-        # current="%s_%s" % (self.__class__.__name__,id(self))
         o=self.__dict__.get(k)
         if isinstance(o,ReactiveProp):
-            # print("Maj %s ReactProp %s <- %s" % (current,k,repr(v)))
             o.set( _gg(v) )
         else:
-            # print("Maj %s Prop %s <- %s" % (current,k,repr(v)))
             super().__setattr__(k,v)
 
     def _getScripts(self) -> str:
