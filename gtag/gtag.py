@@ -16,14 +16,14 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-import guy,sys,asyncio,hashlib,html,inspect
+import guy,sys,asyncio,hashlib,html,inspect,types
 import typing as T
 
 
 _gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x #TODO: rename to value() ?
 
 def log(*a):
-    # print(*a)
+    #~ print(*a)
     pass
 
 
@@ -139,37 +139,62 @@ class ReactiveProp:
     #TODO: add a lot of __slot__ ;-)
 
 
-class ReactiveMethod:
-    """ like ReactiveProp, but for gtag.method wchich can return binded tag
-        (object created by @bind decorator)
-    """
-    def __init__(self,instance,method,args,kargs):
-        self.__instance=instance
-        self.__method=method
-        self.__a=args
-        self.__k=kargs
+#~ class ReactiveMethod:
+    #~ """ like ReactiveProp, but for gtag.method wchich can return binded tag
+        #~ (object created by @bind decorator)
+    #~ """
+    #~ def __init__(self,instance,method,args,kargs):
+        #~ self.__instance=instance
+        #~ self.__method=method
+        #~ self.__a=args
+        #~ self.__k=kargs
 
-    def __call__(self):
-        return self.__method(self.__instance,*self.__a,**self.__k)
+    #~ def __call__(self):
+        #~ return self.__method(self.__instance,*self.__a,**self.__k)
 
-    def __str__(self) -> str:
-        return str(self())
+    #~ def __str__(self) -> str:
+        #~ return str(self())
 
 
-def bind( method ): # gtag.method decorator -> ReactiveMethod
-    """ Decorator to make a gtag.method() able to return a "Reactive Tag" !
-        (like 'computed vars' in vuejs)
-    """
-    def _(gtagInstance,*a,**k):
-        assert isinstance(gtagInstance,GTag)
-        return ReactiveMethod(gtagInstance,method,a,k)
-    return _
+#~ def bind( method ): # gtag.method decorator -> ReactiveMethod
+    #~ """ Decorator to make a gtag.method() able to return a "Reactive Tag" !
+        #~ (like 'computed vars' in vuejs)
+    #~ """
+    #~ def _(gtagInstance,*a,**k):
+        #~ assert isinstance(gtagInstance,GTag)
+        #~ return ReactiveMethod(gtagInstance,method,a,k)
+    #~ return _
 
 def start( method ): # gtag.event decorator
     """ Decorator to make a gtag.method() able to start after init !
     """
-    method.autostart=True
+    Capacity(method).set(Capacity.AUTOSTART)
     return method
+
+def local( method ): # gtag.event decorator
+    """ Decorator to make a gtag.method() able to start after init !
+    """
+    Capacity(method).set(Capacity.LOCAL)
+    return method
+
+class Capacity:
+    LOCAL="local"
+    AUTOSTART="autostart"
+    def __init__(self,method):
+        self.__method=method
+    def has( self, capacity ):
+        if hasattr(self.__method,"capacities"):
+            return capacity in self.__method.capacities
+    def set( self, capacity ):
+        if not hasattr(self.__method,"capacities"):
+            self.__method.capacities=[]
+        self.__method.capacities.append(capacity)
+    @property
+    def hasLocal( self ):
+        return self.has(Capacity.LOCAL)
+    @property
+    def hasAutostart( self ):
+        return self.has(Capacity.AUTOSTART)
 
 
 
@@ -239,7 +264,6 @@ class GTag:
             self._parent._childs.append(self)
 
     def _tree(self):
-        assert self._parent is None,"You are not on the main instance, you can't get tree"
         def _gc(g,lvl=0) -> list:
             ll=["+" + ("   "*lvl) + repr(g)]
             for obj in g.innerChilds:
@@ -256,7 +280,6 @@ class GTag:
         return [v for k,v in self.__dict__.items() if k not in ["_tag","_parent"] and isinstance(v,GTag)]
 
     def _getChilds(self) -> dict:
-        assert self._parent is None,"You are not on the main instance, you can't get a child"
 
         def _gc(g) -> dict:
             d={g.id:g}
@@ -369,26 +392,13 @@ class GTag:
         """ Override to get back some js code"""
         pass
 
+    def _rebuild(self):
+        self._childs=[]
+        self._tag=self.build()
 
     def __str__(self):
         log("___rendering",repr(self))
         o= self._tag
-        if isinstance(o,ReactiveMethod):
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            self._childs=[] # clear the (builded) childs (from build()) .
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            o=o()
-
         if o is None:
             return ""
         else:
@@ -403,16 +413,8 @@ class GTag:
             return str(o)
 
     def __repr__(self):
-        if self._tag:
-            if isinstance(self._tag,ReactiveMethod):
-                s="DYNAMIC"
-            else:
-                s="STATIC"
-        else:
-            s="???"
-        return "<GTag: %s [%s] [parent:%s] (innerchilds=%s)>" % (
+        return "<GTag: %s [parent:%s] (innerchilds=%s)>" % (
             self.id,
-            s,
             self._parent.id if self._parent else "None",
             [i.id for i in self.innerChilds]
         )
@@ -426,11 +428,15 @@ class GTag:
 
     def _getScripts(self) -> str:
         ll=[]
-        for v in self._getChilds().values():
-            js=v and v.script() or None
+        for g in self._getChilds().values():
+            js=g and g.script() or None
+
+            #~ if withStarts:
+                #~ for m in [v for k,v in inspect.getmembers(g) if inspect.ismethod(v) and Capacity(v).hasAutostart]:
+                    #~ ll.append( getattr(self.bind,m.__name__)() )
+
             if js:
-                if isinstance(js,ReactiveMethod): js=js() # dangerous ?
-                ll.append( "(function(tag){%s})(document.getElementById('%s'))" % (str(js),v.id) )
+                ll.append( "(function(tag){%s})(document.getElementById('%s'))" % (str(js),g.id) )
         return ";".join(ll)
 
 
@@ -484,6 +490,8 @@ class GTagApp(guy.Guy):
             if(!sessionStorage["gtag"]) sessionStorage["gtag"]=Math.random().toString(36).substring(2);
             var GID=sessionStorage["gtag"];
 
+            async function forceUpdateManually(x) {console.log(x),eval(x)}
+
             async function getSessionId() {return GID}
             async function _render(html,script) {
                 document.body.innerHTML=html;
@@ -496,8 +504,7 @@ class GTagApp(guy.Guy):
     <body>
             <script src="guy.js"></script>
     </body>
-</html>
-        """ % "\n".join([str(h) for h in hh])
+</html>""" % "\n".join([str(h) for h in hh])
 
     async def init(self):
         if self._ses is not None:
@@ -516,10 +523,11 @@ class GTagApp(guy.Guy):
         log(gtag._tree())
         await self.js._render( str(gtag), gtag._getScripts() )
 
-        autostarts = [v for k,v in inspect.getmembers(gtag) if inspect.ismethod(v) and hasattr(v,"autostart")]
-        for m in autostarts:
-            print(m)
-
+    async def forceUpdate(self,g):
+        g._rebuild()
+        js=g._update()["script"]
+        print("force update",repr(g),"-->",js)
+        await self.js.forceUpdateManually(js)
 
     async def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
@@ -531,22 +539,27 @@ class GTagApp(guy.Guy):
 
         #////////////////////////////////////////////////////////////////// THE MAGIC TODO: move to gtag
         obj=gtag._getRef(id)
-        # keep the main tag, and the current object !
-        # (others will be rebuild during rendering)
 
         log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s)"% (method,args))
         proc=getattr(obj,method)
+        updateAll=not Capacity(proc).hasLocal
 
         if asyncio.iscoroutinefunction( proc ):
-            r=await proc(*args)
+            rep=await proc(*args)
         else:
-            r=proc(*args)
-        if r is None:
-            # gtag._tag=gtag.build()
+            rep=proc(*args)
+
+        if rep:
+            if "async_generator" in str(type(rep)): #TODO: howto better ?
+                async for line in rep:
+                    await self.forceUpdate(gtag if updateAll else obj)
+            else:
+                raise Exception("wtf?")
+
+        if updateAll:
+            gtag._rebuild()
             return gtag._update() #UPDATE ALL (historic way)
-        elif r:                   # update partial content
-            obj._tag=obj.build()
-            return obj._update()
         else:
-            return None
+            obj._rebuild()
+            return obj._update()
         #////////////////////////////////////////////////////////////////// THE MAGIC

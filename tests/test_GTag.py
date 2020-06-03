@@ -2,8 +2,8 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
-from gtag import GTag,bind,Tag
-from gtag.gtag import ReactiveMethod,CSS,JS
+from gtag import GTag,Tag
+from gtag.gtag import CSS,JS
 import pytest
 
 def test_GTag():
@@ -59,7 +59,6 @@ def test_GTag_render():
     class My(GTag):
         def init(self):
             self.v=12
-        @bind
         def build(self):
             return Tag.div("hello",self.bind.v,onclick=self.bind.onclick(42))
         def onclick(self,anArg=None):
@@ -67,7 +66,6 @@ def test_GTag_render():
 
     m=My()
     o=m.build()
-    assert isinstance(o,ReactiveMethod)
     html=str(m)
 
     assert 'onclick="self.bindUpdate(' in html
@@ -84,7 +82,6 @@ def test_GTag_clone():
         def init(self,v):
             self.v=v
 
-        @bind
         def build(self):
             return Tag.div("hello",self.bind.v,onclick=self.bind.onclick(42))
         def onclick(self,anArg=None):
@@ -93,7 +90,6 @@ def test_GTag_clone():
     m=My(12)
     m.added=42
     o=m.build()
-    assert isinstance(o,ReactiveMethod)
     html=str(m)
 
     assert 'onclick="self.bindUpdate(' in html
@@ -106,7 +102,6 @@ def test_GTag_clone():
     mm=m._clone()
     assert mm.added==42
     o=m.build()
-    assert isinstance(o,ReactiveMethod)
     html=str(m)
 
     assert 'onclick="self.bindUpdate(' in html
@@ -121,7 +116,6 @@ def test_GTag_clone_with_State():
     class My(GTag):
         def init(self,v):
             self.v=v
-        @bind
         def build(self):
             return Tag.div("hello",self.bind.v,onclick=self.bind.onclick(42))
         def onclick(self,anArg=None):
@@ -158,9 +152,8 @@ def test_GTag_clone_with_State():
 
 
 
-def test_ReactiveMethod():
+def test_ReactiveMethod(): #NON SENSE NOW
     class MTag(GTag):
-        @bind
         def bm(self,c,nb=2):
             return c*nb
 
@@ -169,8 +162,8 @@ def test_ReactiveMethod():
 
     p=MTag()
 
-    assert p.bm("X")() == "XX"
-    assert p.bm("O",nb=3)() == "OOO"
+    assert p.bm("X")== "XX"
+    assert p.bm("O",nb=3) == "OOO"
 
     assert p.m("X") == "XX"
     assert p.m("O",nb=3) == "OOO"
@@ -222,7 +215,6 @@ def test_GTagDyn_with_childs():
     class MTag(GTag):
         def init(self):
             self.prop=1
-        @bind
         def build(self):
             self.child=C()
             return Tag.div( self.child )

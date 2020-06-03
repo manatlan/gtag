@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -u
-from gtag import GTag,bind
+from gtag import GTag
 from gtag.gtags import *
 
 class Btn(GTag):

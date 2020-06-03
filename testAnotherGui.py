@@ -1,4 +1,4 @@
-from gtag import GTag,bind,Tag
+from gtag import GTag,Tag
 
 """
 An exemple of using another set of tags

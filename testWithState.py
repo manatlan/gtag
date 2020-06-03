@@ -1,4 +1,4 @@
-from gtag import GTag,bind,Tag
+from gtag import GTag,Tag
 from gtag.gtags import *
 
 class ShareState(GTag):
@@ -14,10 +14,9 @@ class Page2(GTag):
     def init(self):
         self.a=12
 
-    @bind
     def build(self):
         return Tag.div(
-            ShareState() , self.bind.a,
+            ShareState() , self.a,
             Button("++",onclick=self.bind.changeState()),
             Button("QUIT",onclick=self.bind.quit()+";window.close()"),
         )

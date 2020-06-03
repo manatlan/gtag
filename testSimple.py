@@ -10,7 +10,7 @@ class App(GTag):
 
     def build(self):
         return VBox(
-            self.bind.cpt,
+            self.cpt,
             Button("++",onclick=self.bind.add())
         )
 

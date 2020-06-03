@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -u
 from gtag import GTag
 from gtag.gtags import *
-import time
+import time,asyncio
 
 class App(GTag):
     size=(400,150)

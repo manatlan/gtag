@@ -1,4 +1,4 @@
-from gtag import GTag, bind, Tag
+from gtag import GTag, Tag
 
 """
 An exemple of GTags
@@ -125,7 +125,6 @@ class InputText(GTag):
         self.disabled=disabled
         self.onchange=onchange
 
-    @bind
     def build(self):
         return Input(type=self.type,value=self.value,onchange=self.bind.select("this.value"),disabled=bool(self.disabled))
 
@@ -142,7 +141,6 @@ class TextArea(GTag):
         self.disabled=disabled
         self.onchange=onchange
 
-    @bind
     def build(self):
         return Tag.textarea(self.value,onchange=self.bind.select("this.value"),disabled=bool(self.disabled))
 
@@ -157,7 +155,6 @@ class Nav(GTag):
         self.entries=entries
         self.more=more
 
-    @bind
     def build(self): # DYNAMIC RENDERING HERE !
         divBrand=Tag.div( klass="navbar-brand" )
         divBrand.add( A( Tag.b(self.title), klass="navbar-item", href="/") )
@@ -206,7 +203,6 @@ class _Selector(GTag):
         if self.onchange: self.onchange(self.value)
 
 class Tabs(_Selector): #TODO: implement disabled
-    @bind
     def build(self):
         u=Tag.ul()
         for idx,i in enumerate(self.choices):
@@ -216,7 +212,6 @@ class Tabs(_Selector): #TODO: implement disabled
 
 
 class RadioButtons(_Selector):
-    @bind
     def build(self):
         o=Tag.div(klass="control")
         for idx,i in enumerate(self.choices):
@@ -236,7 +231,6 @@ class RadioButtons(_Selector):
 
 
 class Select(_Selector):
-    @bind
     def build(self):
         s=Tag.select( onclick=self.bind.select("this.value"),style="width:100%",disabled=bool(self.disabled) )
         for idx,i in enumerate(self.choices):
@@ -244,7 +238,6 @@ class Select(_Selector):
         return Tag.div(s,klass="select")
 
 class SelectButtons(_Selector):    #TODO: add disabled
-    @bind
     def build(self):
         u=Tag.ul()
         for idx,i in enumerate(self.choices):
@@ -260,7 +253,6 @@ class Checkbox(GTag):
         self.disabled=disabled
         self.onchange=onchange
 
-    @bind
     def build(self):
         o=Tag.div(klass="control")
         o.add('<label class="checkbox">',

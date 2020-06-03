@@ -2,7 +2,7 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
-from gtag import GTag,bind,Tag
+from gtag import GTag,Tag
 from gtag.gtags import *
 
 import pytest

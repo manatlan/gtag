@@ -1,4 +1,4 @@
-from gtag import GTag,bind,Tag
+from gtag import GTag,Tag,local
 from gtag.gtags import *
 
 """
@@ -13,10 +13,11 @@ class MyInc(GTag):
     def build(self):
         return HBox(
             Button("-",onclick=self.bind.addV(-1) ),
-            Text(self.bind.cpt,style="text-align:center"),
+            Text(self.cpt,style="text-align:center"),
             Button("+",onclick=self.bind.addV(1) ),
         )
 
+    # @local
     def addV(self,v):
         self.cpt+=v
 
@@ -42,21 +43,18 @@ class Page1(GTag):
         self.nb=nb
         self.txt=txt
 
-    @bind
-    def compute(self):
-        return Tag.div( "⭐" * int(self.nb) )
 
     def build(self):
         return VBox(
             HBox(InputText(self.bind.txt ),Text(self.bind.txt)),
             MyInc(self.bind.nb),
             MyInc(self.bind.nb),
-            Box(self.bind.nb, self.compute()),
+            Box(self.nb, Tag.div( "⭐" * int(self.nb) )),
             Button("Show mbox",onclick=self.bind.aff())
         )
 
     def aff(self):
-        self.main.setMBox( MyInc(12) )  #<-- auto-innerChild !
+        self.main.setMBox( MyInc(self.nb) )  #<-- auto-innerChild !
 
 class Page2(GTag):
 
@@ -106,7 +104,6 @@ class Page3(GTag):
     def realCallback(self,x):
         self.main.setToast("Changed to %s"%x)
 
-    @bind
     def renderContent(self):
         if self.selected=="tab2":
             rows=[[1,2,3,4],[1,2,3,4],[1,2,3,4]]
@@ -132,7 +129,6 @@ class TestApp(GTag):
         self.cb=False
 
 
-    @bind
     def build(self): # DYNAMIC RENDERING HERE !
         nav= Nav("gtag-demo",{
             "Page1":lambda: self.setPage(1),

@@ -1,6 +1,6 @@
-from gtag import GTag,bind,Tag
+from gtag import GTag,Tag
 from gtag.gtag import ReactiveProp
-
+import pytest
 
 import types
 
@@ -40,30 +40,6 @@ class StaticBinded(GTag):
         return Tag.text(self.bind.n, *self.stars())
 
 
-class StaticComputed(GTag): # GOOD PRATICE !!
-    """ A gtag component with a property bind'ed and a method binded (computed) """
-    def __init__(self,n):
-        self.n=n
-        super().__init__(None)
-
-    @bind
-    def stars(self):
-        return Tag.text( *[Star(i) for i in range(int(self.n))] )
-
-    def build(self):
-        return Tag.text(self.bind.n, self.stars() )
-
-
-class StaticBuildBinded(GTag): # BAD PRACTICE
-    """ the build is binded !!!!"""
-    def __init__(self,n):
-        self.n=n
-        super().__init__(None)
-
-    @bind
-    def build(self):
-        ll=[Star(i) for i in range(int(self.n))]
-        return Tag.text(self.n, *ll )
 
 
 
@@ -81,8 +57,6 @@ def test_simple():
     tags=[
         Static(iv),
         StaticBinded(iv),
-        StaticComputed(iv),
-        StaticBuildBinded(iv),
     ]
 
     for t in tags:
@@ -96,8 +70,6 @@ def test_change():
     tags=[
         Static(iv),
         StaticBinded(iv),
-        StaticComputed(iv),
-        StaticBuildBinded(iv),
     ]
 
     for t in tags:
@@ -105,8 +77,6 @@ def test_change():
 
     check(tags[0],iv,iv)
     check(tags[1],cv,iv)
-    check(tags[2],cv,cv) # good
-    check(tags[3],cv,cv) # good
 
 
 def test_rp():
@@ -119,24 +89,18 @@ def test_rp():
     tags=[
         Static(a),
         StaticBinded(a),
-        StaticComputed(a),
-        StaticBuildBinded(a),
     ]
 
     check(tags[0],iv,iv)
     check(tags[1],iv,iv)
-    check(tags[2],iv,iv)
-    check(tags[3],iv,iv)
 
     p["a"]=3 # change RP to 3
 
     check(tags[0],3,iv) # really bad !
     check(tags[1],3,iv)
-    check(tags[2],3,3) # good
-    check(tags[3],3,3) # good
 
 
-
+@pytest.mark.skip(reason="non sense, everything is dynamic now")
 def test_DANGEROUS():
     class StaticComputed(GTag): # GOOD PRATICE !!
         """ A gtag component with a property bind'ed and a method binded (computed) """
@@ -144,7 +108,7 @@ def test_DANGEROUS():
             self.n=n
             super().__init__(None)
 
-        @bind # -> Str'Able
+
         def stars(self):
             return Tag.text( *[Star(i) for i in range(int(self.n))] )
 
@@ -157,6 +121,7 @@ def test_DANGEROUS():
     t.n=3
     assert "-2-" in str(t) # ARGGHHH should be 3 ... but ^^ ... see workarounds vv
 
+@pytest.mark.skip(reason="non sense, everything is dynamic now")
 def test_DANGEROUS_workaround1():
     class StaticComputed(GTag): # GOOD PRATICE !!
         """ A gtag component with a property bind'ed and a method binded (computed) """
@@ -164,11 +129,9 @@ def test_DANGEROUS_workaround1():
             self.n=n
             super().__init__(None)
 
-        @bind # -> Str'Able
         def stars(self):
             return Tag.text( *[Star(i) for i in range(int(self.n))] )
 
-        @bind
         def compute(self):
             return Tag.text("-%s-" % self.n)
 
@@ -179,10 +142,10 @@ def test_DANGEROUS_workaround1():
     assert "-2-" in str(t)
 
     t.n=3
-    assert "-3-" in str(t) # good!
+    assert "-2-" in str(t) # good!
 
 
-
+@pytest.mark.skip(reason="non sense, everything is dynamic now")
 def test_DANGEROUS_workaround2():
     class StaticBuildBinded(GTag): # BAD PRACTICE
 
@@ -190,13 +153,12 @@ def test_DANGEROUS_workaround2():
             self.n=n
             super().__init__(None)
 
-        @bind
         def build(self):
             ll=[Star(i) for i in range(int(self.n))]
-            return Tag.text("-%s-"%self.n, *ll )
+            return Tag.text("-%s-"%self.bind.n, *ll )
 
     t=StaticBuildBinded(2)
     assert "-2-" in str(t)
 
-    t.n=3
+    t.bind.n=3
     assert "-3-" in str(t) # good!
