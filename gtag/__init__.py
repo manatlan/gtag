@@ -18,6 +18,6 @@
 
 __version__="0.0.9"
 
-from .gtag import GTag,bind,Tag
+from .gtag import GTag,Tag,bind,start
 
-__all__ = ['GTag', 'bind', 'Tag' ]
+__all__ = ['GTag', 'Tag', 'bind', 'start' ]

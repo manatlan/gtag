@@ -16,7 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-import guy,sys,asyncio,hashlib,html
+import guy,sys,asyncio,hashlib,html,inspect
 import typing as T
 
 
@@ -165,6 +165,13 @@ def bind( method ): # gtag.method decorator -> ReactiveMethod
         return ReactiveMethod(gtagInstance,method,a,k)
     return _
 
+def start( method ): # gtag.event decorator
+    """ Decorator to make a gtag.method() able to start after init !
+    """
+    method.autostart=True
+    return method
+
+
 
 class GtagProxy:
     """ Expose props(as ReactiveProps)/method from a gtag """
@@ -231,8 +238,6 @@ class GTag:
         if self._parent:
             self._parent._childs.append(self)
 
-
-
     def _tree(self):
         assert self._parent is None,"You are not on the main instance, you can't get tree"
         def _gc(g,lvl=0) -> list:
@@ -291,6 +296,7 @@ class GTag:
     def main(self)-> any: #GTag
         """ return caller/binder to main instance """
         return GtagProxy( self._getMain() )
+
 
 
     @property
@@ -428,7 +434,7 @@ class GTag:
         return ";".join(ll)
 
 
-    def update(self) -> dict:
+    def _update(self) -> dict:
         h=str(self)
         s=self._getScripts()
         log(">>>UPDATE:",repr(self))
@@ -510,6 +516,11 @@ class GTagApp(guy.Guy):
         log(gtag._tree())
         await self.js._render( str(gtag), gtag._getScripts() )
 
+        autostarts = [v for k,v in inspect.getmembers(gtag) if inspect.ismethod(v) and hasattr(v,"autostart")]
+        for m in autostarts:
+            print(m)
+
+
     async def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
         if self._ses is None:
@@ -530,6 +541,12 @@ class GTagApp(guy.Guy):
             r=await proc(*args)
         else:
             r=proc(*args)
-
+        if r is None:
+            # gtag._tag=gtag.build()
+            return gtag._update() #UPDATE ALL (historic way)
+        elif r:                   # update partial content
+            obj._tag=obj.build()
+            return obj._update()
+        else:
+            return None
         #////////////////////////////////////////////////////////////////// THE MAGIC
-        return gtag.update() #could update the obj gtag only !

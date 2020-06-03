@@ -3,12 +3,6 @@ from gtag import GTag
 from gtag.gtags import *
 import time
 
-
-import asyncio
-async def longProcess(time=2):
-    await asyncio.sleep(time)
-    return time
-
 class App(GTag):
     size=(400,150)
 
@@ -26,9 +20,8 @@ class App(GTag):
         self.cpt+=1
 
     async def t2(self):
-        await longProcess()
+        await asyncio.sleep(2)
         self.cpt+=1
-
 
 app=App()
 app.run()
