@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -u
-from gtag import GTag,local,start
+from gtag import GTag,local
 from gtag.gtags import *
 import random,asyncio
 
@@ -15,19 +15,27 @@ class App(GTag):
         self.rows = None
 
     def build(self):
-        o=Tag.div(Tag.button("reload",onclick=self.bind.evtReload()))
+        o=Tag.div(
+            Tag.button("reload1",onclick=self.bind.evtReload()),
+            Tag.button("reload2",onclick=self.bind.evtReload2()),
+        )
         if self.rows:
             o.add( Table(self.rows) )
         else:
             o.add( "Loading",Tag.progress(klass="progress") )
         return o
 
-    async def evtReload(self):
+    async def evtReload(self):  # better approach !
         self.rows = None
-        yield
+        yield                           # <- make an intermediate update/render
+        self.rows = await fetch()
+
+    async def evtReload2(self):
         self.rows = await fetch()
 
 
 
+
 app=App()
-app.run()
+app.run( start=app.evtReload() )
+# app.run( start=app.evtReload2() )

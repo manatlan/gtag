@@ -1,4 +1,4 @@
-from gtag import GTag, Tag
+from gtag import GTag, Tag, local
 
 """
 An exemple of GTags
@@ -128,6 +128,7 @@ class InputText(GTag):
     def build(self):
         return Input(type=self.type,value=self.value,onchange=self.bind.select("this.value"),disabled=bool(self.disabled))
 
+    # @local
     def select(self,value):
         self.value = value
         if self.onchange: self.onchange(self.value)
@@ -237,7 +238,7 @@ class Select(_Selector):
             s.add( Tag.option(i,value=idx,selected=(self.value==i)))
         return Tag.div(s,klass="select")
 
-class SelectButtons(_Selector):    #TODO: add disabled
+class SelectButtons(_Selector):    #TODO: add disabled ?
     def build(self):
         u=Tag.ul()
         for idx,i in enumerate(self.choices):
@@ -275,19 +276,22 @@ class Checkbox(GTag):
 if __name__=="__main__":
 
     class M(GTag):
-        size=(100,100)
-        def init(self):
+        size=(400,400)
+        def init(self,n,t):
             self.v=False
+            self.n=n
+            self.t=t
 
         def build(self):
-            tt=t.Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
-            return Div(tt,
+            tt=Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
+            return Tag.div(tt,
                 Checkbox(self.bind.v,"ok ?"),
-                RadioButtons(1,[1,2,3],self.bind.v),
-                GInput("hekk",disabled=self.bind.v),
-                TextArea("hekk",disabled=self.bind.v),
+                RadioButtons(self.bind.n,[1,2,3],self.bind.v),
+                SelectButtons(self.bind.n,[1,2,3],self.bind.v),
+                InputText(self.bind.t,disabled=self.bind.v),
+                TextArea(self.bind.t,disabled=self.bind.v),
                 self.bind.v,
             )
 
-    app=M()
+    app=M(1,"hello")
     app.run()

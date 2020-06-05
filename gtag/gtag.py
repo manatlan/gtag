@@ -20,7 +20,9 @@ import guy,sys,asyncio,hashlib,html,inspect,types
 import typing as T
 
 
-_gg=lambda x: x.get() if isinstance(x,ReactiveProp) else x #TODO: rename to value() ?
+isAsyncGenerator=lambda x: "async_generator" in str(type(x)) #TODO: howto better ?
+
+value=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
 def log(*a):
     #~ print(*a)
@@ -103,26 +105,26 @@ class ReactiveProp:
 
 
     def __eq__(self, v):
-        return self.get() == _gg(v)
+        return self.get() == value(v)
 
     def __ne__(self, v):
-        return self.get() != _gg(v)
+        return self.get() != value(v)
 
     def __lt__(self, v):
-        return self.get() < _gg(v)
+        return self.get() < value(v)
 
     def __le__(self, v):
-        return self.get() <= _gg(v)
+        return self.get() <= value(v)
 
     def __ge__(self, v):
-        return self.get() >= _gg(v)
+        return self.get() >= value(v)
 
     def __gt__(self, v):
-        return self.get() > _gg(v)
+        return self.get() > value(v)
 
 
     def __iadd__(self,v):
-        vv=self.get() + _gg(v)
+        vv=self.get() + value(v)
         self.set( vv )
         return self
 
@@ -165,12 +167,6 @@ class ReactiveProp:
         #~ return ReactiveMethod(gtagInstance,method,a,k)
     #~ return _
 
-def start( method ): # gtag.event decorator
-    """ Decorator to make a gtag.method() able to start after init !
-    """
-    Capacity(method).set(Capacity.AUTOSTART)
-    return method
-
 def local( method ): # gtag.event decorator
     """ Decorator to make a gtag.method() able to start after init !
     """
@@ -179,7 +175,6 @@ def local( method ): # gtag.event decorator
 
 class Capacity:
     LOCAL="local"
-    AUTOSTART="autostart"
     def __init__(self,method):
         self.__method=method
     def has( self, capacity ):
@@ -192,9 +187,6 @@ class Capacity:
     @property
     def hasLocal( self ):
         return self.has(Capacity.LOCAL)
-    @property
-    def hasAutostart( self ):
-        return self.has(Capacity.AUTOSTART)
 
 
 
@@ -227,6 +219,7 @@ class GTag:
     The magic thing ;-)
     """
     size=None
+    _call=None # first event to call at start !
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
@@ -346,7 +339,7 @@ class GTag:
 
 
     def _clone(self):
-        props={k:v for k,v in self.__dict__.items() if k[0]!="_"}
+        props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call"}
         gtag = self.__class__(*self._args,**self._kargs,dontGuessParent=True)
         gtag.__dict__.update(props)
         assert isinstance(gtag,GTag)
@@ -388,7 +381,7 @@ class GTag:
         """
         pass
 
-    def script(self):
+    def script(self):               #TODO: i don't like that -> should change that ! (todo: gtags comp too)
         """ Override to get back some js code"""
         pass
 
@@ -422,7 +415,7 @@ class GTag:
     def __setattr__(self,k,v):
         o=self.__dict__.get(k)
         if isinstance(o,ReactiveProp):
-            o.set( _gg(v) )
+            o.set( value(v) )
         else:
             super().__setattr__(k,v)
 
@@ -430,11 +423,6 @@ class GTag:
         ll=[]
         for g in self._getChilds().values():
             js=g and g.script() or None
-
-            #~ if withStarts:
-                #~ for m in [v for k,v in inspect.getmembers(g) if inspect.ismethod(v) and Capacity(v).hasAutostart]:
-                    #~ ll.append( getattr(self.bind,m.__name__)() )
-
             if js:
                 ll.append( "(function(tag){%s})(document.getElementById('%s'))" % (str(js),g.id) )
         return ";".join(ll)
@@ -449,16 +437,19 @@ class GTag:
             self.id, h,s
         ))
 
-    def run(self,*a,**k) -> any:
+    def run(self,*a,start=None,**k) -> any:
         """ Run as Guy App (using Chrome) """
+        self._call=start
         return GTagApp(self,False).run(*a,**k)
 
-    def runCef(self,*a,**k) -> any:
+    def runCef(self,*a,start=None,**k) -> any:
         """ Run as Guy App (using Cef) """
+        self._call=start
         return GTagApp(self,False).runCef(*a,**k)
 
-    def serve(self,*a,**k) -> any:
+    def serve(self,*a,start=None,**k) -> any:
         """ Run as Guy Server App """
+        self._call=start
         return GTagApp(self,True).serve(*a,**k)
 
 
@@ -496,8 +487,8 @@ class GTagApp(guy.Guy):
             async function _render(html,script) {
                 document.body.innerHTML=html;
                 if(script) eval(script)
+                console.log(script)
             }
-            /*function update() { return self.update(GID) } promise */
         </script>
         %s
     </head>
@@ -507,33 +498,40 @@ class GTagApp(guy.Guy):
 </html>""" % "\n".join([str(h) for h in hh])
 
     async def init(self):
-        if self._ses is not None:
+        if self._ses is not None: # web mode
             gid=await self.js.getSessionId()
             log("CREATE SESSION:",gid)
             gtag = self._ses.get(gid)
             if gtag is None:
                 gtag = self._originalGTag._clone()
                 self._ses[gid] = gtag
-        else:
+        else: # app mode
             gtag = self._originalGTag
 
         gtag.exit = self.exit
 
         log(">>>SERVE",repr(gtag))
         log(gtag._tree())
-        await self.js._render( str(gtag), gtag._getScripts() )
 
-    async def forceUpdate(self,g):
+        #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- call statement (old autostart system)
+        caller=""
+        if gtag._call:  # there is an event to call at start !
+            if isAsyncGenerator(gtag._call) or asyncio.iscoroutine(gtag._call):
+                caller=getattr(gtag.bind,gtag._call.__name__)()
+        #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+        await self.js._render( str(gtag), gtag._getScripts()+";"+caller )
+
+    async def forceUpdate(self,g): #can't be called from client side !
         g._rebuild()
-        js=g._update()["script"]
-        print("force update",repr(g),"-->",js)
+        js=g._update()["script"]    #TODO: not cute ... should unify way to render to client (currently: 3 ways)
+        log(">>>Force UPDATE:",repr(g))
         await self.js.forceUpdateManually(js)
 
     async def bindUpdate(self,id:str,gid:str,method:str,*args):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
         if self._ses is None:
             gtag=self._originalGTag
-            gid=None
         else:
             gtag=self._ses[gid]
 
@@ -542,7 +540,7 @@ class GTagApp(guy.Guy):
 
         log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s)"% (method,args))
         proc=getattr(obj,method)
-        updateAll=not Capacity(proc).hasLocal
+        toRender=gtag if not Capacity(proc).hasLocal else obj
 
         if asyncio.iscoroutinefunction( proc ):
             rep=await proc(*args)
@@ -550,16 +548,12 @@ class GTagApp(guy.Guy):
             rep=proc(*args)
 
         if rep:
-            if "async_generator" in str(type(rep)): #TODO: howto better ?
-                async for line in rep:
-                    await self.forceUpdate(gtag if updateAll else obj)
+            if isAsyncGenerator(rep):
+                async for _ in rep: # could use yielded thing to update all or local ?!
+                    await self.forceUpdate(toRender)
             else:
                 raise Exception("wtf?")
 
-        if updateAll:
-            gtag._rebuild()
-            return gtag._update() #UPDATE ALL (historic way)
-        else:
-            obj._rebuild()
-            return obj._update()
+        toRender._rebuild()
+        return toRender._update() #UPDATE ALL (historic way)
         #////////////////////////////////////////////////////////////////// THE MAGIC
