@@ -4,7 +4,7 @@ if __name__=="__main__":
 
 from gtag import gtag,Tag
 from pprint import pprint
-
+from datetime import datetime
 
 def test_CSS():
     assert str(gtag.CSS("body {background:yellow}"))=="""<style type="text/css">body {background:yellow}</style>"""
@@ -52,6 +52,11 @@ def test_gtag_internals():
 
     assert len(g._childs)==1 #innerchild is no more auto-appended to childs (in constructor) !!!!
 
-def test_convjs():
-    assert gtag.convjs([42,b"this.value","he'llo",False,None,3.14,0,True])==['42', "this.value", "'he&#x27;llo'", 'false', 'null', '3.14', '0', 'true']
-    assert gtag.convjs([42,b"this.value",'he"llo',False,None,3.14,0,True])==['42', "this.value", "'he&quot;llo'", 'false', 'null', '3.14', '0', 'true']
+def test_jjs():
+    a=["A",b"this.value",False,None,42]
+    k=dict(p=12,d=datetime(2020,12,12,1,0,0),c=b"alert(42)")
+    assert gtag.jjs(a)=='["A", this.value, false, null, 42]'
+    assert gtag.jjs(k)=='{"p": 12, "d": "2020-12-12T01:00:00Z", "c": alert(42)}'
+
+
+

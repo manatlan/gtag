@@ -1,4 +1,4 @@
-from gtag import GTag,Tag
+from gtag import GTag,Tag,local
 import pytest
 
 # @pytest.mark.skip(reason="could coz trouble with vscode <> chrome")
@@ -62,13 +62,29 @@ def test_GTagApp_run_with_start_ag_params():
         size=(100,100)
         def build(self):
             return Tag.div("hello")
-        async def evtExit(self,i):
+        @local
+        async def evtExit(self,i=42):
             print("yo")
             yield
             self.exit(i)
 
     m=My()
-    assert m.run(start=m.evtExit(45))==45
+    assert m.run(start=m.evtExit(i=45))==45
+
+
+def test_GTagApp_run_with_start_ag_params_karg():
+    class My(GTag):
+        size=(100,100)
+        def build(self):
+            return Tag.div("hello")
+        async def evtExit(self,a=12,b=13):
+            print("yo")
+            yield
+            self.exit(a+b)
+
+    m=My()
+    assert m.run(start=m.evtExit(b=-12))==0
+
 
 
 # @pytest.mark.skip(reason="could coz trouble with vscode <> chrome")

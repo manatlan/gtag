@@ -24,20 +24,14 @@ isAsyncGenerator=lambda x: "async_generator" in str(type(x)) #TODO: howto better
 
 value=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
-def convjs(l:list)->list:
-    ll=[]
-    for i in l:
-        if i is None:
-            ll.append("null")
-        elif isinstance(i,bool):
-            ll.append( i and "true" or "false")
-        elif isinstance(i,bytes):   # bind b"" -> js
-            ll.append( i.decode() )
-        elif isinstance(i,str):
-            ll.append( "'%s'" % html.escape(i))
+def jjs(obj):
+    """ json dumps (js is b'' (bytes)) """
+    def my(obj):
+        if isinstance(obj,bytes):
+            return "<:<:%s:>:>" % obj.decode()
         else:
-            ll.append( str(i) )
-    return ll
+            return guy.serialize(obj)
+    return guy.json.dumps(obj, default=my).replace('"<:<:',"").replace(':>:>"',"")
 
 def log(*a):
     #~ print(*a)
@@ -321,11 +315,11 @@ class GTag:
                     else:
                         return ReactiveProp(self.__dict__,name)
                 elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
-                    def _(*args):
-                        if args:
-                            return "self.bindUpdate('%s',GID,'%s',%s)" % (self.id,name,",".join(convjs(list(args))) ) #TODO: escaping here ! (and the render/str ?) json here !
+                    def _(*args,**kargs):
+                        if args or kargs:
+                            return "self.bindUpdate('%s',GID,'%s',%s,%s)" % (self.id,name,jjs(args),jjs(kargs))
                         else:
-                            return "self.bindUpdate('%s',GID,'%s')" % (self.id,name)
+                            return "self.bindUpdate('%s',GID,'%s',[],{})" % (self.id,name)
                     return _
                 else:
                     raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
@@ -533,7 +527,7 @@ class GTagApp(guy.Guy):
         log(">>>Force UPDATE:",repr(g))
         await self.js.forceUpdateManually(js)
 
-    async def bindUpdate(self,id:str,gid:str,method:str,*args):
+    async def bindUpdate(self,id:str,gid:str,method:str,args,kargs):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
         if self._ses is None:
             gtag=self._originalGTag
@@ -543,14 +537,14 @@ class GTagApp(guy.Guy):
         #////////////////////////////////////////////////////////////////// THE MAGIC TODO: move to gtag
         obj=gtag._getRef(id)
 
-        log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s)"% (method,args))
+        log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s %s)"% (method,args,kargs))
         proc=getattr(obj,method)
         toRender=gtag if not Capacity(proc).hasLocal else obj
 
         if asyncio.iscoroutinefunction( proc ):
-            rep=await proc(*args)
+            rep=await proc(*args,**kargs)
         else:
-            rep=proc(*args)
+            rep=proc(*args,**kargs)
 
         if rep:
             if isAsyncGenerator(rep):

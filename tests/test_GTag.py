@@ -2,7 +2,7 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
-from gtag import GTag,Tag
+from gtag import GTag,Tag,local
 from gtag.gtag import CSS,JS
 import pytest
 
@@ -52,6 +52,16 @@ def test_GTag_simplest3():
     assert str(m)==""
 
 def test_GTag_simplest4():
+    class C(GTag):
+        def build(self):
+            return Tag.div("hello")
+    class My(GTag):
+        def build(self):
+            return C()
+    m=My()
+    assert ">hello<" in str(m)
+
+def test_GTag_simplest5():
     class C(GTag):
         def build(self):
             return Tag.div("hello")
