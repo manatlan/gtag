@@ -125,7 +125,7 @@ class InputText(GTag):
         self.onchange=onchange
 
     def build(self):
-        return Input(type=self.type,value=self.value,onchange=self.bind.select("this.value"),disabled=bool(self.disabled))
+        return Input(type=self.type,value=self.value,onchange=self.bind.select(b"this.value"),disabled=bool(self.disabled))
 
     # @local
     def select(self,value):
@@ -142,7 +142,7 @@ class TextArea(GTag):
         self.onchange=onchange
 
     def build(self):
-        return Tag.textarea(self.value,onchange=self.bind.select("this.value"),disabled=bool(self.disabled))
+        return Tag.textarea(self.value,onchange=self.bind.select(b"this.value"),disabled=bool(self.disabled))
 
     def select(self,value):
         self.value = value
@@ -168,12 +168,12 @@ class Nav(GTag):
 
         menu=Tag.div(klass="navbar-start")
         for k,v in self.entries.items():
-            menu.add( A(k, klass="navbar-item", onclick=self.bind.evtSelectEntry("'%s'"%k)))
+            menu.add( A(k, klass="navbar-item", onclick=self.bind.evtSelectEntry(k)))
 
         if self.more:
             menuEnd=Tag.div(klass="navbar-end")
             for k,v in self.more.items():
-                menuEnd.add( A(k, klass="navbar-item", onclick=self.bind.evtSelectEntry("'%s'"%k)))
+                menuEnd.add( A(k, klass="navbar-item", onclick=self.bind.evtSelectEntry(k)))
         else:
             menuEnd=None
 
@@ -232,7 +232,7 @@ class RadioButtons(_Selector):
 
 class Select(_Selector):
     def build(self):
-        s=Tag.select( onclick=self.bind.select("this.value"),style="width:100%",disabled=bool(self.disabled) )
+        s=Tag.select( onclick=self.bind.select(b"this.value"),style="width:100%",disabled=bool(self.disabled) )
         for idx,i in enumerate(self.choices):
             s.add( Tag.option(i,value=idx,selected=(self.value==i)))
         return Tag.div(s,klass="select")

@@ -31,6 +31,8 @@ def convjs(l:list)->list:
             ll.append("null")
         elif isinstance(i,bool):
             ll.append( i and "true" or "false")
+        elif isinstance(i,bytes):   # bind b"" -> js
+            ll.append( i.decode() )
         elif isinstance(i,str):
             ll.append( "'%s'" % html.escape(i))
         else:
@@ -321,7 +323,7 @@ class GTag:
                 elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
                     def _(*args):
                         if args:
-                            return "self.bindUpdate('%s',GID,'%s',%s)" % (self.id,name,",".join([str(i) for i in args]) ) #TODO: escaping here ! (and the render/str ?) json here !
+                            return "self.bindUpdate('%s',GID,'%s',%s)" % (self.id,name,",".join(convjs(list(args))) ) #TODO: escaping here ! (and the render/str ?) json here !
                         else:
                             return "self.bindUpdate('%s',GID,'%s')" % (self.id,name)
                     return _
@@ -468,10 +470,6 @@ class GTagApp(guy.Guy):
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script>
-            var None=null;
-            var True=true;
-            var False=false;
-
             if(!sessionStorage["gtag"]) sessionStorage["gtag"]=Math.random().toString(36).substring(2);
             var GID=sessionStorage["gtag"];
 
@@ -515,7 +513,7 @@ class GTagApp(guy.Guy):
                 fname = gtag._call.__name__
                 args = gtag._call.cr_frame.f_locals  # dict object
                 if "self" in args: del args["self"]
-                args=convjs(args.values())
+                args=args.values()
 
                 method=getattr(gtag.bind,fname)
                 caller=method(*args)

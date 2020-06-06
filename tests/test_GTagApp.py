@@ -30,7 +30,7 @@ def test_GTagApp_run_with_start():
     m=My()
     assert m.run(start=m.evtExit())==43
 
-# @pytest.mark.skip(reason="could coz trouble with vscode <> chrome")
+#@pytest.mark.skip(reason="TODO")
 def test_GTagApp_run_with_start_param():
     class My(GTag):
         size=(100,100)
