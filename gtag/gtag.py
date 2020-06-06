@@ -510,8 +510,13 @@ class GTagApp(guy.Guy):
         if gtag._call:  # there is an event to call at start !
             if isAsyncGenerator(gtag._call) or asyncio.iscoroutine(gtag._call):
 
-                fname = gtag._call.__name__
-                args = gtag._call.cr_frame.f_locals  # dict object
+                if asyncio.iscoroutine(gtag._call):
+                    fname = gtag._call.__name__
+                    args = gtag._call.cr_frame.f_locals  # dict object
+                elif isAsyncGenerator(gtag._call):
+                    fname=gtag._call.__name__
+                    args = gtag._call.ag_frame.f_locals  # dict object
+
                 if "self" in args: del args["self"]
                 args=args.values()
 

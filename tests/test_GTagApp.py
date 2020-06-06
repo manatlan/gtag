@@ -39,11 +39,10 @@ def test_GTagApp_run_with_start_param():
         async def evtExit(self,p,txt,b):
             self.exit("%s%s%s"%(p,txt,b))
 
-
     m=My()
     assert m.run(start=m.evtExit(43,"jj",False))=="43jjFalse"
 
-@pytest.mark.skip(reason="TODO")
+#@pytest.mark.skip(reason="TODO")
 def test_GTagApp_run_with_start_ag():
     class My(GTag):
         size=(100,100)
@@ -56,6 +55,20 @@ def test_GTagApp_run_with_start_ag():
 
     m=My()
     assert m.run(start=m.evtExit())==44
+
+#@pytest.mark.skip(reason="TODO")
+def test_GTagApp_run_with_start_ag_params():
+    class My(GTag):
+        size=(100,100)
+        def build(self):
+            return Tag.div("hello")
+        async def evtExit(self,i):
+            print("yo")
+            yield
+            self.exit(i)
+
+    m=My()
+    assert m.run(start=m.evtExit(45))==45
 
 
 # @pytest.mark.skip(reason="could coz trouble with vscode <> chrome")

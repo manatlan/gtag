@@ -54,3 +54,4 @@ def test_gtag_internals():
 
 def test_convjs():
     assert gtag.convjs([42,b"this.value","he'llo",False,None,3.14,0,True])==['42', "this.value", "'he&#x27;llo'", 'false', 'null', '3.14', '0', 'true']
+    assert gtag.convjs([42,b"this.value",'he"llo',False,None,3.14,0,True])==['42', "this.value", "'he&quot;llo'", 'false', 'null', '3.14', '0', 'true']
