@@ -141,31 +141,6 @@ class ReactiveProp:
     #TODO: add a lot of __slot__ ;-)
 
 
-#~ class ReactiveMethod:
-    #~ """ like ReactiveProp, but for gtag.method wchich can return binded tag
-        #~ (object created by @bind decorator)
-    #~ """
-    #~ def __init__(self,instance,method,args,kargs):
-        #~ self.__instance=instance
-        #~ self.__method=method
-        #~ self.__a=args
-        #~ self.__k=kargs
-
-    #~ def __call__(self):
-        #~ return self.__method(self.__instance,*self.__a,**self.__k)
-
-    #~ def __str__(self) -> str:
-        #~ return str(self())
-
-
-#~ def bind( method ): # gtag.method decorator -> ReactiveMethod
-    #~ """ Decorator to make a gtag.method() able to return a "Reactive Tag" !
-        #~ (like 'computed vars' in vuejs)
-    #~ """
-    #~ def _(gtagInstance,*a,**k):
-        #~ assert isinstance(gtagInstance,GTag)
-        #~ return ReactiveMethod(gtagInstance,method,a,k)
-    #~ return _
 
 def local( method ): # gtag.event decorator
     """ Decorator to make a gtag.method() able to start after init !
@@ -175,7 +150,7 @@ def local( method ): # gtag.event decorator
 
 class Capacity:
     LOCAL="local"
-    def __init__(self,method):
+    def __init__(self,method:callable):
         self.__method=method
     def has( self, capacity ):
         if hasattr(self.__method,"capacities"):
@@ -225,10 +200,12 @@ class GTag:
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
         self._tag=None
+        self.script=None
 
-        if "dontGuessParent" in k.keys(): # clonage (only main tags, so parent is None)
-            del k["dontGuessParent"]
-            parent=None
+        if "parent" in k.keys(): # clonage (only main tags, so parent is None)
+            #(but could be used to reparent a gtag manually)
+            parent=k["parent"]
+            del k["parent"]
         else:
             # guess parent
             frame = sys._getframe(1)
@@ -250,7 +227,7 @@ class GTag:
         log("INIT",repr(self))
         self.init(*self._args,**self._kargs)
 
-        self._tag = self.build() # can be a Tag or ReactiveMethod
+        self._tag = self.build()
 
         # Store the instance in the parent._childs
         if self._parent:
@@ -339,8 +316,9 @@ class GTag:
 
 
     def _clone(self):
+        assert self._parent==None,"Can't clone a gtag which is not the main"
         props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call"}
-        gtag = self.__class__(*self._args,**self._kargs,dontGuessParent=True)
+        gtag = self.__class__(*self._args,**self._kargs,parent=None)
         gtag.__dict__.update(props)
         assert isinstance(gtag,GTag)
         log("^^^ CLONED ^^^",repr(self),"-->",repr(gtag))
@@ -381,10 +359,6 @@ class GTag:
         """
         pass
 
-    def script(self):               #TODO: i don't like that -> should change that ! (todo: gtags comp too)
-        """ Override to get back some js code"""
-        pass
-
     def _rebuild(self):
         self._childs=[]
         self._tag=self.build()
@@ -422,7 +396,7 @@ class GTag:
     def _getScripts(self) -> str:
         ll=[]
         for g in self._getChilds().values():
-            js=g and g.script() or None
+            js=g.script
             if js:
                 ll.append( "(function(tag){%s})(document.getElementById('%s'))" % (str(js),g.id) )
         return ";".join(ll)
