@@ -24,13 +24,26 @@ isAsyncGenerator=lambda x: "async_generator" in str(type(x)) #TODO: howto better
 
 value=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
+def convjs(l:list)->list:
+    ll=[]
+    for i in l:
+        if i is None:
+            ll.append("null")
+        elif isinstance(i,bool):
+            ll.append( i and "true" or "false")
+        elif isinstance(i,str):
+            ll.append( "'%s'" % html.escape(i))
+        else:
+            ll.append( str(i) )
+    return ll
+
 def log(*a):
     #~ print(*a)
     pass
 
 
 class MyMetaclass(type):
-    def __getattr__(self,name:str) -> any:
+    def __getattr__(self,name:str) -> callable:
         def _(*a,**k) -> Tag:
             t=Tag(*a,**k)
             t.tag=name
@@ -38,7 +51,6 @@ class MyMetaclass(type):
         return _
 
 class Tag(metaclass=MyMetaclass):
-    __metaclass__ = MyMetaclass
     """ This is a helper to produce a "HTML TAG" """
     tag="div" # default one
     klass=None
@@ -73,6 +85,7 @@ class Tag(metaclass=MyMetaclass):
         )
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
+
 
 
 class CSS(Tag):
@@ -240,7 +253,8 @@ class GTag:
                 inners=_gc(obj,lvl+1)
                 ll.extend( [i+' (INNER)' for i in inners] )
             for obj in g._childs:
-                ll.extend( _gc(obj,lvl+1) )
+                if obj not in g.innerChilds:
+                    ll.extend( _gc(obj,lvl+1) )
             return ll
         return "\n".join(_gc(self,0))
 
@@ -256,7 +270,8 @@ class GTag:
             for obj in g.innerChilds:
                 d.update( _gc(obj) )
             for obj in g._childs:
-                d.update( _gc(obj) )
+                if obj not in g.innerChilds:
+                    d.update( _gc(obj) )
             return d
 
         return _gc(self)
@@ -315,12 +330,13 @@ class GTag:
         return Binder()
 
 
-    def _clone(self):
+    def _clone(self): #TODO: not clear here ... need redone
         assert self._parent==None,"Can't clone a gtag which is not the main"
         props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call"}
         gtag = self.__class__(*self._args,**self._kargs,parent=None)
         gtag.__dict__.update(props)
-        assert isinstance(gtag,GTag)
+        gtag.init(*self._args,**self._kargs)
+        gtag._rebuild()
         log("^^^ CLONED ^^^",repr(self),"-->",repr(gtag))
         return gtag
 
@@ -359,6 +375,8 @@ class GTag:
         """
         pass
 
+    def exit(self,v=None): pass # overriden by run/runcef/serve
+
     def _rebuild(self):
         self._childs=[]
         self._tag=self.build()
@@ -375,8 +393,6 @@ class GTag:
                 assert isinstance(o._tag,Tag)
                 o=o._tag        #TODO: recursivity here ?!... wtf if gtag return a gtag
                 o.id=self.id
-            else:
-                raise Exception("%s --build--> ???%s???" % (repr(self),type(o)))
             return str(o)
 
     def __repr__(self):
@@ -407,7 +423,7 @@ class GTag:
         s=self._getScripts()
         log(">>>UPDATE:",repr(self))
         log(self._tree())
-        return dict(script="""document.querySelector("#%s").innerHTML=`%s`;%s""" % (
+        return dict(script="""document.querySelector("#%s").outerHTML=`%s`;%s""" % (
             self.id, h,s
         ))
 
@@ -452,6 +468,10 @@ class GTagApp(guy.Guy):
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script>
+            var None=null;
+            var True=true;
+            var False=false;
+
             if(!sessionStorage["gtag"]) sessionStorage["gtag"]=Math.random().toString(36).substring(2);
             var GID=sessionStorage["gtag"];
 
@@ -491,7 +511,15 @@ class GTagApp(guy.Guy):
         caller=""
         if gtag._call:  # there is an event to call at start !
             if isAsyncGenerator(gtag._call) or asyncio.iscoroutine(gtag._call):
-                caller=getattr(gtag.bind,gtag._call.__name__)()
+
+                fname = gtag._call.__name__
+                args = gtag._call.cr_frame.f_locals  # dict object
+                if "self" in args: del args["self"]
+                args=convjs(args.values())
+
+                method=getattr(gtag.bind,fname)
+                caller=method(*args)
+                print("====>",gtag._call,caller)
         #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
         await self.js._render( str(gtag), gtag._getScripts()+";"+caller )

@@ -30,6 +30,50 @@ def test_GTag():
 
     assert type(m._update()) is dict
 
+def test_GTag_simplest():
+    class My(GTag):
+        def build(self):
+            return "hello"
+    m=My()
+    assert str(m)=="hello"
+
+def test_GTag_simplest2():
+    class My(GTag):
+        def build(self):
+            return 42
+    m=My()
+    assert str(m)=="42"
+
+def test_GTag_simplest3():
+    class My(GTag):
+        def build(self):
+            return None
+    m=My()
+    assert str(m)==""
+
+def test_GTag_simplest4():
+    class C(GTag):
+        def build(self):
+            return Tag.div("hello")
+    class My(GTag):
+        def build(self):
+            return C()
+    m=My()
+    assert ">hello<" in str(m)
+
+def test_GTag_simplest_bad():
+    class C(GTag):
+        def build(self):
+            return "hello"  #<- not a Tag !!
+    class My(GTag):
+        def build(self):
+            return C()
+    m=My()
+
+    with pytest.raises(Exception):
+        print(m)
+
+
 
 def test_GTag_build():
     class My(GTag):
