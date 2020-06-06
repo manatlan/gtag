@@ -28,10 +28,10 @@ def jjs(obj):
     """ json dumps (js is b'' (bytes)) """
     def my(obj):
         if isinstance(obj,bytes):
-            return "<:<:%s:>:>" % obj.decode()
+            return "<:<:%s:>:>" % obj.decode() #TODO: not optimal ... do better ;-)
         else:
             return guy.serialize(obj)
-    return guy.json.dumps(obj, default=my).replace('"<:<:',"").replace(':>:>"',"")
+    return guy.json.dumps(obj, default=my).replace('"<:<:',"").replace(':>:>"',"") #TODO: not optimal ... do better ;-)
 
 def log(*a):
     #~ print(*a)

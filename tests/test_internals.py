@@ -32,6 +32,7 @@ def test_gtag_internals():
     assert g.id in d
     assert g.c.id in d
 
+    #TODO: do something here (the inner shouldn't be added to child ... no ?)
     assert g._tree().count("\n") ==2
     #SOMETHING LIKE:
     #       main
@@ -50,6 +51,7 @@ def test_gtag_internals():
 
     assert g._tree().count("\n") ==2
 
+    #TODO: do something here (will be the default ... I guess)
     assert len(g._childs)==1 #innerchild is no more auto-appended to childs (in constructor) !!!!
 
 def test_jjs():
