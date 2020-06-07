@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gtag"
 version = "0.0.13"
-description = "GUI Lib for python3 (depends on guy), components based"
+description = "GUI toolkit for building beautiful applications for mobile, web, and desktop from a single python3 codebase"
 authors = ["manatlan <manatlan@gmail.com>"]
 readme = 'README.md'
 license="Apache-2.0"
