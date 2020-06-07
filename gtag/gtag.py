@@ -384,6 +384,8 @@ class GTag:
         self._tag=self.build()
 
     def __str__(self):
+        for o in self.innerChilds:
+            o._rebuild()
 
         def getTagIded(o):
             if isinstance(o,Tag):
