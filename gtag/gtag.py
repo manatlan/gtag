@@ -377,17 +377,24 @@ class GTag:
         self._tag=self.build()
 
     def __str__(self):
+
+        def getTagIded(o):
+            if isinstance(o,Tag):
+                o.id=self.id
+            elif isinstance(o,GTag):
+                o=getTagIded(o._tag)
+                o.id=self.id
+            else:
+                o=Tag.span(o)
+                o.id=self.id
+            return o
+
         log("___rendering",repr(self))
         o= self._tag
         if o is None:
             return ""
         else:
-            if isinstance(o,Tag):
-                o.id=self.id
-            elif isinstance(o,GTag):
-                assert isinstance(o._tag,Tag)
-                o=o._tag        #TODO: recursivity here ?!... wtf if gtag return a gtag
-                o.id=self.id
+            o=getTagIded(o)
             return str(o)
 
     def __repr__(self):

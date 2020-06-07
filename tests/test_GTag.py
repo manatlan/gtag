@@ -35,14 +35,17 @@ def test_GTag_simplest():
         def build(self):
             return "hello"
     m=My()
-    assert str(m)=="hello"
+    m._id="fake"
+    assert str(m)=='<span id="fake">hello</span>' #it's now auto embedded in span tag
+
 
 def test_GTag_simplest2():
     class My(GTag):
         def build(self):
             return 42
     m=My()
-    assert str(m)=="42"
+    m._id="fake"
+    assert str(m)=='<span id="fake">42</span>' #it's now auto embedded in span tag
 
 def test_GTag_simplest3():
     class My(GTag):
@@ -71,6 +74,19 @@ def test_GTag_simplest5():
     m=My()
     assert ">hello<" in str(m)
 
+def test_GTag_simplest6():
+    class C(GTag):
+        def build(self):
+            return Tag.div("hello")
+    class B(GTag):
+        def build(self):
+            return C()
+    class My(GTag):
+        def build(self):
+            return B()
+    m=My()
+    assert ">hello</div" in str(m)
+
 def test_GTag_simplest_bad():
     class C(GTag):
         def build(self):
@@ -79,10 +95,7 @@ def test_GTag_simplest_bad():
         def build(self):
             return C()
     m=My()
-
-    with pytest.raises(Exception):
-        print(m)
-
+    assert ">hello</span" in str(m)
 
 
 def test_GTag_build():
