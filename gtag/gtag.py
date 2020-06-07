@@ -235,6 +235,7 @@ class GTag:
 
         log("INIT",repr(self))
         self.init(*self._args,**self._kargs)
+        self._childs=[]     #<- clear innerchilds (creating during child phase)
 
         self._tag = self.build()
 
@@ -249,8 +250,7 @@ class GTag:
                 inners=_gc(obj,lvl+1)
                 ll.extend( [i+' (INNER)' for i in inners] )
             for obj in g._childs:
-                if obj not in g.innerChilds:
-                    ll.extend( _gc(obj,lvl+1) )
+                ll.extend( _gc(obj,lvl+1) )
             return ll
         return "\n".join(_gc(self,0))
 
@@ -266,8 +266,7 @@ class GTag:
             for obj in g.innerChilds:
                 d.update( _gc(obj) )
             for obj in g._childs:
-                if obj not in g.innerChilds:
-                    d.update( _gc(obj) )
+                d.update( _gc(obj) )
             return d
 
         return _gc(self)

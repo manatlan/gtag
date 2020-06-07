@@ -39,7 +39,7 @@ def test_gtag_internals():
     #           child (inner)
     #           child
 
-    assert len(g._childs)==2
+    assert len(g._childs)==1
 
     #########################################################
     g._rebuild()
@@ -51,8 +51,7 @@ def test_gtag_internals():
 
     assert g._tree().count("\n") ==2
 
-    #TODO: do something here (will be the default ... I guess)
-    assert len(g._childs)==1 #innerchild is no more auto-appended to childs (in constructor) !!!!
+    assert len(g._childs)==1
 
 def test_jjs():
     a=["A",b"this.value",False,None,42]
