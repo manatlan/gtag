@@ -77,13 +77,13 @@ def test_GTagApp_run_with_start_ag_params_karg():
         size=(100,100)
         def build(self):
             return Tag.div("hello")
-        async def evtExit(self,a=12,b=13):
+        async def evtExit(self,a,b=13,c=10):
             print("yo")
             yield
-            self.exit(a+b)
+            self.exit(a+b+c)
 
     m=My()
-    assert m.run(start=m.evtExit(b=-12))==0
+    assert m.run(start=m.evtExit(3,c=-16))==0
 
 
 
