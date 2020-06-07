@@ -18,6 +18,12 @@ def test_Tag_metaclass():
     assert str(s) == '<form checked class="jack">42</form>'
 
 
+def test_Tag_metaclass2():
+    s=Tag.my_tag(42,klass="jo")
+    assert str(s) == '<my-tag class="jo">42</my-tag>'
+
+
+
 def test_Tag_change_props():
     t=Tag()
     t.id=1

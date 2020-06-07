@@ -75,7 +75,7 @@ class Tag(metaclass=MyMetaclass):
                     rattrs.append( '%s="%s"'%(k.replace("_","-") if k!="klass" else "class",html.escape( str(v) )) )
 
         return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
-            tag=self.tag,
+            tag=self.tag.replace("_","-"),
             attrs=" ".join([""]+rattrs) if rattrs else "",
             content=" ".join([str(i) for i in self.__contents if i is not None]),
         )
