@@ -24,14 +24,14 @@ isAsyncGenerator=lambda x: "async_generator" in str(type(x)) #TODO: howto better
 
 value=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
-def jjs(obj):
+def jjs(obj): #TODO: not optimal ... do better than pattern subst ;-)
     """ json dumps (js is b'' (bytes)) """
     def my(obj):
         if isinstance(obj,bytes):
-            return "<:<:%s:>:>" % obj.decode() #TODO: not optimal ... do better ;-)
+            return "<:<:%s:>:>" % obj.decode()
         else:
             return guy.serialize(obj)
-    return guy.json.dumps(obj, default=my).replace('"<:<:',"").replace(':>:>"',"") #TODO: not optimal ... do better ;-)
+    return guy.json.dumps(obj, default=my).replace('"<:<:',"").replace(':>:>"',"")
 
 def log(*a):
     #~ print(*a)

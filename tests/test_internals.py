@@ -32,7 +32,6 @@ def test_gtag_internals():
     assert g.id in d
     assert g.c.id in d
 
-    #TODO: do something here (the inner shouldn't be added to child ... no ?)
     assert g._tree().count("\n") ==2
     #SOMETHING LIKE:
     #       main
