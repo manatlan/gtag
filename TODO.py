@@ -9,10 +9,8 @@ class Comp(GTag):
     def build(self):
         return Tag.div(
             Tag.div( "hello", self.value ),
-            Tag.div( "hello", self.bind.value ),
             Tag.button( "Click me", onclick=self.bind.clickMe(1) ),
         )
-    # @local                        # <- here is the trick
     def clickMe(self,inc):
         self.value+=inc
 
