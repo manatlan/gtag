@@ -217,15 +217,19 @@ class GTag:
             del k["parent"]
         else:
             # guess parent
-            frame = sys._getframe(1)
-            arguments = frame.f_code.co_argcount
-            if arguments == 0:
-                parent=None
-            else:
-                caller_calls_self = frame.f_code.co_varnames[0]
-                parent=frame.f_locals[caller_calls_self]
-                assert isinstance(parent,GTag)
-                if parent is self: parent=None  #for TU only
+            lvl=0
+            while True:
+                lvl+=1
+                frame = sys._getframe(lvl)
+                arguments = frame.f_code.co_argcount
+                if arguments == 0:
+                    parent=None
+                    break
+                else:
+                    caller_calls_self = frame.f_code.co_varnames[0]
+                    parent=frame.f_locals[caller_calls_self]
+                    if isinstance(parent,GTag):
+                        break
 
         self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         self._childs=[]     #<- this is cleared at each rendering
@@ -235,7 +239,7 @@ class GTag:
 
         log("INIT",repr(self))
         self.init(*self._args,**self._kargs)
-        self._childs=[]     #<- clear innerchilds (creating during child phase)
+        self._childs=[]     #<- clear innerchilds (creating during child phase), to avoid to appears in child
 
         self._tag = self.build()
 
@@ -328,7 +332,7 @@ class GTag:
     def _clone(self): #TODO: not clear here ... need redone
         assert self._parent==None,"Can't clone a gtag which is not the main"
         props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call"}
-        gtag = self.__class__(*self._args,**self._kargs,parent=None)
+        gtag = self.__class__(*self._args,**self._kargs,parent=None) # parent=None, will avoid guess parent ! (it makes sense, because you can clone only mains)
         gtag.__dict__.update(props)
         gtag.init(*self._args,**self._kargs)
         gtag._rebuild()

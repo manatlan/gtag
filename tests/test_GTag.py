@@ -87,7 +87,7 @@ def test_GTag_simplest6():
     m=My()
     assert ">hello</div" in str(m)
 
-def test_GTag_simplest_bad():
+def test_GTag_simplest1():
     class C(GTag):
         def build(self):
             return "hello"  #<- not a Tag !!
@@ -96,6 +96,26 @@ def test_GTag_simplest_bad():
             return C()
     m=My()
     assert ">hello</span" in str(m)
+
+
+def test_GTag_guess_parent_in_difficulty():
+    class C(GTag):
+        def init(self,v):
+            self.v=v
+        def build(self):
+            return self.v
+    class My(GTag):
+        def init(self,ll):
+            self.ll=ll
+        def build(self):
+            rows=[C(i) for i in self.ll]
+            return Tag.div(*rows)
+    m=My( list("abc") )
+    rendu=str(m)
+    assert ">a</span" in rendu
+    assert ">b</span" in rendu
+    assert ">c</span" in rendu
+
 
 
 def test_GTag_build():

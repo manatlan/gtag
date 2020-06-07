@@ -87,7 +87,7 @@ def test_GTagApp_run_with_start_ag_params_karg():
 
 
 
-@pytest.mark.skip(reason="could coz trouble with vscode <> chrome")
+#@pytest.mark.skip(reason="could coz trouble with vscode <> chrome")
 def test_GTagApp_serve():
     class My(GTag):
         size=(100,100)
