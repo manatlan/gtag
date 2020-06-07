@@ -24,7 +24,7 @@ isAsyncGenerator=lambda x: "async_generator" in str(type(x)) #TODO: howto better
 
 value=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
-def jjs(obj): #TODO: not optimal ... do better than pattern subst ;-)
+def jjs(obj): #TODO: not optimal ... do better than str's pattern subst ;-)
     """ json dumps (js is b'' (bytes)) """
     def my(obj):
         if isinstance(obj,bytes):
@@ -277,7 +277,10 @@ class GTag:
 
     def _getRef(self,id): # -> GTag
         childs=self._getChilds()
-        return childs[id]
+        try:
+            return childs[id]
+        except KeyError:
+            raise Exception("ERROR: Unknown child '%s' in '%s'"%(id,self.id))
 
     def _getMain(self):
         x=self
@@ -329,8 +332,8 @@ class GTag:
         return Binder()
 
 
-    def _clone(self): #TODO: not clear here ... need redone
-        assert self._parent==None,"Can't clone a gtag which is not the main"
+    def _clone(self): #TODO: not clear here ... need redone (the rebuild() needed ?! why ?!)
+        assert self._parent==None,"Can't clone a gtag which is not the main one"
         props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call"}
         gtag = self.__class__(*self._args,**self._kargs,parent=None) # parent=None, will avoid guess parent ! (it makes sense, because you can clone only mains)
         gtag.__dict__.update(props)
@@ -389,7 +392,7 @@ class GTag:
                 o=getTagIded(o._tag)
                 o.id=self.id
             else:
-                o=Tag.span(o)
+                o=Tag.span(o) # auto span'ify
                 o.id=self.id
             return o
 
@@ -476,15 +479,8 @@ class GTagApp(guy.Guy):
         <script>
             if(!sessionStorage["gtag"]) sessionStorage["gtag"]=Math.random().toString(36).substring(2);
             var GID=sessionStorage["gtag"];
-
-            async function forceUpdateManually(x) {console.log(x),eval(x)}
-
             async function getSessionId() {return GID}
-            async function _render(html,script) {
-                document.body.innerHTML=html;
-                if(script) eval(script)
-                console.log(script)
-            }
+            async function render(js) {eval(js)}
         </script>
         %s
     </head>
@@ -504,7 +500,7 @@ class GTagApp(guy.Guy):
         else: # app mode
             gtag = self._originalGTag
 
-        gtag.exit = self.exit
+        gtag.exit = self.exit #plug the exit()
 
         log(">>>SERVE",repr(gtag))
         log(gtag._tree())
@@ -522,20 +518,18 @@ class GTagApp(guy.Guy):
                     args = gtag._call.ag_frame.f_locals  # dict object
 
                 if "self" in args: del args["self"]
-                args=args.values()
+                args=args.values()  #TODO: how can it works ?! (verify that with TU *a,**k)!)
 
                 method=getattr(gtag.bind,fname)
                 caller=method(*args)
-                print("====>",gtag._call,caller)
         #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-        await self.js._render( str(gtag), gtag._getScripts()+";"+caller )
+        js="document.body.innerHTML=`%s`;%s;%s" %(str(gtag),gtag._getScripts(),caller)
+        await self.js.render(js)
 
     async def forceUpdate(self,g): #can't be called from client side !
         g._rebuild()
-        js=g._update()["script"]    #TODO: not cute ... should unify way to render to client (currently: 3 ways)
         log(">>>Force UPDATE:",repr(g))
-        await self.js.forceUpdateManually(js)
+        await self.js.render( g._update()["script"] )
 
     async def bindUpdate(self,id:str,gid:str,method:str,args,kargs):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
