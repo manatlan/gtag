@@ -137,6 +137,11 @@ class ReactiveProp:
         self.set( vv )
         return self
 
+    def __getitem__(self,k):
+        return self.get()[k]
+    def __setitem__(self,k,v):
+        self.get()[k]=value(v)
+
     def __int__(self):
         return int(self.get())
     def __bool__(self):
@@ -384,9 +389,6 @@ class GTag:
         self._tag=self.build()
 
     def __str__(self):
-        for o in self.innerChilds:
-            o._rebuild()
-
         def getTagIded(o):
             if isinstance(o,Tag):
                 o.id=self.id
@@ -403,6 +405,9 @@ class GTag:
         if o is None:
             return ""
         else:
+            for i in self.innerChilds:
+                i._rebuild()
+
             o=getTagIded(o)
             return str(o)
 
