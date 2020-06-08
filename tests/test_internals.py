@@ -2,6 +2,8 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
+from gtag.gtag import GTag
+import pytest
 from gtag import gtag,Tag
 from pprint import pprint
 from datetime import datetime
@@ -31,6 +33,11 @@ def test_gtag_internals():
     assert len(d)==3
     assert g.id in d
     assert g.c.id in d
+
+    assert isinstance(g.main.id,str)
+    assert g.main.id == g.id
+    assert g.main.main.main.id == g.id
+    assert g.main.parent is None
 
     assert g._tree().count("\n") ==2
     #SOMETHING LIKE:

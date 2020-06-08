@@ -560,6 +560,7 @@ class GTagApp(guy.Guy):
         if rep:
             if isAsyncGenerator(rep):
                 async for _ in rep: # could use yielded thing to update all or local ?!
+                    assert _ is None, "wtf?"
                     await self.forceUpdate(toRender)
             else:
                 raise Exception("wtf?")

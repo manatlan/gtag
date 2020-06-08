@@ -4,7 +4,7 @@ import pytest
 import asyncio
 
 async def fetch():
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.01)
     return 42
 
 def test_it():

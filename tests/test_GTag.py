@@ -308,8 +308,11 @@ def test_GTagDyn_with_childs():
         def test(self):
             return 1
 
-
     p=MTag()
+
+    with pytest.raises(Exception):
+        p._getRef("XXX")
+
     assert p.parent is None
     assert repr(p.main) == repr(p)
     str(p) #<-- force to render

@@ -1,4 +1,4 @@
-from gtag.gtag import ReactiveProp
+from gtag.gtag import GTag, ReactiveProp
 
 def test_ReactiveProp():
     p=dict(a=12,b=42)
@@ -53,3 +53,18 @@ def test_WARNING():
     def tt():
         assert str(a) == "43"
         assert "-%s-" % a == "-43-"
+
+def test_GtagProxy_reactiveProp():
+    class Pojo: pass
+    p=Pojo()
+    p.a=42
+
+    class My(GTag):
+        def init(self):
+            self.v=ReactiveProp(p.__dict__,"a")
+
+    assert isinstance(My().v,ReactiveProp)
+    assert My().v==42
+    assert isinstance(My().main.v,ReactiveProp)
+    assert My().main.v==42
+
