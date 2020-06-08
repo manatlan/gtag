@@ -86,7 +86,7 @@ def testClickInnerChild(webMode):
     assert s.main.cpt1=={'init': 4, 'build': 4}
     assert s.main.cpt2=={'init': 1, 'build': 5}
 
-def testBase():
+def testBaseApp():
     js=dict(
         render=lambda x:x,
         getSessionId= lambda: None, # GID is None
@@ -96,5 +96,17 @@ def testBase():
     assert a.cpt2=={'init': 1, 'build': 1}
     s=GSimu( a,False,js)
     assert a.cpt1=={'init': 1, 'build': 1}
-    assert a.cpt2=={'init': 1, 'build': 2}
+    assert a.cpt2=={'init': 1, 'build': 2} #TODO: in app-mode, innerchild are rebuider during the guy.init() ?! causing 2 instead of 1
+
+def testBaseWeb():
+    js=dict(
+        render=lambda x:x,
+        getSessionId= lambda: None, # GID is None
+    )
+    a=App()
+    assert a.cpt1=={'init': 1, 'build': 1}
+    assert a.cpt2=={'init': 1, 'build': 1}
+    s=GSimu( a,True,js)
+    assert a.cpt1=={'init': 1, 'build': 1}
+    assert a.cpt2=={'init': 1, 'build': 1}
 
