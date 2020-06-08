@@ -39,17 +39,17 @@ class App(GTag):
 
 
 
+js=dict(
+    render=lambda x:x,
+    getSessionId= lambda: None, # GID is None
+)
 
 
 import pytest
 @pytest.mark.parametrize("webMode", [False,True])
 def testClickChild(webMode):
-    cbs=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
 
-    s=GSimu( App(),webMode ,cbs)
+    s=GSimu( App(),webMode ,js)
 
     s.callEvent( s.childs[0].id, "clickMe",1)
     s.callEvent( s.childs[0].id, "clickMe",1)
@@ -66,12 +66,7 @@ def testClickChild(webMode):
 
 @pytest.mark.parametrize("webMode", [False,True])
 def testClickInnerChild(webMode):
-    cbs=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
-
-    s=GSimu( App(), webMode ,cbs )
+    s=GSimu( App(), webMode ,js )
 
     s.callEvent( s.innerchilds[0].id, "clickMe",1)
     s.callEvent( s.innerchilds[0].id, "clickMe",1)
@@ -87,10 +82,7 @@ def testClickInnerChild(webMode):
     assert s.main.cpt2=={'init': 1, 'build': 5}
 
 def testBaseApp():
-    js=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
+
     a=App()
     assert a.cpt1=={'init': 1, 'build': 1}
     assert a.cpt2=={'init': 1, 'build': 1}
@@ -99,10 +91,6 @@ def testBaseApp():
     assert a.cpt2=={'init': 1, 'build': 2} #TODO: in app-mode, innerchild are rebuider during the guy.init() ?! causing 2 instead of 1
 
 def testBaseWeb():
-    js=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
     a=App()
     assert a.cpt1=={'init': 1, 'build': 1}
     assert a.cpt2=={'init': 1, 'build': 1}
