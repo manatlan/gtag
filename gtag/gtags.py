@@ -1,4 +1,4 @@
-from gtag import GTag, Tag, local
+from gtag import GTag, Tag, local, value
 
 """
 An exemple of GTags
@@ -81,6 +81,7 @@ class MBox(GTag):
     def init(self,content):
         self.content=content
 
+    @local
     def build(self):
         if self.content:
             o = Tag.div(klass="modal is-active")
@@ -96,6 +97,7 @@ class Toaster(GTag):
     def init(self,content):
         self.content=content
 
+    @local
     def build(self):
         try:
             if self.content:
@@ -130,7 +132,7 @@ class InputText(GTag):
     # @local
     def select(self,value):
         self.value = value
-        if self.onchange: self.onchange(self.value)
+        if self.onchange: self.onchange( value(self.value) )
 
 
 
@@ -146,7 +148,7 @@ class TextArea(GTag):
 
     def select(self,value):
         self.value = value
-        if self.onchange: self.onchange(self.value)
+        if self.onchange: self.onchange( value(self.value) )
 
 
 class Nav(GTag):
@@ -200,7 +202,7 @@ class _Selector(GTag):
 
     def select(self,idx):
         self.value=self.choices[int(idx)]
-        if self.onchange: self.onchange(self.value)
+        if self.onchange: self.onchange( value(self.value) )
 
 class Tabs(_Selector): #TODO: implement disabled
     def build(self):
@@ -270,7 +272,7 @@ class Checkbox(GTag):
 
     def switch(self):
         self.value = not self.value
-        if self.onchange: self.onchange(self.value)
+        if self.onchange: self.onchange( value(self.value) )
 
 if __name__=="__main__":
 
