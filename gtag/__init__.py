@@ -18,6 +18,6 @@
 
 __version__="0.0.17"
 
-from .gtag import GTag,Tag,local
+from .gtag import GTag,Tag,local,value
 
-__all__ = ['GTag', 'Tag','local'  ]
+__all__ = ['GTag', 'Tag','local','value'  ]
