@@ -516,6 +516,7 @@ class GTagApp(guy.Guy):
         caller=""
         if gtag._call:  # there is an event to call at start !
             if isAsyncGenerator(gtag._call) or asyncio.iscoroutine(gtag._call):
+                fname,args="",{}
 
                 if asyncio.iscoroutine(gtag._call):
                     fname = gtag._call.__name__
