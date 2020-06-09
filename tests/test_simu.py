@@ -64,6 +64,27 @@ def testClickChild(webMode):
     assert s.main.cpt1=={'init': 4, 'build': 4}
     assert s.main.cpt2=={'init': 1, 'build': 5}
 
+    try: # change clickMe() to render local only
+        Comp.clickMe.capacities=["local"]
+
+        s=GSimu( App(),webMode ,js)
+
+        s.callEvent( s.childs[0].id, "clickMe",1)
+        s.callEvent( s.childs[0].id, "clickMe",1)
+        s.callEvent( s.childs[0].id, "clickMe",1)
+
+        assert s.main.v1==3
+        assert s.main.c2.value==0
+
+        assert s.childs[0].value==3
+        assert s.ichilds[0].value==0
+
+        assert s.main.cpt1=={'init': 1, 'build': 4}
+        assert s.main.cpt2=={'init': 1, 'build': 2}
+
+    finally:
+        Comp.clickMe.capacities=[]
+
 @pytest.mark.parametrize("webMode", [False,True])
 def testClickInnerChild(webMode):
     s=GSimu( App(), webMode ,js )
@@ -81,6 +102,27 @@ def testClickInnerChild(webMode):
     assert s.main.cpt1=={'init': 4, 'build': 4}
     assert s.main.cpt2=={'init': 1, 'build': 5}
 
+    try: # change clickMe() to render local only
+        Comp.clickMe.capacities=["local"]
+
+        s=GSimu( App(),webMode ,js)
+
+        s.callEvent( s.childs[0].id, "clickMe",1)
+        s.callEvent( s.childs[0].id, "clickMe",1)
+        s.callEvent( s.childs[0].id, "clickMe",1)
+
+        assert s.main.v1==3
+        assert s.main.c2.value==0
+
+        assert s.childs[0].value==3
+        assert s.ichilds[0].value==0
+
+        assert s.main.cpt1=={'init': 1, 'build': 4}
+        assert s.main.cpt2=={'init': 1, 'build': 2}
+
+    finally:
+        Comp.clickMe.capacities=[]
+
 def testBaseApp():
 
     a=App()
@@ -88,7 +130,20 @@ def testBaseApp():
     assert a.cpt2=={'init': 1, 'build': 1}
     s=GSimu( a,False,js)
     assert a.cpt1=={'init': 1, 'build': 1}
-    assert a.cpt2=={'init': 1, 'build': 2} #TODO: in app-mode, innerchild are rebuider during the guy.init() ?! causing 2 instead of 1
+    assert a.cpt2=={'init': 1, 'build': 2} #TODO: in app-mode, innerchild are rebuided during the guy.init() ?! causing 2 instead of 1
+
+    try: # change clickMe() to render local only
+        Comp.clickMe.capacities=["local"]
+
+        a=App()
+        assert a.cpt1=={'init': 1, 'build': 1}
+        assert a.cpt2=={'init': 1, 'build': 1}
+        s=GSimu( a,False,js)
+        assert a.cpt1=={'init': 1, 'build': 1}
+        assert a.cpt2=={'init': 1, 'build': 2} #TODO: in app-mode, innerchild are rebuided during the guy.init() ?! causing 2 instead of 1
+
+    finally:
+        Comp.clickMe.capacities=[]
 
 def testBaseWeb():
     a=App()
@@ -98,3 +153,15 @@ def testBaseWeb():
     assert a.cpt1=={'init': 1, 'build': 1}
     assert a.cpt2=={'init': 1, 'build': 1}
 
+    try: # change clickMe() to render local only
+        Comp.clickMe.capacities=["local"]
+
+        a=App()
+        assert a.cpt1=={'init': 1, 'build': 1}
+        assert a.cpt2=={'init': 1, 'build': 1}
+        s=GSimu( a,True,js)
+        assert a.cpt1=={'init': 1, 'build': 1}
+        assert a.cpt2=={'init': 1, 'build': 1}
+
+    finally:
+        Comp.clickMe.capacities=[]
