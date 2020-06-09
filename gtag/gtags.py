@@ -105,7 +105,7 @@ class Toaster(GTag):
                     window.hideToast=function() {if(tag && tag.parentNode) tag.parentNode.removeChild(tag)}
                     setTimeout(window.hideToast,2000)
                     """
-                o=Tag.div(klass="notification is-primary")
+                o=Tag.div(klass="notification has-text-light has-background-grey")
                 o.style="position:fixed;left:0px;right:0px;bottom:0px;z-index:1000"
                 o.add( Button(klass='delete',onclick="window.hideToast()") )
                 o.add( str(self.content) ) # force to render now ! (because it will be cleared next op)
