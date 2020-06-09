@@ -59,7 +59,7 @@ def testClickChild(webMode):
     assert s.main.c2.value==0
 
     assert s.childs[0].value==3
-    assert s.innerchilds[0].value==0
+    assert s.ichilds[0].value==0
 
     assert s.main.cpt1=={'init': 4, 'build': 4}
     assert s.main.cpt2=={'init': 1, 'build': 5}
@@ -68,15 +68,15 @@ def testClickChild(webMode):
 def testClickInnerChild(webMode):
     s=GSimu( App(), webMode ,js )
 
-    s.callEvent( s.innerchilds[0].id, "clickMe",1)
-    s.callEvent( s.innerchilds[0].id, "clickMe",1)
-    s.callEvent( s.innerchilds[0].id, "clickMe",1)
+    s.callEvent( s.ichilds[0].id, "clickMe",1)
+    s.callEvent( s.ichilds[0].id, "clickMe",1)
+    s.callEvent( s.ichilds[0].id, "clickMe",1)
 
     assert s.main.v1==0
     assert s.main.c2.value==3
 
     assert s.childs[0].value==0
-    assert s.innerchilds[0].value==3
+    assert s.ichilds[0].value==3
 
     assert s.main.cpt1=={'init': 4, 'build': 4}
     assert s.main.cpt2=={'init': 1, 'build': 5}

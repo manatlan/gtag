@@ -255,7 +255,7 @@ class GTag:
     def _tree(self):
         def _gc(g,lvl=0) -> list:
             ll=["+" + ("   "*lvl) + repr(g)]
-            for obj in g.innerChilds:
+            for obj in g._ichilds:
                 inners=_gc(obj,lvl+1)
                 ll.extend( [i+' (INNER)' for i in inners] )
             for obj in g._childs:
@@ -265,14 +265,14 @@ class GTag:
 
 
     @property
-    def innerChilds(self):
+    def _ichilds(self):
         return [v for k,v in self.__dict__.items() if k not in ["_tag","_parent"] and isinstance(v,GTag)]
 
     def _getChilds(self) -> dict:
 
         def _gc(g) -> dict:
             d={g.id:g}
-            for obj in g.innerChilds:
+            for obj in g._ichilds:
                 d.update( _gc(obj) )
             for obj in g._childs:
                 d.update( _gc(obj) )
@@ -405,7 +405,7 @@ class GTag:
         if o is None:
             return ""
         else:
-            for i in self.innerChilds:
+            for i in self._ichilds:
                 i._rebuild()
 
             o=getTagIded(o)
@@ -415,7 +415,7 @@ class GTag:
         return "<GTag: %s [parent:%s] (innerchilds=%s)>" % (
             self.id,
             self._parent.id if self._parent else "None",
-            [i.id for i in self.innerChilds]
+            [i.id for i in self._ichilds]
         )
 
     def __setattr__(self,k,v):

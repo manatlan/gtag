@@ -294,6 +294,37 @@ def test_GTag_with_childs():
     assert p._getRef( p.child.id ) is p.child
 
 
+def test_GTag_childs_ichilds():
+    class C(GTag):
+        def build(self):
+            return "hi"
+
+    class MTag(GTag):
+        def init(self):
+            self.c1=C()
+        def build(self):
+            self.c2=C()
+            return C()
+
+    p=MTag()
+
+    assert p.c1     in p._ichilds
+    assert p.c1 not in p._childs
+
+    assert p.c2 in p._ichilds
+    assert p.c2 in p._childs #it appears in childs coz it was created in build() (not in init)
+
+    assert len(p._getChilds())==4 # because p is in getChilds()
+    assert len(p._ichilds)==2
+    assert len(p._childs)==2
+
+    assert all([i.main.id == p.id for i in p._childs])
+    assert all([i.main.id == p.id for i in p._ichilds])
+
+    assert all([i.parent.id == p.id for i in p._childs])
+    assert all([i.parent.id == p.id for i in p._ichilds])
+
+
 def test_GTagDyn_with_childs():
     class C(GTag):
         def build(self):

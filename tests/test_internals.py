@@ -28,7 +28,7 @@ def test_gtag_internals():
             return Tag.div( self.c, C())
 
     g=My()
-    assert g.innerChilds==[g.c] #object created in self container
+    assert g._ichilds==[g.c] #object created in self container
     d= g._getChilds()
     assert len(d)==3
     assert g.id in d
@@ -49,7 +49,7 @@ def test_gtag_internals():
 
     #########################################################
     g._rebuild()
-    assert g.innerChilds==[g.c] #object created in self container
+    assert g._ichilds==[g.c] #object created in self container
     d= g._getChilds()
     assert len(d)==3
     assert g.id in d

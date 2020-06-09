@@ -21,8 +21,8 @@ class GSimu:
     def childs(self):
         return self.main._childs
     @property
-    def innerchilds(self):
-        return self.main.innerChilds
+    def ichilds(self):
+        return self.main._ichilds
 
 
     def get(self,name):
@@ -36,6 +36,6 @@ class GSimu:
     def callEvent(self,gobject,eventMethod,*a,**k):
         return asyncio.run(self.gapp.bindUpdate(gobject, None ,eventMethod,a,k)) # GID is None
 
-    async def _mockCallMe(self,method,*a):
-        assert method in self.__callbacks, "Undefined callback '%s'" % method
-        return self.__callbacks[method](*a)
+    async def _mockCallMe(self,jsmethod,*a):
+        assert jsmethod in self.__callbacks, "Undefined callback '%s'" % jsmethod
+        return self.__callbacks[jsmethod](*a)
