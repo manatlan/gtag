@@ -38,7 +38,7 @@ class Button(GTag):
     js="document.addEventListener('contextmenu', event => event.preventDefault());"
     def build(self):
         if "klass" not in self._kargs:
-            self._kargs["klass"]="button is-light"
+            self._kargs["klass"]="button is-link"
         return Tag.button(*self._args,**self._kargs)
 
 class Input(GTag):

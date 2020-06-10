@@ -12,9 +12,9 @@ class MyInc(GTag):
 
     def build(self):
         return HBox(
-            Button("-",onclick=self.bind.addV(-1) ),
+            Button("-",onclick=self.bind.addV(-1),klass="button is-light" ),
             Text(self.cpt,style="text-align:center"),
-            Button("+",onclick=self.bind.addV(1) ),
+            Button("+",onclick=self.bind.addV(1),klass="button is-light" ),
         )
 
     # @local

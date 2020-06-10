@@ -1,4 +1,4 @@
-from gtag.gtag import GTag, ReactiveProp
+from gtag.gtag import GTag, ReactiveProp,value
 
 def test_ReactiveProp():
     p=dict(a=12,b=42)
@@ -36,6 +36,32 @@ def test_ReactiveProp_bool():
     assert not ReactiveProp(p,"b") == True
     assert bool(ReactiveProp(p,"a")) == True
     assert bool(ReactiveProp(p,"b")) == False
+
+def test_ReactiveProp_object():
+    p=dict(a="hello")
+
+    pp=ReactiveProp(p,"a")
+    assert pp.upper() == "HELLO"
+    assert pp == "hello"
+    assert p["a"]=="hello"
+    pp.set( pp.upper() )
+    assert pp=="HELLO"
+    assert p["a"]=="HELLO"
+
+
+def test_ReactiveProp_myobject():
+    class O:
+        def __init__(self):
+            self.toto="hello"
+
+    p=dict(a= O() )
+
+    pp=ReactiveProp(p,"a")
+    assert pp.toto == "hello"
+    p["a"].toto = "yala"
+    assert pp.toto == "yala"
+    pp.toto="tolo"
+    assert p["a"].toto == "tolo"
 
 
 def test_WARNING():

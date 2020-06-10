@@ -152,6 +152,15 @@ class ReactiveProp:
     def __repr__(self):
         iid=self.__instance.id if hasattr(self.__instance,"id") else str(self.__instance)
         return "<%s instance=%s attr=%s>" % (self.__class__.__name__,iid,self.__attribut)
+
+    def __getattr__(self,k):
+        return getattr(self.get(),k)
+    def __setattr__(self,k,v):
+        if k.startswith("_"):
+            super().__setattr__(k, v)
+        else:
+            setattr(self.get(),k,value(v))
+
     #TODO: add a lot of __slot__ ;-)
 
 
@@ -446,17 +455,23 @@ class GTag:
     def run(self,*a,start=None,**k) -> any:
         """ Run as Guy App (using Chrome) """
         self._call=start
-        return GTagApp(self,False).run(*a,**k)
+        g=GTagApp(self,False)
+        g._name=self.__class__.__name__
+        return g.run(*a,**k)
 
     def runCef(self,*a,start=None,**k) -> any:
         """ Run as Guy App (using Cef) """
         self._call=start
-        return GTagApp(self,False).runCef(*a,**k)
+        g=GTagApp(self,False)
+        g._name=self.__class__.__name__
+        return GTagApp.runCef(*a,**k)
 
     def serve(self,*a,start=None,**k) -> any:
         """ Run as Guy Server App """
         self._call=start
-        return GTagApp(self,True).serve(*a,**k)
+        g=GTagApp(self,True)
+        g._name=self.__class__.__name__
+        return g.serve(*a,**k)
 
 
 
@@ -569,3 +584,7 @@ class GTagApp(guy.Guy):
         toRender._rebuild()
         return toRender._update() #UPDATE ALL (historic way)
         #////////////////////////////////////////////////////////////////// THE MAGIC
+
+o=dict(a=12)
+p=ReactiveProp(o,"a")
+print( p)

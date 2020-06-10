@@ -17,7 +17,7 @@ p=MTag()
 
 def test_1():
     b=Button("hello")
-    assert str(b).endswith('class="button is-light">hello</button>')
+    assert str(b).endswith('class="button is-link">hello</button>')
     b=Button("hello",klass="xxx")
     assert str(b).endswith('class="xxx">hello</button>')
     b=Button(p.prop1,klass="xxx")
