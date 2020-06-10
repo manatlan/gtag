@@ -53,13 +53,16 @@ def test_ReactiveProp_myobject():
     class O:
         def __init__(self):
             self.toto="hello"
+        def test(self):
+            return True
 
-    p=dict(a= O() )
+    p=dict( a = O() )
 
     pp=ReactiveProp(p,"a")
     assert pp.toto == "hello"
     p["a"].toto = "yala"
     assert pp.toto == "yala"
+    assert pp.test()
     pp.toto="tolo"
     assert p["a"].toto == "tolo"
 
