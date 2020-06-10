@@ -585,6 +585,3 @@ class GTagApp(guy.Guy):
         return toRender._update() #UPDATE ALL (historic way)
         #////////////////////////////////////////////////////////////////// THE MAGIC
 
-o=dict(a=12)
-p=ReactiveProp(o,"a")
-print( p)
