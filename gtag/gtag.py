@@ -316,7 +316,7 @@ class GTag:
 
 
     @property
-    def parent(self)-> any: #GTag
+    def parent(self)-> T.Union[GtagProxy,None]:
         """ return caller/binder to parent instance (None if gtag is the main) """
         if self._parent is None:
             return None
@@ -325,14 +325,14 @@ class GTag:
 
 
     @property
-    def main(self)-> any: #GTag
+    def main(self)-> GtagProxy:
         """ return caller/binder to main instance """
         return GtagProxy( self._getMain() )
 
 
 
     @property
-    def bind(self) -> any:
+    def bind(self):
         """ to bind attribute or method !"""
         class Binder:
             def __getattr__(this,name:str):
