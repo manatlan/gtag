@@ -84,7 +84,7 @@ class MBox(GTag):
     def init(self,content):
         self.content=content
 
-    @local
+
     def build(self):
         if self.content:
             o = Tag.div(klass="modal is-active")
@@ -93,6 +93,7 @@ class MBox(GTag):
             o.add( Tag.div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
             return o
 
+    @local
     def close(self):
         self.content=None
 
@@ -100,7 +101,6 @@ class Toaster(GTag):
     def init(self,content):
         self.content=content
 
-    @local
     def build(self):
         try:
             if self.content:
@@ -116,9 +116,6 @@ class Toaster(GTag):
         finally:
             self.content=None # clear content ! (so gtag object is possible)
 
-
-    def close(self):
-        self.content=None
 
 
 class InputText(GTag):
@@ -237,7 +234,7 @@ class RadioButtons(_Selector):
 
 class Select(_Selector):
     def build(self):
-        s=Tag.select( onclick=self.bind.select(b"this.value"),style="width:100%",disabled=bool(self.disabled) )
+        s=Tag.select( onchange=self.bind.select(b"this.value"),style="width:100%",disabled=bool(self.disabled) )
         for idx,i in enumerate(self.choices):
             s.add( Tag.option(i,value=idx,selected=(self.value==i)))
         return Tag.div(s,klass="select")
@@ -291,6 +288,7 @@ if __name__=="__main__":
             return Tag.div(tt,
                 Checkbox(self.bind.v,"ok ?"),
                 RadioButtons(self.bind.n,[1,2,3],self.bind.v),
+                Select(self.bind.n,[1,2,3],self.bind.v),
                 SelectButtons(self.bind.n,[1,2,3],self.bind.v),
                 InputText(self.bind.t,disabled=self.bind.v),
                 TextArea(self.bind.t,disabled=self.bind.v),
