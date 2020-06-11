@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -u
 import pytest
-from gtag import GTag,Tag,local
+from gtag import GTag,Tag,render
 from . import GSimu
 
 

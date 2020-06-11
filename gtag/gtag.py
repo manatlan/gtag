@@ -34,12 +34,12 @@ def jjs(obj): #TODO: not optimal ... do better than str's pattern subst ;-)
     return guy.json.dumps(obj, default=my).replace('"<:<:',"").replace(':>:>"',"")
 
 def log(*a):
-    #~ print(*a)
+    # print(*a)
     pass
 
 
 class MyMetaclass(type):
-    def __getattr__(self,name:str) -> callable:
+    def __getattr__(self,name:str):
         def _(*a,**k) -> Tag:
             t=Tag(*a,**k)
             t.tag=name
@@ -81,8 +81,6 @@ class Tag(metaclass=MyMetaclass):
         )
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
-
-
 
 class CSS(Tag):
     def __init__(self,content):
@@ -164,27 +162,37 @@ class ReactiveProp:
     #TODO: add a lot of __slot__ ;-)
 
 
+class render:
 
-def local( method ): # gtag.event decorator
-    """ Decorator to make a gtag.method() able to start after init !
-    """
-    Capacity(method).set(Capacity.LOCAL)
-    return method
+    @staticmethod
+    def local( method ): # gtag.event decorator
+        """ Make the method renders only this component (and its childs)"""
+        Capacity(method).set(inspect.getouterframes(inspect.currentframe())[0].function)
+        return method
+
+    @staticmethod
+    def parent( method ): # gtag.event decorator
+        """ Make the method renders only its parent (and its childs) """
+        Capacity(method).set(inspect.getouterframes(inspect.currentframe())[0].function)
+        return method
+
+    @staticmethod
+    def no( method ): # gtag.event decorator
+        """ Make the method renders nothing """
+        Capacity(method).set(inspect.getouterframes(inspect.currentframe())[0].function)
+        return method
 
 class Capacity:
-    LOCAL="local"
     def __init__(self,method:callable):
         self.__method=method
-    def has( self, capacity ):
+    def has( self, f:callable ):
         if hasattr(self.__method,"capacities"):
-            return capacity in self.__method.capacities
+            return f.__name__ in self.__method.capacities
     def set( self, capacity ):
         if not hasattr(self.__method,"capacities"):
             self.__method.capacities=[]
         self.__method.capacities.append(capacity)
-    @property
-    def hasLocal( self ):
-        return self.has(Capacity.LOCAL)
+
 
 
 
@@ -566,7 +574,15 @@ class GTagApp(guy.Guy):
 
         log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s %s)"% (method,args,kargs))
         proc=getattr(obj,method)
-        toRender=gtag if not Capacity(proc).hasLocal else obj
+
+        if Capacity(proc).has(render.local):
+            toRender=obj
+        elif Capacity(proc).has(render.parent):
+            toRender=obj._parent if obj._parent else obj
+        elif Capacity(proc).has(render.no):
+            toRender=None
+        else:
+            toRender=gtag
 
         if asyncio.iscoroutinefunction( proc ):
             rep=await proc(*args,**kargs)
@@ -577,11 +593,13 @@ class GTagApp(guy.Guy):
             if isAsyncGenerator(rep):
                 async for _ in rep: # could use yielded thing to update all or local ?!
                     assert _ is None, "wtf?"
-                    await self.forceUpdate(toRender)
+                    if toRender:
+                        await self.forceUpdate(toRender)
             else:
                 raise Exception("wtf?")
 
-        toRender._rebuild()
-        return toRender._update() #UPDATE ALL (historic way)
+        if toRender:
+            toRender._rebuild()
+            return toRender._update() #UPDATE ALL (historic way)
         #////////////////////////////////////////////////////////////////// THE MAGIC
 

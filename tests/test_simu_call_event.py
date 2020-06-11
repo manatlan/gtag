@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -u
 import pytest
-from gtag import GTag,Tag,local
+from gtag import GTag,Tag,render
 from . import GSimu
 
 
@@ -98,7 +98,7 @@ def testTheComplex(webMode):
     class My(GTag):
         def build(self):
             return "Hello"
-        @local
+        @render.local
         async def evt(self,a,b=10,c=20):
             print("render")
             yield

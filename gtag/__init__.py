@@ -16,8 +16,8 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-__version__="0.0.19"
+__version__="0.0.20"
 
-from .gtag import GTag,Tag,local,value
+from .gtag import GTag, Tag, value, render
 
-__all__ = ['GTag', 'Tag','local','value'  ]
+__all__ = [ 'GTag', 'Tag', 'value', 'render' ]

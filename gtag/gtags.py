@@ -1,4 +1,4 @@
-from gtag import GTag, Tag, local, value
+from gtag import GTag, Tag, render, value
 
 """
 An exemple of GTags
@@ -93,7 +93,7 @@ class MBox(GTag):
             o.add( Tag.div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
             return o
 
-    @local
+    @render.local
     def close(self):
         self.content=None
 
@@ -129,7 +129,6 @@ class InputText(GTag):
     def build(self):
         return Input(type=self.type,value=self.value,onchange=self.bind.select(b"this.value"),disabled=bool(self.disabled))
 
-    # @local
     def select(self,value):
         self.value = value
         if self.onchange: self.onchange( value(self.value) )

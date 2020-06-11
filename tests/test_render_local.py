@@ -3,7 +3,7 @@ if __name__=="__main__":
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
 
-from gtag import GTag,Tag,local
+from gtag import GTag,Tag,render
 import pytest
 
 def test_redraw_global():
@@ -45,7 +45,7 @@ def test_redraw_local():
         def build(self):
             return Tag.div( self.v )
 
-        @local #<- THE ONLY CHANGE ^^
+        @render.local #<- THE ONLY CHANGE ^^
         def evt(self):
             self.v+=1
 
@@ -67,3 +67,5 @@ def test_redraw_local():
     assert a.v==1
     assert a.c.v==1
 
+#TODO: test render.parent
+#TODO: test render.no

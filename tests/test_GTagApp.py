@@ -62,7 +62,7 @@
 #         size=(100,100)
 #         def build(self):
 #             return Tag.div("hello")
-#         @local
+#         @dec.local
 #         async def evtExit(self,i=42):
 #             print("yo")
 #             yield

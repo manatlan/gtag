@@ -1,4 +1,4 @@
-from gtag import GTag,Tag,local
+from gtag import GTag,Tag,render
 from gtag.gtags import *
 
 """
@@ -17,7 +17,6 @@ class MyInc(GTag):
             Button("+",onclick=self.bind.addV(1),klass="button is-light" ),
         )
 
-    # @local
     def addV(self,v):
         self.cpt+=v
 

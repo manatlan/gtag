@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -u
-from gtag import GTag,Tag,local
+from gtag import GTag,Tag,render
 from . import GSimu
 
 class Comp(GTag):

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gtag"
-version = "0.0.19"
+version = "0.0.20"
 description = "GUI toolkit for building beautiful applications for mobile, web, and desktop from a single python3 codebase"
 authors = ["manatlan <manatlan@gmail.com>"]
 readme = 'README.md'
