@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -u
-from gtag import GTag,local
+from gtag import GTag,render
 from gtag.gtags import *
 import random,asyncio
 
