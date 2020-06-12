@@ -10,7 +10,7 @@ def testInInit(webMode):
 
     class My(GTag):
         def init(self):
-            self.script="alert(42)"
+            self("alert(42)")
         def build(self):
             return "Hello"
 
@@ -31,7 +31,7 @@ def testInBuild(webMode):
 
     class My(GTag):
         def build(self):
-            self.script="alert(42)"
+            self("alert(42)")
             return "Hello"
 
     def assertRender(x):
@@ -52,15 +52,15 @@ def testInBoth(webMode):
 
     class My(GTag):
         def init(self):
-            self.script="alert(43)"
+            self("alert(42)")
         def build(self):
-            self.script="alert(42)"
+            self("alert(43)")
             return "Hello"
 
     def assertRender(x):
         assert "document.body.innerHTML" in x
         assert "alert(42)" in x
-        assert "alert(43)" not in x
+        assert "alert(43)" in x
 
     cbs=dict(
         render=assertRender,

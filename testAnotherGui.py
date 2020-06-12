@@ -42,7 +42,7 @@ class Modal(GTag):
         self.obj=obj
     def build(self):
         if self.obj:
-            self.script="""M.Modal.init(tag, {onCloseEnd:function() {%s}}).open()""" % self.bind.close()
+            self("""M.Modal.init(tag, {onCloseEnd:function() {%s}}).open()""" % self.bind.close())
             return Tag.div(self.obj,klass="modal")
     def close(self):
         self.obj=None
@@ -54,7 +54,7 @@ class Toaster(GTag):
     def build(self):
         try:
             if self.content:
-                self.script="""M.toast({html: "%s"})""" % self.content
+                self("""M.toast({html: "%s"})""" % self.content)
                 return ""
         finally:
             self.content=None # clear content ! (so gtag object is possible)
@@ -64,14 +64,14 @@ class Datepicker(GTag):
     def init(self,obj):
         self.obj=obj
     def build(self):
-        self.script="""M.Datepicker.init(tag);"""
+        self("""M.Datepicker.init(tag);""")
         return Tag.input(self.obj,type="text",klass="datepicker")
 
 class Timepicker(GTag):
     def init(self,obj):
         self.obj=obj
     def build(self):
-        self.script="""M.Timepicker.init(tag);"""
+        self("""M.Timepicker.init(tag);""")
         return Tag.input(self.obj,type="text",klass="timepicker")
 
 
@@ -109,7 +109,7 @@ class RadioButtons(_Selector):
 
 class Select(_Selector):
     def build(self):
-        self.script="""M.FormSelect.init(tag)"""
+        self("""M.FormSelect.init(tag)""")
         s=Tag.select( onchange=self.bind.select(b"this.value"), style="width:100%",disabled=bool(self.disabled) )
         for idx,i in enumerate(self.choices):
             s.add( Tag.option(i,value=idx,selected=(self.value==i)))
@@ -117,7 +117,7 @@ class Select(_Selector):
 
 class Tabs(_Selector): #TODO: implement disabled
     def build(self):
-        self.script="""M.Tabs.init(tag)"""
+        self("""M.Tabs.init(tag)""")
         u=Tag.ul(klass="tabs")
         for idx,i in enumerate(self.choices):
             isActive="active" if self.value==i else None

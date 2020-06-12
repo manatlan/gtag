@@ -231,7 +231,7 @@ class GTag:
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
         self._tag=None
-        self.script=None
+        self._scripts=[]
 
         if "parent" in k.keys(): # clonage (only main tags, so parent is None)
             #(but could be used to reparent a gtag manually)
@@ -262,6 +262,8 @@ class GTag:
         log("INIT",repr(self))
         self.init(*self._args,**self._kargs)
         self._childs=[]     #<- clear innerchilds (creating during child phase), to avoid to appears in child
+
+        self._scriptsInInit=self._scripts[:]
 
         self._tag = self.build()
 
@@ -359,6 +361,7 @@ class GTag:
         props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call"}
         gtag = self.__class__(*self._args,**self._kargs,parent=None) # parent=None, will avoid guess parent ! (it makes sense, because you can clone only mains)
         gtag.__dict__.update(props)
+        gtag._scripts=[]
         gtag.init(*self._args,**self._kargs)
         gtag._rebuild()
         log("^^^ CLONED ^^^",repr(self),"-->",repr(gtag))
@@ -401,7 +404,11 @@ class GTag:
 
     def exit(self,v=None): pass # overriden by run/runcef/serve
 
-    def _rebuild(self):
+    def _clearScripts(self):
+        self._scripts=self._scriptsInInit[:]
+
+    def _rebuild(self,clearScripts=True):
+        if clearScripts: self._clearScripts()
         self._childs=[]
         self._tag=self.build()
 
@@ -442,10 +449,17 @@ class GTag:
         else:
             super().__setattr__(k,v)
 
+    @property
+    def scripts(self):
+        return ";".join(self._scripts)
+
+    def __call__(self,js):
+        self._scripts.append(js)
+
     def _getScripts(self) -> str:
         ll=[]
         for g in self._getChilds().values():
-            js=g.script
+            js=g.scripts
             if js:
                 ll.append( "(function(tag){%s})(document.getElementById('%s'))" % (str(js),g.id) )
         return ";".join(ll)
@@ -558,7 +572,7 @@ class GTagApp(guy.Guy):
         await self.js.render(js)
 
     async def forceUpdate(self,g): #can't be called from client side !
-        g._rebuild()
+        g._rebuild(False)
         log(">>>Force UPDATE:",repr(g))
         await self.js.render( g._update()["script"] )
 
@@ -584,6 +598,8 @@ class GTagApp(guy.Guy):
         else:
             toRender=gtag
 
+        if toRender: toRender._clearScripts()
+
         if asyncio.iscoroutinefunction( proc ):
             rep=await proc(*args,**kargs)
         else:
@@ -599,7 +615,7 @@ class GTagApp(guy.Guy):
                 raise Exception("wtf?")
 
         if toRender:
-            toRender._rebuild()
+            toRender._rebuild(False)
             return toRender._update() #UPDATE ALL (historic way)
         #////////////////////////////////////////////////////////////////// THE MAGIC
 
