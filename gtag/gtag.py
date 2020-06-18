@@ -77,7 +77,7 @@ class Tag(metaclass=MyMetaclass):
         return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
             tag=self.tag.replace("_","-"),
             attrs=" ".join([""]+rattrs) if rattrs else "",
-            content=" ".join([str(i) for i in self.__contents if i is not None]),
+            content=" ".join([str(i) for i in self.__contents if i is not None and not isinstance(i,bool)]),
         )
     def __repr__(self):
         return "<%s>" % self.__class__.__name__

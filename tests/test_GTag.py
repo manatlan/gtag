@@ -381,3 +381,19 @@ def test_ReactiveProp():
     p.bind.prop2.set( p.bind.prop1.get() )
     assert p.prop2 == 1
 
+def test_GTag_with_gtag():
+    class C(GTag):
+        def build(self):
+            return Tag.div("hello")
+
+    class B(GTag):
+        def build(self):
+            return C()
+
+    class MTag(GTag):
+        def build(self):
+            return B()
+
+    p=MTag()
+    p._id="yo"
+    assert str(p)=='<div id="yo">hello</div>'
