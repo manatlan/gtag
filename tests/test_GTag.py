@@ -383,17 +383,16 @@ def test_ReactiveProp():
 
 def test_GTag_with_gtag():
     class C(GTag):
+        def init(self):
+            self._id="C"
         def build(self):
-            return Tag.div("hello")
+            return Tag.pre("hello")
 
-    class B(GTag):
+    class MTag(GTag):
+        def init(self):
+            self._id="M"
         def build(self):
             return C()
 
-    class MTag(GTag):
-        def build(self):
-            return B()
-
     p=MTag()
-    p._id="yo"
-    assert str(p)=='<div id="yo">hello</div>'
+    assert str(p)=='<div id="M"><pre id="C">hello</pre></div>'

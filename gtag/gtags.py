@@ -81,16 +81,20 @@ class Table(GTag):
         return Tag.table(h,Tag.tbody(*ll),klass="table is-bordered is-striped is-narrow is-hoverable is-fullwidth")
 
 class MBox(GTag):
-    def init(self,content):
+    def init(self,content,canClose=True):
         self.content=content
-
+        self.canClose=canClose
 
     def build(self):
         if self.content:
             o = Tag.div(klass="modal is-active")
-            o.add( Tag.div(klass="modal-background",onclick=self.bind.close()) )
+            if self.canClose:
+                o.add( Tag.div(klass="modal-background",onclick=self.bind.close()) )
+            else:
+                o.add( Tag.div(klass="modal-background") )
             o.add( Tag.div( Box(self.content),klass="modal-content") )
-            o.add( Tag.div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
+            if self.canClose:
+                o.add( Tag.div(klass="modal-close is-large",aria_label="close",onclick=self.bind.close()) )
             return o
 
     @render.local

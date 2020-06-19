@@ -413,17 +413,6 @@ class GTag:
         self._tag=self.build()
 
     def __str__(self):
-        def getTagIded(o):
-            if isinstance(o,Tag):
-                o.id=self.id
-            elif isinstance(o,GTag):
-                o=getTagIded(o._tag)
-                o.id=self.id
-            else:
-                o=Tag.span(o) # auto span'ify
-                o.id=self.id
-            return o
-
         log("___rendering",repr(self))
         o= self._tag
         if o is None:
@@ -432,7 +421,14 @@ class GTag:
             for i in self._ichilds:
                 i._rebuild()
 
-            o=getTagIded(o)
+            if isinstance(o,Tag):
+                o.id=self.id
+            elif isinstance(o,GTag):
+                o=Tag.div(o) # auto div'ify
+                o.id=self.id
+            else:
+                o=Tag.span(o) # auto span'ify
+                o.id=self.id
             return str(o)
 
     def __repr__(self):

@@ -16,7 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-__version__="0.0.22"
+__version__="0.0.23"
 
 from .gtag import GTag, Tag, value, render
 
