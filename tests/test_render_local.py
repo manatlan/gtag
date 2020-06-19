@@ -5,13 +5,9 @@ if __name__=="__main__":
 
 from gtag import GTag,Tag,render
 import pytest
+from . import GSimu
 
-#TODO: test rendering with the included SIMUlator ! (all tests below are stupids! (except for coverage))
-#TODO: test rendering with the included SIMUlator ! (all tests below are stupids! (except for coverage))
-#TODO: test rendering with the included SIMUlator ! (all tests below are stupids! (except for coverage))
-#TODO: test rendering with the included SIMUlator ! (all tests below are stupids! (except for coverage))
-
-def test_redraw_global(): # STUPID TEST
+def test_redraw_global():
     class C(GTag):
         def init(self,v):
             self.v=v
@@ -33,15 +29,21 @@ def test_redraw_global(): # STUPID TEST
             return Tag.div( self.c, self.bind.v )
 
 
-    a=A(0)
-    assert str(a)=='<div id="A"><div id="C">0</div> 0</div>'
-    a.c.evt()
-    assert str(a)=='<div id="A"><div id="C">1</div> 1</div>' # the str() rebuild all
-    assert a.v==1
-    assert a.c.v==1
+    def assertRender(x):
+        assert 'document.body.innerHTML=`<div id="A"><div id="C">0</div> 0</div>`' in x
+
+    cbs=dict(
+        render=assertRender,
+        getSessionId= lambda: None, # GID is None
+    )
+    app=A(0)
+    s=GSimu( app,False,cbs)
+    x=s.callEvent("C","evt")
+    assert x["script"]=="""document.querySelector("#A").outerHTML=`<div id="A"><div id="C">1</div> 1</div>`;"""
 
 
-def test_redraw_local():    # STUPID TEST
+
+def test_redraw_local():
     class C(GTag):
         def init(self,v):
             self.v=v
@@ -50,7 +52,7 @@ def test_redraw_local():    # STUPID TEST
         def build(self):
             return Tag.div( self.v )
 
-        @render.local #<- THE ONLY CHANGE ^^
+        @render.local
         def evt(self):
             self.v+=1
 
@@ -64,14 +66,18 @@ def test_redraw_local():    # STUPID TEST
             return Tag.div( self.c, self.bind.v )
 
 
-    a=A(0)
-    assert str(a)=='<div id="A"><div id="C">0</div> 0</div>'
-    a.c.evt()
-    assert str(a)=='<div id="A"><div id="C">1</div> 1</div>'    # the str() rebuild all
-    # but on the screen it should be <div id="A"><div id="C">1</div> 0</div>
-    assert a.v==1
-    assert a.c.v==1
+    def assertRender(x):
+        assert 'document.body.innerHTML=`<div id="A"><div id="C">0</div> 0</div>`' in x
 
+    cbs=dict(
+        render=assertRender,
+        getSessionId= lambda: None, # GID is None
+    )
+
+    app=A(0)
+    s=GSimu( app,False,cbs)
+    x=s.callEvent("C","evt")
+    assert x["script"]=="""document.querySelector("#C").outerHTML=`<div id="C">1</div>`;"""
 
 def test_redraw_none(): # STUPID TEST
     class C(GTag):
@@ -82,7 +88,7 @@ def test_redraw_none(): # STUPID TEST
         def build(self):
             return Tag.div( self.v )
 
-        @render.no #<- THE ONLY CHANGE ^^
+        @render.no
         def evt(self):
             self.v+=1
 
@@ -96,16 +102,20 @@ def test_redraw_none(): # STUPID TEST
             return Tag.div( self.c, self.bind.v )
 
 
-    a=A(0)
-    assert str(a)=='<div id="A"><div id="C">0</div> 0</div>'
-    a.c.evt()
-    assert str(a)=='<div id="A"><div id="C">1</div> 1</div>'    # the str() rebuild all
-    # but on the screen it should be <div id="A"><div id="C">1</div> 0</div>
-    assert a.v==1
-    assert a.c.v==1
+    def assertRender(x):
+        assert 'document.body.innerHTML=`<div id="A"><div id="C">0</div> 0</div>`' in x
+
+    cbs=dict(
+        render=assertRender,
+        getSessionId= lambda: None, # GID is None
+    )
+    app=A(0)
+    s=GSimu( app,False,cbs)
+    x=s.callEvent("C","evt")
+    assert x is None
 
 
-def test_redraw_parent(): # STUPID TEST
+def test_redraw_parent():
     class C(GTag):
         def init(self,v):
             self.v=v
@@ -114,7 +124,7 @@ def test_redraw_parent(): # STUPID TEST
         def build(self):
             return Tag.div( self.v )
 
-        @render.parent #<- THE ONLY CHANGE ^^
+        @render.parent
         def evt(self):
             self.v+=1
 
@@ -128,12 +138,15 @@ def test_redraw_parent(): # STUPID TEST
             return Tag.div( self.c, self.bind.v )
 
 
-    a=A(0)
-    assert str(a)=='<div id="A"><div id="C">0</div> 0</div>'
-    a.c.evt()
-    assert str(a)=='<div id="A"><div id="C">1</div> 1</div>'    # the str() rebuild all
-    # but on the screen it should be <div id="A"><div id="C">1</div> 0</div>
-    assert a.v==1
-    assert a.c.v==1
+    def assertRender(x):
+        assert 'document.body.innerHTML=`<div id="A"><div id="C">0</div> 0</div>`' in x
 
+    cbs=dict(
+        render=assertRender,
+        getSessionId= lambda: None, # GID is None
+    )
 
+    app=A(0)
+    s=GSimu( app,False,cbs)
+    x=s.callEvent("C","evt")
+    assert x["script"]=="""document.querySelector("#A").outerHTML=`<div id="A"><div id="C">1</div> 1</div>`;"""
