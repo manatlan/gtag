@@ -109,6 +109,7 @@ class ReactiveProp:
         if value!=NONE:
             self.set(value)
     def set(self,v):
+        assert not isinstance(v,ReactiveProp)
         self.__instance[self.__attribut]=v
     def get(self):
         return self.__instance[self.__attribut]
@@ -478,7 +479,7 @@ class GTag:
                 print("CREATE REACTIVE",k,repr(v))
                 # create reactive !
 
-                if v and isinstance(v,ReactiveProp):
+                if isinstance(v,ReactiveProp):
                     # v is RP
                     self._data[k]=v
                     super().__setattr__(k,v)
