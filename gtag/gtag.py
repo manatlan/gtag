@@ -82,25 +82,6 @@ class Tag(metaclass=MyMetaclass):
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
 
-# class CSS(Tag):
-#     def __init__(self,content):
-#         self._md5=hashlib.md5("css:".encode()+content.encode()).hexdigest()
-#         if content.startswith("http"):
-#             self.tag="link"
-#             super().__init__(type="text/css",rel="stylesheet",href=content)
-#         else:
-#             self.tag="style"
-#             super().__init__(content,type="text/css")
-
-# class JS(Tag):
-#     tag="script"
-#     def __init__(self,content):
-#         self._md5=hashlib.md5("js:".encode()+content.encode()).hexdigest()
-#         if content.startswith("http"):
-#             super().__init__(type="text/javascript",src=content)
-#         else:
-#             super().__init__(content,type="text/javascript")
-
 class NONE: pass
 class ReactiveProp:
     def __init__(self,dico:dict,attribut:str,value=NONE):
