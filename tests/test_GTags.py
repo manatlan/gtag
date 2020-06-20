@@ -13,23 +13,25 @@ class MTag(GTag):
         self.prop1=1
         self.prop2=2
 
-p=MTag()
+
 
 def test_1():
+    p=MTag()
     b=Button("hello")
     assert str(b).endswith('class="button is-link">hello</button>')
     b=Button("hello",klass="xxx")
     assert str(b).endswith('class="xxx">hello</button>')
     b=Button(p.prop1,klass="xxx")
     assert str(b).endswith('class="xxx">1</button>')
-    b=Button(p.bind.prop1,klass="xxx")
+    b=Button(p.prop1,klass="xxx")
     assert str(b).endswith('class="xxx">1</button>')
 
 def test_basics():
+    p=MTag()
     for o in [Button, Input, Section, A, Text, HBox, VBox, Box]:
         assert ">XXX<" in str(o("XXX"))
         assert ">1<" in str(o(p.prop1))
-        assert ">1<" in str(o(p.bind.prop1))
+        assert ">1<" in str(o(p.prop1))
 
 def test_Selectors():
     choices=["XXX",1]

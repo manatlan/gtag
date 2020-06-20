@@ -101,10 +101,13 @@ class JS(Tag):
         else:
             super().__init__(content,type="text/javascript")
 
+class NONE: pass
 class ReactiveProp:
-    def __init__(self,dico:dict,attribut:str):
+    def __init__(self,dico:dict,attribut:str,value=NONE):
         self.__instance=dico
         self.__attribut=attribut
+        if value!=NONE:
+            self.set(value)
     def set(self,v):
         self.__instance[self.__attribut]=v
     def get(self):
@@ -226,11 +229,13 @@ class GTag:
     """
     size=None
     _call=None # first event to call at start !
+    _parent=None
 
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
+        self._data={}
         self._tag=None
         self._scripts=[]
 
@@ -362,7 +367,7 @@ class GTag:
 
     def _clone(self): #TODO: not clear here ... need redone (the rebuild() needed ?! why ?!)
         assert self._parent==None,"Can't clone a gtag which is not the main one"
-        props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call"}
+        props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call" or k=="_data"}
         gtag = self.__class__(*self._args,**self._kargs,parent=None) # parent=None, will avoid guess parent ! (it makes sense, because you can clone only mains)
         gtag.__dict__.update(props)
         gtag._scripts=[]
@@ -443,38 +448,48 @@ class GTag:
         )
 
     # def __getattr__(self,name):
-    #     o=self.__dict__[name]
+    #     o=self._data[name]
     #     print("getattr",name)
     #     if isinstance(o,ReactiveProp):
     #         return o
     #     else:
-    #         return ReactiveProp(self.__dict__,name)
+    #         return ReactiveProp(self._data,name)
 
 
     def __setattr__(self,k,v):
-        if not hasattr(self,"_data"):
-            super().__setattr__("_data",{})
-        o=self._data.get(k)
-
-        if isinstance(o,ReactiveProp):
-            print("SET REACTIVE",k,repr(v))
-            o.set( value(v) )
+        if k.startswith("_"):
+            print("REAL SET",k,repr(v))
+            super().__setattr__(k,v)
         else:
-            if k.startswith("_"):
-                print("REAL SET",k,repr(v))
-                super().__setattr__(k,v)
-            else:
-                if isinstance(v,ReactiveProp):
-                    print("Already REACTIVE",k,repr(v))
+            o=self._data.get(k)
+
+            if o and isinstance(o,ReactiveProp):
+                print("SET EXISTING REACTIVE",k,repr(v))
+
+                if v and isinstance(v,ReactiveProp):
+                    # v is RP
+                    self._data[k]=v
                     super().__setattr__(k,v)
-                else: # create reactive !
+                else:
+                    # v is real
+                    o.set( v )
+
+            else:
+                print("CREATE REACTIVE",k,repr(v))
+                # create reactive !
+
+                if v and isinstance(v,ReactiveProp):
+                    # v is RP
+                    self._data[k]=v
+                    super().__setattr__(k,v)
+                else:
+                    # v is real
                     self._data[k]=v
 
-                    o=ReactiveProp(self._data,k)
-                    o.set(v)
-                    print("CREATE REACTIVE",k,repr(v))
+                    rp=ReactiveProp(self._data,k,v)
 
-                    super().__setattr__(k,o)
+                    super().__setattr__(k,rp)
+
 
     @property
     def scripts(self):

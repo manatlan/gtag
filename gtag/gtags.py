@@ -204,6 +204,7 @@ class _Selector(GTag):
 
 
     def select(self,idx):
+        print("EVT SELECT",self.value)
         self.value=self.choices[int(idx)]
         if self.onchange: self.onchange( value(self.value) )
 
@@ -289,13 +290,13 @@ if __name__=="__main__":
         def build(self):
             tt=Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
             return Tag.div(tt,
-                Checkbox(self.bind.v,"ok ?"),
-                RadioButtons(self.bind.n,[1,2,3],self.bind.v),
-                Select(self.bind.n,[1,2,3],self.bind.v),
-                SelectButtons(self.bind.n,[1,2,3],self.bind.v),
-                InputText(self.bind.t,disabled=self.bind.v),
-                TextArea(self.bind.t,disabled=self.bind.v),
-                self.bind.v,
+                Checkbox(self.v,"ok ?"),
+                RadioButtons(self.n,[1,2,3],self.v),
+                Select(self.n,[1,2,3],self.v),
+                SelectButtons(self.n,[1,2,3],self.v),
+                InputText(self.t,disabled=self.v),
+                TextArea(self.t,disabled=self.v),
+                self.v,
             )
 
     app=M(1,"hello")

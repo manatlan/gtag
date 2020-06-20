@@ -37,7 +37,7 @@ class StaticBinded(GTag):
         return [Star(i) for i in range(int(self.n))]
 
     def build(self):
-        return Tag.text(self.bind.n, *self.stars())
+        return Tag.text(self.n, *self.stars())
 
 
 
@@ -113,7 +113,7 @@ def test_DANGEROUS():
             return Tag.text( *[Star(i) for i in range(int(self.n))] )
 
         def build(self):
-            return Tag.text("-%s-" % self.bind.n, self.stars() ) # <---- DANGEROUS the binded is str'ised at build !!!!
+            return Tag.text("-%s-" % self.n, self.stars() ) # <---- DANGEROUS the binded is str'ised at build !!!!
 
     t=StaticComputed(2)
     assert "-2-" in str(t)
@@ -155,7 +155,7 @@ def test_DANGEROUS_workaround2():
 
         def build(self):
             ll=[Star(i) for i in range(int(self.n))]
-            return Tag.text("-%s-"%self.bind.n, *ll )
+            return Tag.text("-%s-"%self.n, *ll )
 
     t=StaticBuildBinded(2)
     assert "-2-" in str(t)

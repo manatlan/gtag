@@ -2,21 +2,24 @@
 from gtag import GTag,Tag
 
 
-class C(GTag):
-    def build(self):
-        return "hi"
+class XSelect(GTag):
+    def init(self,value, choices:list, disabled=False, onchange=None):
+        assert value in choices
+        self.value=value
+        self.choices=choices
+        self.disabled=disabled
+        self.onchange=onchange
 
-class MTag(GTag):
-    def init(self):
-        self.c1=C()
     def build(self):
-        self.c2=C()
-        return C()
+        s=Tag.select( onchange=self.bind.select(b"this.value"),style="width:100%",disabled=bool(self.disabled) )
+        for idx,i in enumerate(self.choices):
+            s.add( Tag.option(i,value=idx,selected=(self.value==i)))
+        return Tag.div(s,klass="select")
 
-p=MTag()
-print("GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
-print(len(p._getChilds()))
-quit()
+    def select(self,idx):
+        self.value=self.choices[int(idx)]
+        if self.onchange: self.onchange( value(self.value) )
+
 
 class Btn(GTag):
     def init(self,v):
@@ -36,18 +39,15 @@ class App(GTag):
 
     def init(self):
         self.cpt = 0
-        self.ccc=Btn(12)
+        self.v="1"
 
     def build(self):
         return Tag.div(
             self.cpt,
             Btn(self.cpt),
+            XSelect(self.v,list("123"))
         )
 
-from pprint import pprint
 app=App()
-pprint(app._ichilds)
-pprint(app._childs)
-pprint(app._getChilds())
-# print(app._tree())
-# app.run()
+# print(type(app.v))
+app.run(log=False)
