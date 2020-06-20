@@ -28,7 +28,7 @@ def test_gtag_internals():
             return Tag.div( self.c, C())
 
     g=My()
-    assert g._ichilds==[g.c] #object created in self container
+    assert len(g._ichilds)==1
     d= g._getChilds()
     assert len(d)==3
     assert g.id in d

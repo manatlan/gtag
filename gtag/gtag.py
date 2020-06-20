@@ -226,6 +226,7 @@ class GTag:
     """
     size=None
     _call=None # first event to call at start !
+
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
@@ -285,7 +286,8 @@ class GTag:
 
     @property
     def _ichilds(self):
-        return [v for k,v in self.__dict__.items() if k not in ["_tag","_parent"] and isinstance(v,GTag)]
+        ll= [v for k,v in self._data.items() if v and isinstance(v,GTag)]
+        return ll
 
     def _getChilds(self) -> dict:
 
@@ -333,17 +335,19 @@ class GTag:
 
 
 
+
     @property
     def bind(self):
         """ to bind attribute or method !"""
         class Binder:
             def __getattr__(this,name:str):
                 if name in self.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
-                    o=self.__dict__[name]
-                    if isinstance(o,ReactiveProp):
-                        return o
-                    else:
-                        return ReactiveProp(self.__dict__,name)
+                    raise Exception("NO MORE BIND")
+                #     o=self.__dict__[name]
+                #     if isinstance(o,ReactiveProp):
+                #         return o
+                #     else:
+                #         return ReactiveProp(self.__dict__,name)
                 elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
                     def _(*args,**kargs):
                         if args or kargs:
@@ -438,12 +442,39 @@ class GTag:
             [i.id for i in self._ichilds]
         )
 
+    # def __getattr__(self,name):
+    #     o=self.__dict__[name]
+    #     print("getattr",name)
+    #     if isinstance(o,ReactiveProp):
+    #         return o
+    #     else:
+    #         return ReactiveProp(self.__dict__,name)
+
+
     def __setattr__(self,k,v):
-        o=self.__dict__.get(k)
+        if not hasattr(self,"_data"):
+            super().__setattr__("_data",{})
+        o=self._data.get(k)
+
         if isinstance(o,ReactiveProp):
+            print("SET REACTIVE",k,repr(v))
             o.set( value(v) )
         else:
-            super().__setattr__(k,v)
+            if k.startswith("_"):
+                print("REAL SET",k,repr(v))
+                super().__setattr__(k,v)
+            else:
+                if isinstance(v,ReactiveProp):
+                    print("Already REACTIVE",k,repr(v))
+                    super().__setattr__(k,v)
+                else: # create reactive !
+                    self._data[k]=v
+
+                    o=ReactiveProp(self._data,k)
+                    o.set(v)
+                    print("CREATE REACTIVE",k,repr(v))
+
+                    super().__setattr__(k,o)
 
     @property
     def scripts(self):
