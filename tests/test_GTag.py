@@ -2,7 +2,7 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
-from gtag import GTag,Tag,render
+from gtag import GTag,Tag,value
 from gtag.gtag import CSS,JS
 import pytest
 
@@ -291,7 +291,7 @@ def test_GTag_with_childs():
     assert p.child.parent.prop == 1
     assert p.child.parent.test() == 1
 
-    assert p._getRef( p.child.id ) is p.child
+    assert p._getRef( p.child.id ) is value(p.child)
 
 
 def test_GTag_childs_ichilds():
@@ -364,7 +364,7 @@ def test_GTagDyn_with_childs():
     assert p.child.parent.prop == 1
     assert p.child.parent.test() == 1
 
-    assert p._getRef( p.child.id ) is p.child
+    assert p._getRef( p.child.id ) is value(p.child)
 
 def test_ReactiveProp():
     class MTag(GTag):

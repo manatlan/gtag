@@ -86,7 +86,7 @@ class MBox(GTag):
         self.canClose=canClose
 
     def build(self):
-        if self.content:
+        if value(self.content):
             o = Tag.div(klass="modal is-active")
             if self.canClose:
                 o.add( Tag.div(klass="modal-background",onclick=self.bind.close()) )
@@ -107,7 +107,7 @@ class Toaster(GTag):
 
     def build(self):
         try:
-            if self.content:
+            if value(self.content):
                 self("""
                     window.hideToast=function() {if(tag && tag.parentNode) tag.parentNode.removeChild(tag)}
                     setTimeout(window.hideToast,2000)

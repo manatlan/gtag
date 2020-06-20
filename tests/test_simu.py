@@ -151,7 +151,7 @@ def testBaseWeb():
     assert a.cpt2=={'init': 1, 'build': 1}
     s=GSimu( a,True,js)
     assert a.cpt1=={'init': 1, 'build': 1}
-    assert a.cpt2=={'init': 1, 'build': 1}
+    assert a.cpt2.get()=={'init': 1, 'build': 1}
 
     try: # change clickMe() to render local only
         Comp.clickMe.capacities=["local"]

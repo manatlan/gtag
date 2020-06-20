@@ -60,6 +60,7 @@ def test_simple():
     ]
 
     for t in tags:
+        assert isinstance(t,GTag)
         check(t,iv,iv)
 
 def test_change():

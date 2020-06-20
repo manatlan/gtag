@@ -163,6 +163,8 @@ class ReactiveProp:
         else:
             setattr(self.get(),k,value(v))
 
+    def __call__(self,*a,**k):
+        return self.get()(*a,**k)
     #TODO: add a lot of __slot__ ;-)
 
 
@@ -237,6 +239,7 @@ class GTag:
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
         self._data={}
+        self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         self._tag=None
         self._scripts=[]
 
@@ -260,7 +263,6 @@ class GTag:
                     if isinstance(parent,GTag):
                         break
 
-        self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         self._childs=[]     #<- this is cleared at each rendering
         self._args=a
         self._kargs=k
@@ -443,18 +445,19 @@ class GTag:
 
     def __repr__(self):
         return "<GTag: %s [parent:%s] (innerchilds=%s)>" % (
-            self.id,
+            self._id,
             self._parent.id if self._parent else "None",
-            [i.id for i in self._ichilds]
+            [i._id for i in self._ichilds]
         )
 
     # def __getattr__(self,name):
     #     o=self._data[name]
     #     print("getattr",name)
-    #     if isinstance(o,ReactiveProp):
-    #         return o
-    #     else:
-    #         return ReactiveProp(self._data,name)
+    #     if o:
+    #         if isinstance(o,ReactiveProp):
+    #             return o
+    #         else:
+    #             return ReactiveProp(self._data,name)
 
 
     def __setattr__(self,k,v):
@@ -462,9 +465,10 @@ class GTag:
             print("REAL SET",k,repr(v))
             super().__setattr__(k,v)
         else:
+            if not hasattr(self,"_data"): setattr(self,"_data",{}) #TODO: really needed ??
             o=self._data.get(k)
 
-            if o and isinstance(o,ReactiveProp):
+            if isinstance(o,ReactiveProp):
                 print("SET EXISTING REACTIVE",k,repr(v))
 
                 if v and isinstance(v,ReactiveProp):
@@ -486,10 +490,7 @@ class GTag:
                 else:
                     # v is real
                     self._data[k]=v
-
-                    rp=ReactiveProp(self._data,k,v)
-
-                    super().__setattr__(k,rp)
+                    super().__setattr__(k,ReactiveProp(self._data,k,v))
 
 
     @property
