@@ -202,28 +202,28 @@ class Capacity:
 
 
 
-class GtagProxy:
-    """ Expose props(as ReactiveProps)/method from a gtag """
-    def __init__(self,instance):
-        self.__instance=instance
-    def __getattr__(self,name:str):
-        if name in ["id","main","parent"]:
-            return getattr(self.__instance,name)
-        elif name in self.__instance.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
-            o=self.__instance.__dict__[name]
-            if isinstance(o,ReactiveProp):
-                return o
-            else:
-                return ReactiveProp(self.__instance.__dict__,name)
-        elif name in dir(self.__instance):   # bind a self.method    -> return a js/string for a guy's call in js side
-            def _(*a,**k):
-                method=getattr(self.__instance,name)
-                return method(*a,**k)
-            return _
-        else:
-            raise Exception("Unknown method/attribut '%s' in '%s'"%(name,repr(self.__instance)))
-    def __repr__(self):
-        return repr(self.__instance)
+# class GtagProxy:
+#     """ Expose props(as ReactiveProps)/method from a gtag """
+#     def __init__(self,instance):
+#         self.__instance=instance
+#     def __getattr__(self,name:str):
+#         if name in ["id","main","parent"]:
+#             return getattr(self.__instance,name)
+#         elif name in self.__instance.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
+#             o=self.__instance.__dict__[name]
+#             if isinstance(o,ReactiveProp):
+#                 return o
+#             else:
+#                 return ReactiveProp(self.__instance.__dict__,name)
+#         elif name in dir(self.__instance):   # bind a self.method    -> return a js/string for a guy's call in js side
+#             def _(*a,**k):
+#                 method=getattr(self.__instance,name)
+#                 return method(*a,**k)
+#             return _
+#         else:
+#             raise Exception("Unknown method/attribut '%s' in '%s'"%(name,repr(self.__instance)))
+#     def __repr__(self):
+#         return repr(self.__instance)
 
 
 class GTag:
@@ -294,7 +294,7 @@ class GTag:
 
     @property
     def _ichilds(self):
-        ll= [v for k,v in self._data.items() if v and isinstance(v,GTag)]
+        ll= [v for k,v in self._data.items() if isinstance(v,GTag)]
         return ll
 
     def _getChilds(self) -> dict:
@@ -328,18 +328,22 @@ class GTag:
 
 
     @property
-    def parent(self)-> T.Union[GtagProxy,None]:
+    # def parent(self)-> T.Union[GTag,None]:
+    def parent(self):
         """ return caller/binder to parent instance (None if gtag is the main) """
         if self._parent is None:
             return None
         else:
+            return self._parent
             return GtagProxy( self._parent )
 
 
     @property
-    def main(self)-> GtagProxy:
+    def main(self):
+    # def main(self)-> GTag:
         """ return caller/binder to main instance """
-        return GtagProxy( self._getMain() )
+        return self._getMain()
+        # return GtagProxy( self._getMain() )
 
 
 
@@ -465,7 +469,6 @@ class GTag:
             print("REAL SET",k,repr(v))
             super().__setattr__(k,v)
         else:
-            if not hasattr(self,"_data"): setattr(self,"_data",{}) #TODO: really needed ??
             o=self._data.get(k)
 
             if isinstance(o,ReactiveProp):

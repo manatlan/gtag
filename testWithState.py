@@ -30,5 +30,5 @@ class Page2(GTag):
 ###############################################################################
 
 app=Page2( )
-app.serve(log=False)
+app.run(log=False)
 

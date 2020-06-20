@@ -17,9 +17,8 @@ class Star(Tag): # a Star tag for the tests bellow
 
 class Static(GTag):
     """ A full static gtag component without any 'bind' """
-    def __init__(self,n):
+    def init(self,n):
         self.n=n
-        super().__init__(None)
 
     def stars(self):
         return [Star(i) for i in range( int(self.n) )]
@@ -29,17 +28,14 @@ class Static(GTag):
 
 class StaticBinded(GTag):
     """ A gtag component with its property bind'ed ! """
-    def __init__(self,n):
+    def init(self,n):
         self.n=n
-        super().__init__(None)
 
     def stars(self):
         return [Star(i) for i in range(int(self.n))]
 
     def build(self):
         return Tag.text(self.n, *self.stars())
-
-
 
 
 
@@ -76,7 +72,7 @@ def test_change():
     for t in tags:
         t.n=cv
 
-    check(tags[0],iv,iv)
+    check(tags[0],cv,iv) 
     check(tags[1],cv,iv)
 
 
