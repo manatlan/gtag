@@ -86,7 +86,7 @@ class MBox(GTag):
         self.canClose=canClose
 
     def build(self):
-        if value(self.content):
+        if bool(self.content):
             o = Tag.div(klass="modal is-active")
             if self.canClose:
                 o.add( Tag.div(klass="modal-background",onclick=self.bind.close()) )

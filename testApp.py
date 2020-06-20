@@ -12,9 +12,9 @@ class MyInc(GTag):
 
     def build(self):
         return HBox(
-            Button("-",onclick=self.addV(-1),klass="button is-light" ),
+            Button("-",onclick=self.bind.addV(-1),klass="button is-light" ),
             Text(self.cpt,style="text-align:center"),
-            Button("+",onclick=self.addV(1),klass="button is-light" ),
+            Button("+",onclick=self.bind.addV(1),klass="button is-light" ),
         )
 
     def addV(self,v):
@@ -146,12 +146,11 @@ class TestApp(GTag):
             page=Page3(self.selectedTab,self.rb,self.so,self.sb,self.cb)
         else:
             page="no"
-
         return Tag.div(
             nav,
             Section( Tag.div( "<br>", page, klass="container") ),
-            Button("test mbox",onclick=self.setMBox(42)),
-            Button("test toast",onclick=self.setToast(42)),
+            Button("test mbox",onclick=self.bind.setMBox(42)),
+            Button("test toast",onclick=self.bind.setToast(42)),
             MBox( self.msg ),
             Toaster( self.toast ),
         )
@@ -173,6 +172,6 @@ class TestApp(GTag):
 
 if __name__=="__main__":
     app=TestApp( )
-    #~ app=Page1(1,"kkk")
+    # app=Page1(1,"kkk")
     print( app.run(log=False) )
     # print( app.serve(log=False) )

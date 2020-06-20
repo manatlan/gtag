@@ -5,7 +5,7 @@ from gtag.gtags import *
 class Btn(GTag):
     def build(self):
         return VBox(
-            self.parent.cpt,self.main.id,
+            self.parent.cpt,
             Button("++",onclick=self.bind.add())
         )
     def add(self):

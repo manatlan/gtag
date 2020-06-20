@@ -104,15 +104,18 @@ class JS(Tag):
 class NONE: pass
 class ReactiveProp:
     def __init__(self,dico:dict,attribut:str,value=NONE):
-        self.__instance=dico
-        self.__attribut=attribut
+        assert not isinstance(dico,ReactiveProp)
+        assert not isinstance(attribut,ReactiveProp)
+        assert not isinstance(value,ReactiveProp)
+        self._instance=dico
+        self._attribut=attribut
         if value!=NONE:
             self.set(value)
     def set(self,v):
         assert not isinstance(v,ReactiveProp)
-        self.__instance[self.__attribut]=v
+        self._instance[self._attribut]=v
     def get(self):
-        return self.__instance[self.__attribut]
+        return self._instance[self._attribut]
 
 
     def __eq__(self, v):
@@ -135,9 +138,20 @@ class ReactiveProp:
 
 
     def __iadd__(self,v):
-        vv=self.get() + value(v)
-        self.set( vv )
-        return self
+        self.set( self.get() + value(v) )
+        return self.get()
+    def __isub__(self,v):
+        self.set( self.get() - value(v) )
+        return self.get()
+    def __imul__(self,v):
+        self.set( self.get() * value(v) )
+        return self.get()
+    def __itruediv__(self,v):
+        self.set( self.get() / value(v) )
+        return self.get()
+    def __ifloordiv__(self,v):
+        self.set( self.get() // value(v) )
+        return self.get()
 
     def __getitem__(self,k):
         return self.get()[k]
@@ -152,8 +166,8 @@ class ReactiveProp:
         return str(self.get())
 
     def __repr__(self):
-        iid=self.__instance.id if hasattr(self.__instance,"id") else str(self.__instance)
-        return "<%s instance=%s attr=%s>" % (self.__class__.__name__,iid,self.__attribut)
+        iid=self._instance.id if hasattr(self._instance,"id") else str(self._instance)
+        return "<%s instance=%s attr=%s>" % (self.__class__.__name__,iid,self._attribut)
 
     def __getattr__(self,k):
         return getattr(self.get(),k)
@@ -466,15 +480,15 @@ class GTag:
 
     def __setattr__(self,k,v):
         if k.startswith("_"):
-            print("REAL SET",k,repr(v))
+            # print("REAL SET",k,repr(v))
             super().__setattr__(k,v)
         else:
             o=self._data.get(k)
 
             if isinstance(o,ReactiveProp):
-                print("SET EXISTING REACTIVE",k,repr(v))
+                # print("SET EXISTING REACTIVE",k,repr(v))
 
-                if v and isinstance(v,ReactiveProp):
+                if isinstance(v,ReactiveProp):
                     # v is RP
                     self._data[k]=v
                     super().__setattr__(k,v)
@@ -483,12 +497,11 @@ class GTag:
                     o.set( v )
 
             else:
-                print("CREATE REACTIVE",k,repr(v))
-                # create reactive !
+                # print("CREATE REACTIVE",k,repr(v))
 
                 if isinstance(v,ReactiveProp):
                     # v is RP
-                    self._data[k]=v
+                    self._data[k]=v            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
                     super().__setattr__(k,v)
                 else:
                     # v is real

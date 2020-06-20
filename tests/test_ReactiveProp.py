@@ -11,7 +11,7 @@ def test_ReactiveProp():
     assert p["a"]==42
     assert str(a)=="42"
     a+=1
-    assert type(a) is ReactiveProp
+    assert type(a) is int
     a+=1
     assert a == 44
 
@@ -26,8 +26,9 @@ def test_ReactiveProp():
     assert not a==b
     assert a!=b
 
-    a+=b
-    assert a == 86
+    b+=a
+    assert b == 86
+    assert type(b) is int
 
 def test_ReactiveProp_bool():
     p=dict(a=True,b=0)
