@@ -193,7 +193,7 @@ class render:
         return method
 
     @staticmethod
-    def no( method ): # gtag.event decorator
+    def none( method ): # gtag.event decorator
         """ Make the method renders nothing """
         Capacity(method).set(inspect.getouterframes(inspect.currentframe())[0].function)
         return method
@@ -594,7 +594,7 @@ class GTagApp(guy.Guy):
             toRender=obj
         elif Capacity(proc).has(render.parent):
             toRender=obj._parent if obj._parent else obj
-        elif Capacity(proc).has(render.no):
+        elif Capacity(proc).has(render.none):
             toRender=None
         else:
             toRender=gtag

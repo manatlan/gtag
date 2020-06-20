@@ -79,7 +79,7 @@ def test_redraw_local():
     x=s.callEvent("C","evt")
     assert x["script"]=="""document.querySelector("#C").outerHTML=`<div id="C">1</div>`;"""
 
-def test_redraw_none(): # STUPID TEST
+def test_redraw_none(): 
     class C(GTag):
         def init(self,v):
             self.v=v
@@ -88,7 +88,7 @@ def test_redraw_none(): # STUPID TEST
         def build(self):
             return Tag.div( self.v )
 
-        @render.no
+        @render.none
         def evt(self):
             self.v+=1
 
