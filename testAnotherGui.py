@@ -152,8 +152,10 @@ class Checkbox(GTag):
 
 class AnotherGUI(GTag):
     size=(800,600)
-    css="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"  # can be a list of str too
-    js="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"     # can be a list of str too
+    headers=[
+        Tag.script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"),
+        Tag.link(href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css",type="text/css",rel="stylesheet"),
+    ]
 
     def init(self):
         self._mbox=None

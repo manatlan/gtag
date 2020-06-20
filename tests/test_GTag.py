@@ -3,7 +3,6 @@ if __name__=="__main__":
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
 from gtag import GTag,Tag,value
-from gtag.gtag import CSS,JS
 import pytest
 
 def test_GTag():
@@ -120,8 +119,7 @@ def test_GTag_guess_parent_in_difficulty():
 
 def test_GTag_build():
     class My(GTag):
-        css="x"
-        js="x"
+        headers=Tag.script("//hello")
         def init(self):
             self.v=12
         def build(self):
@@ -139,8 +137,7 @@ def test_GTag_build():
     assert '>hello 12<' in html
 
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSS) for i in hh])
-    assert any( [isinstance(i,JS) for i in hh])
+    assert any( [isinstance(i,Tag) for i in hh])
 
 def test_GTag_render():
     class My(GTag):
@@ -160,11 +157,12 @@ def test_GTag_render():
     assert '>hello 12<' in html
 
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSS) for i in hh])
+    assert any( [isinstance(i,Tag) for i in hh])
 
 
 def test_GTag_clone():
     class My(GTag):
+        headers=Tag.script("// hi")
 
         def init(self,v):
             self.v=v
@@ -184,7 +182,8 @@ def test_GTag_clone():
     assert '>hello 12<' in html
 
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSS) for i in hh])
+    assert any( [isinstance(i,Tag) for i in hh])
+
 
     mm=m._clone()
     assert mm.added==42
@@ -195,8 +194,8 @@ def test_GTag_clone():
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
-    hh=m._guessHeaders()
-    assert any( [isinstance(i,CSS) for i in hh])
+    hh=mm._guessHeaders()
+    assert any( [isinstance(i,Tag) for i in hh])
 
 
 def test_GTag_clone_with_State():

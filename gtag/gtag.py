@@ -82,24 +82,24 @@ class Tag(metaclass=MyMetaclass):
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
 
-class CSS(Tag):
-    def __init__(self,content):
-        self._md5=hashlib.md5("css:".encode()+content.encode()).hexdigest()
-        if content.startswith("http"):
-            self.tag="link"
-            super().__init__(type="text/css",rel="stylesheet",href=content)
-        else:
-            self.tag="style"
-            super().__init__(content,type="text/css")
+# class CSS(Tag):
+#     def __init__(self,content):
+#         self._md5=hashlib.md5("css:".encode()+content.encode()).hexdigest()
+#         if content.startswith("http"):
+#             self.tag="link"
+#             super().__init__(type="text/css",rel="stylesheet",href=content)
+#         else:
+#             self.tag="style"
+#             super().__init__(content,type="text/css")
 
-class JS(Tag):
-    tag="script"
-    def __init__(self,content):
-        self._md5=hashlib.md5("js:".encode()+content.encode()).hexdigest()
-        if content.startswith("http"):
-            super().__init__(type="text/javascript",src=content)
-        else:
-            super().__init__(content,type="text/javascript")
+# class JS(Tag):
+#     tag="script"
+#     def __init__(self,content):
+#         self._md5=hashlib.md5("js:".encode()+content.encode()).hexdigest()
+#         if content.startswith("http"):
+#             super().__init__(type="text/javascript",src=content)
+#         else:
+#             super().__init__(content,type="text/javascript")
 
 class NONE: pass
 class ReactiveProp:
@@ -385,18 +385,10 @@ class GTag:
 
         ll=[]
         for g in GTag.__subclasses__():
-            if hasattr(g,"css"):
-                for i in mklist(getattr(g,"css")):
-                    if i:
-                        c=CSS(i)
-                        if c._md5 not in [l._md5 for l in ll]:
-                            ll.append( c )
-            if hasattr(g,"js"):
-                for i in mklist(getattr(g,"js")):
-                    if i:
-                        c=JS(i)
-                        if c._md5 not in [l._md5 for l in ll]:
-                            ll.append( c )
+            if hasattr(g,"headers"):
+                for i in mklist(getattr(g,"headers")):
+                        # if c._md5 not in [l._md5 for l in ll]:
+                        ll.append( i )
         return ll
 
 

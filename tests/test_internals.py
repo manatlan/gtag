@@ -8,13 +8,13 @@ from gtag import gtag,Tag
 from pprint import pprint
 from datetime import datetime
 
-def test_CSS():
-    assert str(gtag.CSS("body {background:yellow}"))=="""<style type="text/css">body {background:yellow}</style>"""
-    assert str(gtag.CSS("http:/yo.css"))=="""<link type="text/css" rel="stylesheet" href="http:/yo.css"></link>"""
+# def test_CSS():
+#     assert str(gtag.CSS("body {background:yellow}"))=="""<style type="text/css">body {background:yellow}</style>"""
+#     assert str(gtag.CSS("http:/yo.css"))=="""<link type="text/css" rel="stylesheet" href="http:/yo.css"></link>"""
 
-def test_JS():
-    assert str(gtag.JS("alert(42)"))=="""<script type="text/javascript">alert(42)</script>"""
-    assert str(gtag.JS("http:/yo.js"))=="""<script type="text/javascript" src="http:/yo.js"></script>"""
+# def test_JS():
+#     assert str(gtag.JS("alert(42)"))=="""<script type="text/javascript">alert(42)</script>"""
+#     assert str(gtag.JS("http:/yo.js"))=="""<script type="text/javascript" src="http:/yo.js"></script>"""
 
 def test_gtag_internals():
     class C(gtag.GTag):
