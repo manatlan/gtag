@@ -136,6 +136,21 @@ class ReactiveProp:
     def __gt__(self, v):
         return self.get() > value(v)
 
+    def __add__(self,v):
+        self.set( self.get() + value(v) )
+        return self.get()
+    def __sub__(self,v):
+        self.set( self.get() + value(v) )
+        return self.get()
+    def __mul__(self,v):
+        self.set( self.get() + value(v) )
+        return self.get()
+    def __truediv__(self,v):
+        self.set( self.get() + value(v) )
+        return self.get()
+    def __floordiv__(self,v):
+        self.set( self.get() + value(v) )
+        return self.get()
 
     def __iadd__(self,v):
         self.set( self.get() + value(v) )
@@ -212,32 +227,6 @@ class Capacity:
         if not hasattr(self.__method,"capacities"):
             self.__method.capacities=[]
         self.__method.capacities.append(capacity)
-
-
-
-
-# class GtagProxy:
-#     """ Expose props(as ReactiveProps)/method from a gtag """
-#     def __init__(self,instance):
-#         self.__instance=instance
-#     def __getattr__(self,name:str):
-#         if name in ["id","main","parent"]:
-#             return getattr(self.__instance,name)
-#         elif name in self.__instance.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
-#             o=self.__instance.__dict__[name]
-#             if isinstance(o,ReactiveProp):
-#                 return o
-#             else:
-#                 return ReactiveProp(self.__instance.__dict__,name)
-#         elif name in dir(self.__instance):   # bind a self.method    -> return a js/string for a guy's call in js side
-#             def _(*a,**k):
-#                 method=getattr(self.__instance,name)
-#                 return method(*a,**k)
-#             return _
-#         else:
-#             raise Exception("Unknown method/attribut '%s' in '%s'"%(name,repr(self.__instance)))
-#     def __repr__(self):
-#         return repr(self.__instance)
 
 
 class GTag:
@@ -342,39 +331,28 @@ class GTag:
 
 
     @property
-    # def parent(self)-> T.Union[GTag,None]:
-    def parent(self):
+    def parent(self): # -> T.Union[GTag,None]:
         """ return caller/binder to parent instance (None if gtag is the main) """
         if self._parent is None:
             return None
         else:
             return self._parent
-            return GtagProxy( self._parent )
 
 
     @property
-    def main(self):
-    # def main(self)-> GTag:
+    def main(self): # -> GTag:
         """ return caller/binder to main instance """
         return self._getMain()
-        # return GtagProxy( self._getMain() )
-
 
 
 
     @property
     def bind(self):
-        """ to bind attribute or method !"""
+        """ to bind method ! and return its js repr"""
         class Binder:
             def __getattr__(this,name:str):
-                if name in self.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
-                    raise Exception("NO MORE BIND")
-                #     o=self.__dict__[name]
-                #     if isinstance(o,ReactiveProp):
-                #         return o
-                #     else:
-                #         return ReactiveProp(self.__dict__,name)
-                elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
+                m=hasattr(self,name) and getattr(self,name)
+                if m and callable( m ):   # bind a self.method    -> return a js/string for a guy's call in js side
                     def _(*args,**kargs):
                         if args or kargs:
                             return "self.bindUpdate('%s',GID,'%s',%s,%s)" % (self.id,name,jjs(args),jjs(kargs))
@@ -382,7 +360,7 @@ class GTag:
                             return "self.bindUpdate('%s',GID,'%s',[],{})" % (self.id,name)
                     return _
                 else:
-                    raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
+                    raise Exception("Unknown method '%s' in '%s'"%(name,self.__class__.__name__))
         return Binder()
 
 
@@ -467,16 +445,6 @@ class GTag:
             self._parent.id if self._parent else "None",
             [i._id for i in self._ichilds]
         )
-
-    # def __getattr__(self,name):
-    #     o=self._data[name]
-    #     print("getattr",name)
-    #     if o:
-    #         if isinstance(o,ReactiveProp):
-    #             return o
-    #         else:
-    #             return ReactiveProp(self._data,name)
-
 
     def __setattr__(self,k,v):
         if k.startswith("_"):

@@ -60,7 +60,7 @@ def test_change_rp_values():
     assert b.v==3
 
 
-def test_concant_rp_values():
+def test_concat_rp_values():
     class A(GTag):
         def init(self):
             self.v="1"
@@ -82,5 +82,44 @@ def test_concant_rp_values():
     assert isinstance(b.v,gtag.ReactiveProp)
     assert a.v=="1x"
     assert b.v=="1x"
+
+def test_add():
+    class A(GTag):
+        def init(self,v):
+            self.v=v
+
+    a=A(42)
+    assert isinstance(a.v,gtag.ReactiveProp)
+    assert a.v==42
+
+    b=A(a.v)
+    assert isinstance(b.v,gtag.ReactiveProp)
+    assert b.v==42
+
+    a.v=a.v+8
+    assert isinstance(a.v,gtag.ReactiveProp)
+    assert isinstance(b.v,gtag.ReactiveProp)
+    assert a.v==50
+    assert b.v==50
+
+def test_add_concat():
+    class A(GTag):
+        def init(self,v):
+            self.v=v
+
+    a=A("x")
+    assert isinstance(a.v,gtag.ReactiveProp)
+    assert a.v=="x"
+
+    b=A(a.v)
+    assert isinstance(b.v,gtag.ReactiveProp)
+    assert b.v=="x"
+
+    a.v=a.v+"y"
+    assert isinstance(a.v,gtag.ReactiveProp)
+    assert isinstance(b.v,gtag.ReactiveProp)
+    assert a.v=="xy"
+    assert b.v=="xy"
+
 if __name__=="__main__":
     test_GTag()

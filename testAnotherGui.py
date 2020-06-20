@@ -44,6 +44,8 @@ class Modal(GTag):
         if self.obj:
             self("""M.Modal.init(tag, {onCloseEnd:function() {%s}}).open()""" % self.bind.close())
             return Tag.div(self.obj,klass="modal")
+
+    @render.no
     def close(self):
         self.obj=None
 
@@ -164,18 +166,18 @@ class AnotherGUI(GTag):
             Nav("Hello", {"Print":lambda: self.mbox("yolo") }),
             Tag.div(
                 Text("hello"),Datepicker(None),Timepicker(None),
-                Checkbox(self.bind.cb,"disabled"),
-                RadioButtons(self.bind.rb,[1,2,3],disabled=self.cb),
-                Select(self.bind.rb,[1,2,3],disabled=self.cb),
-                Tabs(self.bind.rb,[1,2,3],disabled=self.cb),
+                Checkbox(self.cb,"disabled"),
+                RadioButtons(self.rb,[1,2,3],disabled=self.cb),
+                Select(self.rb,[1,2,3],disabled=self.cb),
+                Tabs(self.rb,[1,2,3],disabled=self.cb),
                 Button("Button",onclick=self.bind.mbox("42")),
                 Button("Toast js",onclick="M.toast({html:'koko'})"),
                 Button("Toast",onclick=self.bind.toast('yooooo')),
                 Div( Div(klass="indeterminate"), klass="progress"),
                 klass="container"
             ),
-            Modal( self.bind._mbox ),
-            Toaster( self.bind._toast ),
+            Modal( self._mbox ),
+            Toaster( self._toast ),
         )
 
     def mbox(self,obj):

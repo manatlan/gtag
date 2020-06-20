@@ -123,14 +123,15 @@ def testClickInnerChild(webMode):
     finally:
         Comp.clickMe.capacities=[]
 
-def testBaseApp():
+@pytest.mark.parametrize("webMode", [False,True])
+def testBaseApp(webMode):
 
     a=App()
     assert a.cpt1=={'init': 1, 'build': 1}
     assert a.cpt2=={'init': 1, 'build': 1}
-    s=GSimu( a,False,js)
+    s=GSimu( a,webMode,js)
     assert a.cpt1=={'init': 1, 'build': 1}
-    assert a.cpt2=={'init': 1, 'build': 2} #TODO: in app-mode, innerchild are rebuided during the guy.init() ?! causing 2 instead of 1
+    assert a.cpt2=={'init': 1, 'build': 2}
 
     try: # change clickMe() to render local only
         Comp.clickMe.capacities=["local"]
@@ -138,30 +139,9 @@ def testBaseApp():
         a=App()
         assert a.cpt1=={'init': 1, 'build': 1}
         assert a.cpt2=={'init': 1, 'build': 1}
-        s=GSimu( a,False,js)
+        s=GSimu( a,webMode,js)
         assert a.cpt1=={'init': 1, 'build': 1}
-        assert a.cpt2=={'init': 1, 'build': 2} #TODO: in app-mode, innerchild are rebuided during the guy.init() ?! causing 2 instead of 1
-
-    finally:
-        Comp.clickMe.capacities=[]
-
-def testBaseWeb():
-    a=App()
-    assert a.cpt1=={'init': 1, 'build': 1}
-    assert a.cpt2=={'init': 1, 'build': 1}
-    s=GSimu( a,True,js)
-    assert a.cpt1=={'init': 1, 'build': 1}
-    assert a.cpt2.get()=={'init': 1, 'build': 1}
-
-    try: # change clickMe() to render local only
-        Comp.clickMe.capacities=["local"]
-
-        a=App()
-        assert a.cpt1=={'init': 1, 'build': 1}
-        assert a.cpt2=={'init': 1, 'build': 1}
-        s=GSimu( a,True,js)
-        assert a.cpt1=={'init': 1, 'build': 1}
-        assert a.cpt2=={'init': 1, 'build': 1}
+        assert a.cpt2=={'init': 1, 'build': 2}
 
     finally:
         Comp.clickMe.capacities=[]

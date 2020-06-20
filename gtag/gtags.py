@@ -204,7 +204,6 @@ class _Selector(GTag):
 
 
     def select(self,idx):
-        print("EVT SELECT",self.value)
         self.value=self.choices[int(idx)]
         if self.onchange: self.onchange( value(self.value) )
 
