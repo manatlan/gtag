@@ -23,13 +23,13 @@ class App(GTag):
         self.cpt2=dict(init=0,build=0)
 
         self.v1=0
-        self.c2=Comp(0,self.bind.cpt2)
+        self.c2=Comp(0,self.cpt2)
 
     def build(self):
         return Tag.div(
 
             "REAL CHILD",
-            Comp(self.bind.v1,self.bind.cpt1),"v=",self.v1,
+            Comp(self.v1,self.cpt1),"v=",self.v1,
             "<br>",self.cpt1,
 
             "<hr> INNERCHILD",
