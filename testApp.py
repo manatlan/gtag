@@ -48,7 +48,7 @@ class Page1(GTag):
             HBox(InputText(self.txt ),Text(self.txt)),
             MyInc(self.nb),
             MyInc(self.nb),
-            Box(self.nb, Tag.div( "⭐" * int(self.nb) )),
+            Box(self.nb, Tag.div( int(self.nb) * "⭐" )),
             Button("Show mbox",onclick=self.bind.aff())
         )
 
@@ -173,5 +173,5 @@ class TestApp(GTag):
 if __name__=="__main__":
     app=TestApp( )
     # app=Page1(1,"kkk")
-    # print( app.run(log=False) )
-    print( app.serve(log=False) )
+    print( app.run(log=False) )
+    # print( app.serve(log=False) )

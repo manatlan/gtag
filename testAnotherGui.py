@@ -45,7 +45,7 @@ class Modal(GTag):
             self("""M.Modal.init(tag, {onCloseEnd:function() {%s}}).open()""" % self.bind.close())
             return Tag.div(self.obj,klass="modal")
 
-    @render.no
+    @render.local
     def close(self):
         self.obj=None
 

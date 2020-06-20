@@ -140,16 +140,16 @@ class ReactiveProp:
         self.set( self.get() + value(v) )
         return self.get()
     def __sub__(self,v):
-        self.set( self.get() + value(v) )
+        self.set( self.get() - value(v) )
         return self.get()
     def __mul__(self,v):
-        self.set( self.get() + value(v) )
+        self.set( self.get() * value(v) )
         return self.get()
     def __truediv__(self,v):
-        self.set( self.get() + value(v) )
+        self.set( self.get() / value(v) )
         return self.get()
     def __floordiv__(self,v):
-        self.set( self.get() + value(v) )
+        self.set( self.get() // value(v) )
         return self.get()
 
     def __iadd__(self,v):
