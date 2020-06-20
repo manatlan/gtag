@@ -2,8 +2,7 @@ if __name__=="__main__":
     import sys,os
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
-from gtag import GTag,Tag,render
-from gtag.gtag import CSS,JS
+from gtag import GTag,Tag,value
 import pytest
 
 def test_GTag():
@@ -120,12 +119,11 @@ def test_GTag_guess_parent_in_difficulty():
 
 def test_GTag_build():
     class My(GTag):
-        css="x"
-        js="x"
+        headers=Tag.script("//hello")
         def init(self):
             self.v=12
         def build(self):
-            return Tag.div("hello",self.bind.v,onclick=self.bind.onclick())
+            return Tag.div("hello",self.v,onclick=self.bind.onclick())
         def onclick(self):
             pass
 
@@ -139,15 +137,14 @@ def test_GTag_build():
     assert '>hello 12<' in html
 
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSS) for i in hh])
-    assert any( [isinstance(i,JS) for i in hh])
+    assert any( [isinstance(i,Tag) for i in hh])
 
 def test_GTag_render():
     class My(GTag):
         def init(self):
             self.v=12
         def build(self):
-            return Tag.div("hello",self.bind.v,onclick=self.bind.onclick(42))
+            return Tag.div("hello",self.v,onclick=self.bind.onclick(42))
         def onclick(self,anArg=None):
             pass
 
@@ -160,17 +157,18 @@ def test_GTag_render():
     assert '>hello 12<' in html
 
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSS) for i in hh])
+    assert any( [isinstance(i,Tag) for i in hh])
 
 
 def test_GTag_clone():
     class My(GTag):
+        headers=Tag.script("// hi")
 
         def init(self,v):
             self.v=v
 
         def build(self):
-            return Tag.div("hello",self.bind.v,onclick=self.bind.onclick(42))
+            return Tag.div("hello",self.v,onclick=self.bind.onclick(42))
         def onclick(self,anArg=None):
             pass
 
@@ -184,7 +182,8 @@ def test_GTag_clone():
     assert '>hello 12<' in html
 
     hh=m._guessHeaders()
-    assert any( [isinstance(i,CSS) for i in hh])
+    assert any( [isinstance(i,Tag) for i in hh])
+
 
     mm=m._clone()
     assert mm.added==42
@@ -195,8 +194,8 @@ def test_GTag_clone():
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
-    hh=m._guessHeaders()
-    assert any( [isinstance(i,CSS) for i in hh])
+    hh=mm._guessHeaders()
+    assert any( [isinstance(i,Tag) for i in hh])
 
 
 def test_GTag_clone_with_State():
@@ -204,7 +203,7 @@ def test_GTag_clone_with_State():
         def init(self,v):
             self.v=v
         def build(self):
-            return Tag.div("hello",self.bind.v,onclick=self.bind.onclick(42))
+            return Tag.div("hello",self.v,onclick=self.bind.onclick(42))
         def onclick(self,anArg=None):
             pass
 
@@ -291,7 +290,7 @@ def test_GTag_with_childs():
     assert p.child.parent.prop == 1
     assert p.child.parent.test() == 1
 
-    assert p._getRef( p.child.id ) is p.child
+    assert p._getRef( p.child.id ) is value(p.child)
 
 
 def test_GTag_childs_ichilds():
@@ -314,9 +313,9 @@ def test_GTag_childs_ichilds():
     assert p.c2 in p._ichilds
     assert p.c2 in p._childs #it appears in childs coz it was created in build() (not in init)
 
-    assert len(p._getChilds())==4 # because p is in getChilds()
     assert len(p._ichilds)==2
     assert len(p._childs)==2
+    assert len(p._getChilds())==4 # because p is in getChilds()
 
     assert all([i.main.id == p.id for i in p._childs])
     assert all([i.main.id == p.id for i in p._ichilds])
@@ -364,7 +363,7 @@ def test_GTagDyn_with_childs():
     assert p.child.parent.prop == 1
     assert p.child.parent.test() == 1
 
-    assert p._getRef( p.child.id ) is p.child
+    assert p._getRef( p.child.id ) is value(p.child)
 
 def test_ReactiveProp():
     class MTag(GTag):
@@ -375,11 +374,11 @@ def test_ReactiveProp():
     p=MTag()
     assert p.prop1 == 1
     assert p.prop2 == 2
-    assert p.bind.prop1 == 1
-    assert p.bind.prop2 == 2
+    # assert p.bind.prop1 == 1
+    # assert p.bind.prop2 == 2
 
-    p.bind.prop2.set( p.bind.prop1.get() )
-    assert p.prop2 == 1
+    # p.bind.prop2.set( p.bind.prop1.get() )
+    # assert p.prop2 == 1
 
 def test_GTag_with_gtag():
     class C(GTag):

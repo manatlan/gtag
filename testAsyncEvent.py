@@ -11,7 +11,7 @@ class App(GTag):
 
     def build(self):
         return VBox(
-            self.bind.cpt,
+            self.cpt,
             Button("t1",onclick=self.bind.t1()),
             Button("t2",onclick=self.bind.t2()),
         )

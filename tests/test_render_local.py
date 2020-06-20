@@ -23,10 +23,10 @@ def test_redraw_global():
         def init(self,v):
             self._id="A" #override id, for the test
             self.v=v
-            self.c=C(self.bind.v)
+            self.c=C(self.v)
 
         def build(self):
-            return Tag.div( self.c, self.bind.v )
+            return Tag.div( self.c, self.v )
 
 
     def assertRender(x):
@@ -60,10 +60,10 @@ def test_redraw_local():
         def init(self,v):
             self._id="A" #override id, for the test
             self.v=v
-            self.c=C(self.bind.v)
+            self.c=C(self.v)
 
         def build(self):
-            return Tag.div( self.c, self.bind.v )
+            return Tag.div( self.c, self.v )
 
 
     def assertRender(x):
@@ -96,10 +96,10 @@ def test_redraw_none(): # STUPID TEST
         def init(self,v):
             self._id="A" #override id, for the test
             self.v=v
-            self.c=C(self.bind.v)
+            self.c=C(self.v)
 
         def build(self):
-            return Tag.div( self.c, self.bind.v )
+            return Tag.div( self.c, self.v )
 
 
     def assertRender(x):
@@ -132,10 +132,10 @@ def test_redraw_parent():
         def init(self,v):
             self._id="A" #override id, for the test
             self.v=v
-            self.c=C(self.bind.v)
+            self.c=C(self.v)
 
         def build(self):
-            return Tag.div( self.c, self.bind.v )
+            return Tag.div( self.c, self.v )
 
 
     def assertRender(x):

@@ -82,33 +82,21 @@ class Tag(metaclass=MyMetaclass):
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
 
-class CSS(Tag):
-    def __init__(self,content):
-        self._md5=hashlib.md5("css:".encode()+content.encode()).hexdigest()
-        if content.startswith("http"):
-            self.tag="link"
-            super().__init__(type="text/css",rel="stylesheet",href=content)
-        else:
-            self.tag="style"
-            super().__init__(content,type="text/css")
-
-class JS(Tag):
-    tag="script"
-    def __init__(self,content):
-        self._md5=hashlib.md5("js:".encode()+content.encode()).hexdigest()
-        if content.startswith("http"):
-            super().__init__(type="text/javascript",src=content)
-        else:
-            super().__init__(content,type="text/javascript")
-
+class NONE: pass
 class ReactiveProp:
-    def __init__(self,dico:dict,attribut:str):
-        self.__instance=dico
-        self.__attribut=attribut
+    def __init__(self,dico:dict,attribut:str,value=NONE):
+        assert not isinstance(dico,ReactiveProp)
+        assert not isinstance(attribut,ReactiveProp)
+        assert not isinstance(value,ReactiveProp)
+        self._instance=dico
+        self._attribut=attribut
+        if value!=NONE:
+            self.set(value)
     def set(self,v):
-        self.__instance[self.__attribut]=v
+        assert not isinstance(v,ReactiveProp)
+        self._instance[self._attribut]=v
     def get(self):
-        return self.__instance[self.__attribut]
+        return self._instance[self._attribut]
 
 
     def __eq__(self, v):
@@ -129,11 +117,37 @@ class ReactiveProp:
     def __gt__(self, v):
         return self.get() > value(v)
 
+    def __add__(self,v):
+        self.set( self.get() + value(v) )
+        return self.get()
+    def __sub__(self,v):
+        self.set( self.get() - value(v) )
+        return self.get()
+    def __mul__(self,v):
+        self.set( self.get() * value(v) )
+        return self.get()
+    def __truediv__(self,v):
+        self.set( self.get() / value(v) )
+        return self.get()
+    def __floordiv__(self,v):
+        self.set( self.get() // value(v) )
+        return self.get()
 
     def __iadd__(self,v):
-        vv=self.get() + value(v)
-        self.set( vv )
-        return self
+        self.set( self.get() + value(v) )
+        return self.get()
+    def __isub__(self,v):
+        self.set( self.get() - value(v) )
+        return self.get()
+    def __imul__(self,v):
+        self.set( self.get() * value(v) )
+        return self.get()
+    def __itruediv__(self,v):
+        self.set( self.get() / value(v) )
+        return self.get()
+    def __ifloordiv__(self,v):
+        self.set( self.get() // value(v) )
+        return self.get()
 
     def __getitem__(self,k):
         return self.get()[k]
@@ -148,8 +162,8 @@ class ReactiveProp:
         return str(self.get())
 
     def __repr__(self):
-        iid=self.__instance.id if hasattr(self.__instance,"id") else str(self.__instance)
-        return "<%s instance=%s attr=%s>" % (self.__class__.__name__,iid,self.__attribut)
+        iid=self._instance.id if hasattr(self._instance,"id") else str(self._instance)
+        return "<%s instance=%s attr=%s>" % (self.__class__.__name__,iid,self._attribut)
 
     def __getattr__(self,k):
         return getattr(self.get(),k)
@@ -159,6 +173,8 @@ class ReactiveProp:
         else:
             setattr(self.get(),k,value(v))
 
+    def __call__(self,*a,**k):
+        return self.get()(*a,**k)
     #TODO: add a lot of __slot__ ;-)
 
 
@@ -194,42 +210,20 @@ class Capacity:
         self.__method.capacities.append(capacity)
 
 
-
-
-class GtagProxy:
-    """ Expose props(as ReactiveProps)/method from a gtag """
-    def __init__(self,instance):
-        self.__instance=instance
-    def __getattr__(self,name:str):
-        if name in ["id","main","parent"]:
-            return getattr(self.__instance,name)
-        elif name in self.__instance.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
-            o=self.__instance.__dict__[name]
-            if isinstance(o,ReactiveProp):
-                return o
-            else:
-                return ReactiveProp(self.__instance.__dict__,name)
-        elif name in dir(self.__instance):   # bind a self.method    -> return a js/string for a guy's call in js side
-            def _(*a,**k):
-                method=getattr(self.__instance,name)
-                return method(*a,**k)
-            return _
-        else:
-            raise Exception("Unknown method/attribut '%s' in '%s'"%(name,repr(self.__instance)))
-    def __repr__(self):
-        return repr(self.__instance)
-
-
 class GTag:
     """
     The magic thing ;-)
     """
     size=None
     _call=None # first event to call at start !
+    _parent=None
+
     """ size of the windowed runned gtag (tuple (width,height) or guy.FULLSCREEN or None) """
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
+        self._data={}
+        self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         self._tag=None
         self._scripts=[]
 
@@ -253,7 +247,6 @@ class GTag:
                     if isinstance(parent,GTag):
                         break
 
-        self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         self._childs=[]     #<- this is cleared at each rendering
         self._args=a
         self._kargs=k
@@ -285,7 +278,8 @@ class GTag:
 
     @property
     def _ichilds(self):
-        return [v for k,v in self.__dict__.items() if k not in ["_tag","_parent"] and isinstance(v,GTag)]
+        ll= [v for k,v in self._data.items() if isinstance(v,GTag)]
+        return ll
 
     def _getChilds(self) -> dict:
 
@@ -318,33 +312,28 @@ class GTag:
 
 
     @property
-    def parent(self)-> T.Union[GtagProxy,None]:
+    def parent(self): # -> T.Union[GTag,None]:
         """ return caller/binder to parent instance (None if gtag is the main) """
         if self._parent is None:
             return None
         else:
-            return GtagProxy( self._parent )
+            return self._parent
 
 
     @property
-    def main(self)-> GtagProxy:
+    def main(self): # -> GTag:
         """ return caller/binder to main instance """
-        return GtagProxy( self._getMain() )
+        return self._getMain()
 
 
 
     @property
     def bind(self):
-        """ to bind attribute or method !"""
+        """ to bind method ! and return its js repr"""
         class Binder:
             def __getattr__(this,name:str):
-                if name in self.__dict__.keys(): # bind a data attribut  -> return a ReactiveProp
-                    o=self.__dict__[name]
-                    if isinstance(o,ReactiveProp):
-                        return o
-                    else:
-                        return ReactiveProp(self.__dict__,name)
-                elif name in dir(self):   # bind a self.method    -> return a js/string for a guy's call in js side
+                m=hasattr(self,name) and getattr(self,name)
+                if m and callable( m ):   # bind a self.method    -> return a js/string for a guy's call in js side
                     def _(*args,**kargs):
                         if args or kargs:
                             return "self.bindUpdate('%s',GID,'%s',%s,%s)" % (self.id,name,jjs(args),jjs(kargs))
@@ -352,13 +341,13 @@ class GTag:
                             return "self.bindUpdate('%s',GID,'%s',[],{})" % (self.id,name)
                     return _
                 else:
-                    raise Exception("Unknown method/attribut '%s' in '%s'"%(name,self.__class__.__name__))
+                    raise Exception("Unknown method '%s' in '%s'"%(name,self.__class__.__name__))
         return Binder()
 
 
     def _clone(self): #TODO: not clear here ... need redone (the rebuild() needed ?! why ?!)
         assert self._parent==None,"Can't clone a gtag which is not the main one"
-        props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call"}
+        props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call" or k=="_data"}
         gtag = self.__class__(*self._args,**self._kargs,parent=None) # parent=None, will avoid guess parent ! (it makes sense, because you can clone only mains)
         gtag.__dict__.update(props)
         gtag._scripts=[]
@@ -377,18 +366,10 @@ class GTag:
 
         ll=[]
         for g in GTag.__subclasses__():
-            if hasattr(g,"css"):
-                for i in mklist(getattr(g,"css")):
-                    if i:
-                        c=CSS(i)
-                        if c._md5 not in [l._md5 for l in ll]:
-                            ll.append( c )
-            if hasattr(g,"js"):
-                for i in mklist(getattr(g,"js")):
-                    if i:
-                        c=JS(i)
-                        if c._md5 not in [l._md5 for l in ll]:
-                            ll.append( c )
+            if hasattr(g,"headers"):
+                for i in mklist(getattr(g,"headers")):
+                        # if c._md5 not in [l._md5 for l in ll]:
+                        ll.append( i )
         return ll
 
 
@@ -433,17 +414,41 @@ class GTag:
 
     def __repr__(self):
         return "<GTag: %s [parent:%s] (innerchilds=%s)>" % (
-            self.id,
+            self._id,
             self._parent.id if self._parent else "None",
-            [i.id for i in self._ichilds]
+            [i._id for i in self._ichilds]
         )
 
     def __setattr__(self,k,v):
-        o=self.__dict__.get(k)
-        if isinstance(o,ReactiveProp):
-            o.set( value(v) )
-        else:
+        if k.startswith("_"):
+            # print("REAL SET",k,repr(v))
             super().__setattr__(k,v)
+        else:
+            o=self._data.get(k)
+
+            if isinstance(o,ReactiveProp):
+                # print("SET EXISTING REACTIVE",k,repr(v))
+
+                if isinstance(v,ReactiveProp):
+                    # v is RP
+                    self._data[k]=v
+                    super().__setattr__(k,v)
+                else:
+                    # v is real
+                    o.set( v )
+
+            else:
+                # print("CREATE REACTIVE",k,repr(v))
+
+                if isinstance(v,ReactiveProp):
+                    # v is RP
+                    self._data[k]=v            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
+                    super().__setattr__(k,v)
+                else:
+                    # v is real
+                    self._data[k]=v
+                    super().__setattr__(k,ReactiveProp(self._data,k,v))
+
 
     @property
     def scripts(self):

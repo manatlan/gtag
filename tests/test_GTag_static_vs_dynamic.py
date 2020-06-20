@@ -17,9 +17,8 @@ class Star(Tag): # a Star tag for the tests bellow
 
 class Static(GTag):
     """ A full static gtag component without any 'bind' """
-    def __init__(self,n):
+    def init(self,n):
         self.n=n
-        super().__init__(None)
 
     def stars(self):
         return [Star(i) for i in range( int(self.n) )]
@@ -29,17 +28,14 @@ class Static(GTag):
 
 class StaticBinded(GTag):
     """ A gtag component with its property bind'ed ! """
-    def __init__(self,n):
+    def init(self,n):
         self.n=n
-        super().__init__(None)
 
     def stars(self):
         return [Star(i) for i in range(int(self.n))]
 
     def build(self):
-        return Tag.text(self.bind.n, *self.stars())
-
-
+        return Tag.text(self.n, *self.stars())
 
 
 
@@ -60,6 +56,7 @@ def test_simple():
     ]
 
     for t in tags:
+        assert isinstance(t,GTag)
         check(t,iv,iv)
 
 def test_change():
@@ -75,7 +72,7 @@ def test_change():
     for t in tags:
         t.n=cv
 
-    check(tags[0],iv,iv)
+    check(tags[0],cv,iv) 
     check(tags[1],cv,iv)
 
 
@@ -113,7 +110,7 @@ def test_DANGEROUS():
             return Tag.text( *[Star(i) for i in range(int(self.n))] )
 
         def build(self):
-            return Tag.text("-%s-" % self.bind.n, self.stars() ) # <---- DANGEROUS the binded is str'ised at build !!!!
+            return Tag.text("-%s-" % self.n, self.stars() ) # <---- DANGEROUS the binded is str'ised at build !!!!
 
     t=StaticComputed(2)
     assert "-2-" in str(t)
@@ -155,7 +152,7 @@ def test_DANGEROUS_workaround2():
 
         def build(self):
             ll=[Star(i) for i in range(int(self.n))]
-            return Tag.text("-%s-"%self.bind.n, *ll )
+            return Tag.text("-%s-"%self.n, *ll )
 
     t=StaticBuildBinded(2)
     assert "-2-" in str(t)

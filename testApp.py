@@ -28,7 +28,7 @@ class Login(GTag):
 
   def build(self):
     return VBox(
-      HBox( Text("Password"), InputText(self.bind.passwd,type="password") ),
+      HBox( Text("Password"), InputText(self.passwd,type="password") ),
       Button("OK",onclick=self.bind.check())
     )
 
@@ -45,10 +45,10 @@ class Page1(GTag):
 
     def build(self):
         return VBox(
-            HBox(InputText(self.bind.txt ),Text(self.bind.txt)),
-            MyInc(self.bind.nb),
-            MyInc(self.bind.nb),
-            Box(self.nb, Tag.div( "⭐" * int(self.nb) )),
+            HBox(InputText(self.txt ),Text(self.txt)),
+            MyInc(self.nb),
+            MyInc(self.nb),
+            Box(self.nb, Tag.div( int(self.nb) * "⭐" )),
             Button("Show mbox",onclick=self.bind.aff())
         )
 
@@ -62,8 +62,8 @@ class Page2(GTag):
 
     def build(self):
         return Tag.div(
-            Box("A test page, with a binding value:", self.bind.nb),
-            MyInc(self.bind.nb),
+            Box("A test page, with a binding value:", self.nb),
+            MyInc(self.nb),
             Button("show",onclick=self.bind.kik()),
             Button("show T",onclick=self.bind.kik2()),
         )
@@ -82,21 +82,21 @@ class Page3(GTag):
         self.cb=cb
 
     def build(self):
-        tabs=Tabs(self.bind.selected,["tab1","tab2","tab3"])
+        tabs=Tabs(self.selected,["tab1","tab2","tab3"])
 
         return Tag.div(tabs,Box(self.renderContent()),
             Checkbox(self.cb, "disable all (vv)"),
             HBox(
-                Text("You selected",self.bind.rb),
-                RadioButtons(self.bind.rb,["apple","pear","banana"],disabled=self.bind.cb,onchange=self.realCallback),
+                Text("You selected",self.rb),
+                RadioButtons(self.rb,["apple","pear","banana"],disabled=self.cb,onchange=self.realCallback),
             ),
             HBox(
-                Text("You selected",self.bind.so),
-                Select(self.bind.so,["apple","pear","banana"],disabled=self.bind.cb),
+                Text("You selected",self.so),
+                Select(self.so,["apple","pear","banana"],disabled=self.cb),
             ),
             HBox(
-                Text("You selected",self.bind.sb),
-                SelectButtons(self.bind.sb,["apple","pear","banana"],disabled=self.bind.cb),
+                Text("You selected",self.sb),
+                SelectButtons(self.sb,["apple","pear","banana"],disabled=self.cb),
             )
         )
 
@@ -139,21 +139,20 @@ class TestApp(GTag):
         })
 
         if self.page==1:
-            page=Page1(self.bind.n,self.bind.txt)
+            page=Page1(self.n,self.txt)
         elif self.page==2:
-            page=Page2(self.bind.nb)
+            page=Page2(self.nb)
         elif self.page==3:
-            page=Page3(self.bind.selectedTab,self.bind.rb,self.bind.so,self.bind.sb,self.bind.cb)
+            page=Page3(self.selectedTab,self.rb,self.so,self.sb,self.cb)
         else:
             page="no"
-
         return Tag.div(
             nav,
             Section( Tag.div( "<br>", page, klass="container") ),
             Button("test mbox",onclick=self.bind.setMBox(42)),
             Button("test toast",onclick=self.bind.setToast(42)),
-            MBox( self.bind.msg ),
-            Toaster( self.bind.toast ),
+            MBox( self.msg ),
+            Toaster( self.toast ),
         )
 
     def setPage(self,n):
@@ -173,6 +172,6 @@ class TestApp(GTag):
 
 if __name__=="__main__":
     app=TestApp( )
-    #~ app=Page1(1,"kkk")
+    # app=Page1(1,"kkk")
     print( app.run(log=False) )
     # print( app.serve(log=False) )

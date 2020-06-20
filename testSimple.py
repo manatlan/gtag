@@ -1,6 +1,5 @@
 #!/usr/bin/python3 -u
 from gtag import GTag,Tag
-from gtag.gtags import *
 
 class App(GTag):
     size=(400,150)
@@ -9,9 +8,10 @@ class App(GTag):
         self.cpt = 0
 
     def build(self):
-        return VBox(
+        return Tag.span(
             self.cpt,
-            Button("++",onclick=self.bind.add())
+            Tag.Button("++",onclick=self.bind.add()),
+            style="background:yellow;padding:10px"
         )
 
     def add(self):
