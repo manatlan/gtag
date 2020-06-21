@@ -21,6 +21,7 @@ import typing as T
 
 
 isAsyncGenerator=lambda x: "async_generator" in str(type(x)) #TODO: howto better ?
+fixBacktip=lambda x: x.replace("`",r"\`")
 
 value=lambda x: x.get() if isinstance(x,ReactiveProp) else x
 
@@ -172,6 +173,9 @@ class ReactiveProp:
             super().__setattr__(k, v)
         else:
             setattr(self.get(),k,value(v))
+
+    def __len__(self):
+        return len(self.get())
 
     def __call__(self,*a,**k):
         return self.get()(*a,**k)
@@ -336,6 +340,9 @@ class GTag:
                 if m and callable( m ):   # bind a self.method    -> return a js/string for a guy's call in js side
                     def _(*args,**kargs):
                         if args or kargs:
+                            args=[value(i) for i in args]
+                            kargs={k:value(v) for k,v in kargs.items()}
+
                             return "self.bindUpdate('%s',GID,'%s',%s,%s)" % (self.id,name,jjs(args),jjs(kargs))
                         else:
                             return "self.bindUpdate('%s',GID,'%s',[],{})" % (self.id,name)
@@ -472,7 +479,7 @@ class GTag:
         log(">>>UPDATE:",repr(self))
         log(self._tree())
         return dict(script="""document.querySelector("#%s").outerHTML=`%s`;%s""" % (
-            self.id, h,s
+            self.id, fixBacktip(h),s
         ))
 
     def run(self,*a,start=None,**k) -> any:
@@ -569,7 +576,7 @@ class GTagApp(guy.Guy):
                 method=getattr(gtag.bind,fname)
                 caller=method(*args)
         #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        js="document.body.innerHTML=`%s`;%s;%s" %(str(gtag),gtag._getScripts(),caller)
+        js="document.body.innerHTML=`%s`;%s;%s" %(fixBacktip(str(gtag)),gtag._getScripts(),caller)
         await self.js.render(js)
 
     async def forceUpdate(self,g): #can't be called from client side !

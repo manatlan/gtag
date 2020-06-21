@@ -281,24 +281,41 @@ class Checkbox(GTag):
 
 if __name__=="__main__":
 
-    class M(GTag):
-        size=(400,400)
-        def init(self,n,t):
-            self.v=False
-            self.n=n
-            self.t=t
+    # class M(GTag):
+    #     size=(400,400)
+    #     def init(self,n,t):
+    #         self.v=False
+    #         self.n=n
+    #         self.t=t
+
+    #     def build(self):
+    #         tt=Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
+    #         return Tag.div(tt,
+    #             Checkbox(self.v,"ok ?"),
+    #             RadioButtons(self.n,[1,2,3],self.v),
+    #             Tabs(self.n,[1,2,3],self.v),
+    #             SelectButtons(self.n,[1,2,3],self.v),
+    #             InputText(self.t,disabled=self.v),
+    #             TextArea(self.t,disabled=self.v),
+    #             self.v,
+    #         )
+
+    # app=M(1,"hello")
+    # app.run()
+
+    class XMain(GTag):
+    #########################################################################
+        def init(self,v):
+            self.x=v
 
         def build(self):
-            tt=Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
-            return Tag.div(tt,
-                Checkbox(self.v,"ok ?"),
-                RadioButtons(self.n,[1,2,3],self.v),
-                Select(self.n,[1,2,3],self.v),
-                SelectButtons(self.n,[1,2,3],self.v),
-                InputText(self.t,disabled=self.v),
-                TextArea(self.t,disabled=self.v),
-                self.v,
+            return Tag.div(
+                RadioButtons(self.x,["111","222"]),
+                self.x,
             )
 
-    app=M(1,"hello")
+
+
+
+    app=XMain( "111" )
     app.run()
