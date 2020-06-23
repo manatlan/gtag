@@ -7,7 +7,7 @@ def test_ReactiveProp():
     assert "<ReactiveProp" in repr(a)
     assert int(a)==12
     assert p["a"]==12
-    a.set(42)
+    a.setValue(42)
     assert p["a"]==42
     assert str(a)=="42"
     a+=1
@@ -45,7 +45,7 @@ def test_ReactiveProp_object():
     assert pp.upper() == "HELLO"
     assert pp == "hello"
     assert p["a"]=="hello"
-    pp.set( pp.upper() )
+    pp.setValue( pp.upper() )
     assert pp=="HELLO"
     assert p["a"]=="HELLO"
 

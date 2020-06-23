@@ -23,7 +23,7 @@ import typing as T
 isAsyncGenerator=lambda x: "async_generator" in str(type(x)) #TODO: howto better ?
 fixBacktip=lambda x: x.replace("`",r"\`")
 
-value=lambda x: x.get() if isinstance(x,ReactiveProp) else x
+value=lambda x: x.getValue() if isinstance(x,ReactiveProp) else x
 
 def jjs(obj): #TODO: not optimal ... do better than str's pattern subst ;-)
     """ json dumps (js is b'' (bytes)) """
@@ -92,93 +92,117 @@ class ReactiveProp:
         self._instance=dico
         self._attribut=attribut
         if value!=NONE:
-            self.set(value)
-    def set(self,v):
+            self.setValue(value)
+    def setValue(self,v):
         assert not isinstance(v,ReactiveProp)
         self._instance[self._attribut]=v
-    def get(self):
+    def getValue(self):
         return self._instance[self._attribut]
 
 
     def __eq__(self, v):
-        return self.get() == value(v)
+        return self.getValue() == value(v)
 
     def __ne__(self, v):
-        return self.get() != value(v)
+        return self.getValue() != value(v)
 
     def __lt__(self, v):
-        return self.get() < value(v)
+        return self.getValue() < value(v)
 
     def __le__(self, v):
-        return self.get() <= value(v)
+        return self.getValue() <= value(v)
 
     def __ge__(self, v):
-        return self.get() >= value(v)
+        return self.getValue() >= value(v)
 
     def __gt__(self, v):
-        return self.get() > value(v)
+        return self.getValue() > value(v)
 
     def __add__(self,v):
-        self.set( self.get() + value(v) )
-        return self.get()
+        self.setValue( self.getValue() + value(v) )
+        return self.getValue()
     def __sub__(self,v):
-        self.set( self.get() - value(v) )
-        return self.get()
+        self.setValue( self.getValue() - value(v) )
+        return self.getValue()
     def __mul__(self,v):
-        self.set( self.get() * value(v) )
-        return self.get()
+        self.setValue( self.getValue() * value(v) )
+        return self.getValue()
     def __truediv__(self,v):
-        self.set( self.get() / value(v) )
-        return self.get()
+        self.setValue( self.getValue() / value(v) )
+        return self.getValue()
     def __floordiv__(self,v):
-        self.set( self.get() // value(v) )
-        return self.get()
+        self.setValue( self.getValue() // value(v) )
+        return self.getValue()
 
     def __iadd__(self,v):
-        self.set( self.get() + value(v) )
-        return self.get()
+        self.setValue( self.getValue() + value(v) )
+        return self.getValue()
     def __isub__(self,v):
-        self.set( self.get() - value(v) )
-        return self.get()
+        self.setValue( self.getValue() - value(v) )
+        return self.getValue()
     def __imul__(self,v):
-        self.set( self.get() * value(v) )
-        return self.get()
+        self.setValue( self.getValue() * value(v) )
+        return self.getValue()
     def __itruediv__(self,v):
-        self.set( self.get() / value(v) )
-        return self.get()
+        self.setValue( self.getValue() / value(v) )
+        return self.getValue()
     def __ifloordiv__(self,v):
-        self.set( self.get() // value(v) )
-        return self.get()
+        self.setValue( self.getValue() // value(v) )
+        return self.getValue()
 
     def __getitem__(self,k):
-        return self.get()[k]
+        return self.getValue()[k]
     def __setitem__(self,k,v):
-        self.get()[k]=value(v)
+        self.getValue()[k]=value(v)
 
     def __int__(self):
-        return int(self.get())
+        return int(self.getValue())
     def __bool__(self):
-        return bool(self.get())
+        return bool(self.getValue())
     def __str__(self):
-        return str(self.get())
+        return str(self.getValue())
 
     def __repr__(self):
         iid=self._instance.id if hasattr(self._instance,"id") else str(self._instance)
-        return "<%s instance=%s attr=%s>" % (self.__class__.__name__,iid,self._attribut)
+        return "<ReactiveProp:%s attr=%s of instance=%s>" % (self.__class__.__name__,self._attribut,iid)
+
+
+    @property
+    def __class__(self):
+        return type(self.getValue())
+
+    def __delitem__(self,k):
+        del self.getValue()[ value(k) ]
+
+    def __hash__(self):
+        return hash(self.getValue())
+
+    def __iter__(self):
+        return iter(self.getValue())
+
+    def __next__(self):
+        return next(self.getValue())
+
+    def __contains__(self,x):
+        return value(x) in self.getValue()
+
+    def __radd__(self, other):
+        return value(other) + self.getValue()
+
 
     def __getattr__(self,k):
-        return getattr(self.get(),k)
+        return getattr(self.getValue(),k)
     def __setattr__(self,k,v):
         if k.startswith("_"):
             super().__setattr__(k, v)
         else:
-            setattr(self.get(),k,value(v))
+            setattr(self.getValue(),k,value(v))
 
     def __len__(self):
-        return len(self.get())
+        return len(self.getValue())
 
     def __call__(self,*a,**k):
-        return self.get()(*a,**k)
+        return self.getValue()(*a,**k)
     #TODO: add a lot of __slot__ ;-)
 
 
@@ -371,11 +395,16 @@ class GTag:
 
         mklist=lambda x: x if isinstance(x,list) else [x]
 
+        md5= lambda x: hashlib.md5(x.encode('utf-8')).hexdigest()
+
+        lmd5=[]
         ll=[]
         for g in GTag.__subclasses__():
             if hasattr(g,"headers"):
                 for i in mklist(getattr(g,"headers")):
-                        # if c._md5 not in [l._md5 for l in ll]:
+                    m5=md5(str(i))
+                    if m5 not in lmd5:
+                        lmd5.append(m5)
                         ll.append( i )
         return ll
 
@@ -442,7 +471,7 @@ class GTag:
                     super().__setattr__(k,v)
                 else:
                     # v is real
-                    o.set( v )
+                    o.setValue( v )
 
             else:
                 # print("CREATE REACTIVE",k,repr(v))
