@@ -59,6 +59,12 @@ def test_change_rp_values():
     assert a.v==3
     assert b.v==3
 
+    a.v//=2
+    assert isinstance(a.v,gtag.ReactiveProp)
+    assert isinstance(b.v,gtag.ReactiveProp)
+    assert a.v==1
+    assert b.v==1
+
 
 def test_concat_rp_values():
     class A(GTag):

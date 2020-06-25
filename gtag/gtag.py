@@ -128,6 +128,8 @@ class ReactiveProp:
         return self.getValue() / value(v)
     def __floordiv__(self,v):
         return self.getValue() // value(v)
+    def __mod__(self,v):
+        return self.getValue() % value(v)
 
     def __iadd__(self,v):
         return self.getValue() + value(v)
@@ -135,10 +137,10 @@ class ReactiveProp:
         return self.getValue() - value(v)
     def __imul__(self,v):
         return self.getValue() * value(v)
-    # def __itruediv__(self,v):
-    #     return self.getValue() / value(v)
-    # def __ifloordiv__(self,v):
-    #     return self.getValue() // value(v)
+    def __itruediv__(self,v):
+        return self.getValue() / value(v)
+    def __ifloordiv__(self,v):
+        return self.getValue() // value(v)
 
 
     def __radd__(self, v):
@@ -151,7 +153,22 @@ class ReactiveProp:
         return value(v) / self.getValue()
     def __rfloordiv__(self, v):
         return value(v) // self.getValue()
+    def __emod__(self,v):
+        return value(v) % self.getValue()
 
+    def __and__(self,v):
+        return self.getValue() & value(v)
+    def __or__(self,v):
+        return self.getValue() | value(v)
+    def __xor__(self,v):
+        return self.getValue() ^ value(v)
+
+    def __rand__(self,v):
+        return value(v) & self.getValue()
+    def __ror__(self,v):
+        return value(v) | self.getValue()
+    def __rxor__(self,v):
+        return value(v) ^ self.getValue()
 
 
     def __getitem__(self,k):
