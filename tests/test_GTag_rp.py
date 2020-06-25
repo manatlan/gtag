@@ -124,6 +124,10 @@ def test_others():
     assert b.v<a.v
     assert b.v<=a.v
 
+
+    assert a.v + b.v == 44
+    assert a.v / b.v == 21
+    assert a.v // b.v == 21
     assert a.v + 1 == 43
     assert a.v - 1 == 41
     assert a.v * 2 == 84

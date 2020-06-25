@@ -129,6 +129,17 @@ class ReactiveProp:
     def __floordiv__(self,v):
         return self.getValue() // value(v)
 
+    def __iadd__(self,v):
+        return self.getValue() + value(v)
+    def __isub__(self,v):
+        return self.getValue() - value(v)
+    def __imul__(self,v):
+        return self.getValue() * value(v)
+    # def __itruediv__(self,v):
+    #     return self.getValue() / value(v)
+    # def __ifloordiv__(self,v):
+    #     return self.getValue() // value(v)
+
 
     def __radd__(self, v):
         return value(v) + self.getValue()
@@ -140,6 +151,7 @@ class ReactiveProp:
         return value(v) / self.getValue()
     def __rfloordiv__(self, v):
         return value(v) // self.getValue()
+
 
 
     def __getitem__(self,k):
