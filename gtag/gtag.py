@@ -86,9 +86,8 @@ class Tag(metaclass=MyMetaclass):
 class NONE: pass
 class ReactiveProp:
     def __init__(self,dico:dict,attribut:str,value=NONE):
-        assert not isinstance(dico,ReactiveProp)
-        assert not isinstance(attribut,ReactiveProp)
-        assert not isinstance(value,ReactiveProp)
+        assert isinstance(dico,dict)
+        assert isinstance(attribut,str)
         self._instance=dico
         self._attribut=attribut
         if value!=NONE:
