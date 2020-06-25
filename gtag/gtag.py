@@ -130,16 +130,16 @@ class ReactiveProp:
     def __mod__(self,v):
         return self.getValue() % value(v)
 
-    def __iadd__(self,v):
-        return self.getValue() + value(v)
-    def __isub__(self,v):
-        return self.getValue() - value(v)
-    def __imul__(self,v):
-        return self.getValue() * value(v)
-    def __itruediv__(self,v):
-        return self.getValue() / value(v)
-    def __ifloordiv__(self,v):
-        return self.getValue() // value(v)
+    # def __iadd__(self,v):
+    #     return self.getValue() + value(v)
+    # def __isub__(self,v):
+    #     return self.getValue() - value(v)
+    # def __imul__(self,v):
+    #     return self.getValue() * value(v)
+    # def __itruediv__(self,v):
+    #     return self.getValue() / value(v)
+    # def __ifloordiv__(self,v):
+    #     return self.getValue() // value(v)
 
 
     def __radd__(self, v):
