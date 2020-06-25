@@ -114,6 +114,11 @@ def test_others():
             self.v=v
     a=R(42)
     b=R(2)
+
+    assert isinstance(a.v,gtag.ReactiveProp)
+    assert isinstance(a.v,int)
+
+
     assert a.v>b.v
     assert a.v>=b.v
     assert b.v<a.v
@@ -138,6 +143,11 @@ def test_list():
         def init(self,v):
             self.v=v
     a=R( list("abc") )
+
+    assert isinstance(a.v,gtag.ReactiveProp)
+    assert isinstance(a.v,list)
+
+
     assert len(a.v)==3
     assert "b" in a.v
 
@@ -149,6 +159,10 @@ def test_dict():
         def init(self,v):
             self.v=v
     a=R( dict(a=1,b=2) )
+
+    assert isinstance(a.v,gtag.ReactiveProp)
+    assert isinstance(a.v,dict)
+
     assert len(a.v)==2
     assert "a" in a.v
     del a.v["b"]
@@ -159,6 +173,8 @@ def test_callable():
         def init(self,v):
             self.v=v
     a=R( lambda x: x )
+    assert isinstance(a.v,gtag.ReactiveProp)
+
     assert a.v(42)==42
 
 def test_gen():
