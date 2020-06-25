@@ -153,7 +153,7 @@ class ReactiveProp:
         return value(v) / self.getValue()
     def __rfloordiv__(self, v):
         return value(v) // self.getValue()
-    def __emod__(self,v):
+    def __rmod__(self,v):
         return value(v) % self.getValue()
 
     def __and__(self,v):
@@ -178,6 +178,8 @@ class ReactiveProp:
     def __delitem__(self,k):
         del self.getValue()[ value(k) ]
 
+    def __float__(self):
+        return float(self.getValue())
     def __int__(self):
         return int(self.getValue())
     def __bool__(self):

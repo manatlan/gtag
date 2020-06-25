@@ -65,6 +65,20 @@ def test_change_rp_values():
     assert a.v==1
     assert b.v==1
 
+    a.v=1
+    a.v%2
+    2%a.v
+    a.v%=2
+
+    a.v&2
+    2&a.v
+    a.v|2
+    2|a.v
+    a.v^2
+    2^a.v
+    a.v&=2
+    a.v|=2
+    a.v^=2
 
 def test_concat_rp_values():
     class A(GTag):
