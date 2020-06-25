@@ -108,6 +108,68 @@ def test_add():
     assert a.v==50
     assert b.v==50
 
+def test_others():
+    class R(GTag):
+        def init(self,v):
+            self.v=v
+    a=R(42)
+    b=R(2)
+    assert a.v>b.v
+    assert a.v>=b.v
+    assert b.v<a.v
+    assert b.v<=a.v
+
+    assert a.v + 1 == 43
+    assert a.v - 1 == 41
+    assert a.v * 2 == 84
+    assert a.v / 2 == 21
+    assert a.v // 2 == 21
+
+    assert 1 + a.v == 43
+    assert 1 - a.v == -41
+    assert 2 * a.v == 84
+    assert 84 / a.v == 2
+    assert 84 // a.v == 2
+
+    assert hash(a.v) == hash(42)
+
+def test_list():
+    class R(GTag):
+        def init(self,v):
+            self.v=v
+    a=R( list("abc") )
+    assert len(a.v)==3
+    assert "b" in a.v
+
+    for i in a.v:
+        assert i in list("abc")
+
+def test_dict():
+    class R(GTag):
+        def init(self,v):
+            self.v=v
+    a=R( dict(a=1,b=2) )
+    assert len(a.v)==2
+    assert "a" in a.v
+    del a.v["b"]
+    assert len(a.v)==1
+
+def test_callable():
+    class R(GTag):
+        def init(self,v):
+            self.v=v
+    a=R( lambda x: x )
+    assert a.v(42)==42
+
+def test_gen():
+    def g():
+        yield 42
+
+    class R(GTag):
+        def init(self,v):
+            self.v=v
+    a=R( g() )
+    assert next(a.v)==42
 
 
 if __name__=="__main__":

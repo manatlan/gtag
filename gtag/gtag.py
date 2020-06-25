@@ -119,41 +119,35 @@ class ReactiveProp:
         return self.getValue() > value(v)
 
     def __add__(self,v):
-        self.setValue( self.getValue() + value(v) )
-        return self.getValue()
+        return self.getValue() + value(v)
     def __sub__(self,v):
-        self.setValue( self.getValue() - value(v) )
-        return self.getValue()
+        return self.getValue() - value(v)
     def __mul__(self,v):
-        self.setValue( self.getValue() * value(v) )
-        return self.getValue()
+        return self.getValue() * value(v)
     def __truediv__(self,v):
-        self.setValue( self.getValue() / value(v) )
-        return self.getValue()
+        return self.getValue() / value(v)
     def __floordiv__(self,v):
-        self.setValue( self.getValue() // value(v) )
-        return self.getValue()
+        return self.getValue() // value(v)
 
-    def __iadd__(self,v):
-        self.setValue( self.getValue() + value(v) )
-        return self.getValue()
-    def __isub__(self,v):
-        self.setValue( self.getValue() - value(v) )
-        return self.getValue()
-    def __imul__(self,v):
-        self.setValue( self.getValue() * value(v) )
-        return self.getValue()
-    def __itruediv__(self,v):
-        self.setValue( self.getValue() / value(v) )
-        return self.getValue()
-    def __ifloordiv__(self,v):
-        self.setValue( self.getValue() // value(v) )
-        return self.getValue()
+
+    def __radd__(self, v):
+        return value(v) + self.getValue()
+    def __rsub__(self, v):
+        return value(v) - self.getValue()
+    def __rmul__(self, v):
+        return value(v) * self.getValue()
+    def __rtruediv__(self, v):
+        return value(v) / self.getValue()
+    def __rfloordiv__(self, v):
+        return value(v) // self.getValue()
+
 
     def __getitem__(self,k):
         return self.getValue()[k]
     def __setitem__(self,k,v):
         self.getValue()[k]=value(v)
+    def __delitem__(self,k):
+        del self.getValue()[ value(k) ]
 
     def __int__(self):
         return int(self.getValue())
@@ -171,9 +165,6 @@ class ReactiveProp:
     def __class__(self):
         return type(self.getValue())
 
-    def __delitem__(self,k):
-        del self.getValue()[ value(k) ]
-
     def __hash__(self):
         return hash(self.getValue())
 
@@ -186,8 +177,6 @@ class ReactiveProp:
     def __contains__(self,x):
         return value(x) in self.getValue()
 
-    def __radd__(self, other):
-        return value(other) + self.getValue()
 
 
     def __getattr__(self,k):
