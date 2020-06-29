@@ -1,5 +1,16 @@
 from gtag.gtag import GTag, ReactiveProp,value
 
+
+def test_SIMPLE():
+    p={}
+
+    a=ReactiveProp(p,"a",12)
+    assert "<ReactiveProp" in repr(a)
+    assert int(a)==12
+    assert p["a"]==12
+    p["a"]=42
+    assert int(a)==42
+
 def test_ReactiveProp():
     p=dict(a=12,b=42)
 

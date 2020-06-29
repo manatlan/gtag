@@ -78,7 +78,7 @@ class Tag(metaclass=MyMetaclass):
         return """<%(tag)s%(attrs)s>%(content)s</%(tag)s>""" % dict(
             tag=self.tag.replace("_","-"),
             attrs=" ".join([""]+rattrs) if rattrs else "",
-            content=" ".join([str(i) for i in self.__contents if i is not None and not isinstance(i,bool)]),
+            content=" ".join([str(i) for i in self.__contents if value(i) is not None and not isinstance(i,bool)]),
         )
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
@@ -259,6 +259,7 @@ class Capacity:
             self.__method.capacities=[]
         self.__method.capacities.append(capacity)
 
+ALL={}
 
 class Binder:
     def __init__(self,instance):
@@ -271,7 +272,7 @@ class Binder:
             # resolve all declaredJsVars from all childs
             pool={}
             for id,o in self.__instance._getChilds().items():
-                pool.update( {o.__class__.__name__:o._declaredJsInputs} )
+                pool.update( o._declaredJsInputs )
             #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
             def _(*args,**kargs):
@@ -297,6 +298,7 @@ class GTag:
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
+        global ALL
         self._data={}
         self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         self._tag=NONE
@@ -332,6 +334,12 @@ class GTag:
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
         signature = inspect.signature( self.init )
         self._declaredJsInputs={k: v.default for k, v in signature.parameters.items() if type(v.default)==bytes}
+        for k,v in self._declaredJsInputs.items():
+            rp=ReactiveProp( ALL,k,"")
+
+            self._data[k]=rp            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
+            super().__setattr__(k,rp)
+
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
         self.init(*self._args,**self._kargs)
@@ -343,6 +351,8 @@ class GTag:
         # Store the instance in the parent._childs
         if self._parent:
             self._parent._childs.append(self)
+        else:
+            self._XXX={}
 
     def _tree(self):
         def _gc(g,lvl=0) -> list:
@@ -668,12 +678,10 @@ class GTagApp(guy.Guy):
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
         # dispatch jsArgs in gtag childs
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-        for o in gtag._getChilds().values():
-            defs=jsArgs.get( o.__class__.__name__,{})
-            if defs:
-                for jsk in o._declaredJsInputs.keys():
-                    if jsk in defs:
-                        setattr(o,jsk,defs[jsk])
+        global ALL
+        for k,v in jsArgs.items():
+            ALL[k]=v
+        print(ALL)
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
         if Capacity(proc).has(render.local):
