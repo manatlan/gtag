@@ -23,6 +23,9 @@ def test_gtag_internals():
     g=My()
     assert len(g._ichilds)==1
     d= g._getChilds()
+    assert len(d)==2
+    g.build()
+    d= g._getChilds()
     assert len(d)==3
     assert g.id in d
     assert g.c.id in d

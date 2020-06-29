@@ -40,7 +40,7 @@ class App(GTag):
 
 
 js=dict(
-    render=lambda x:x,
+    eval=lambda x:x,
     getSessionId= lambda: None, # GID is None
 )
 
@@ -62,7 +62,7 @@ def testClickChild(webMode):
     assert s.ichilds[0].value==0
 
     assert s.main.cpt1=={'init': 4, 'build': 4}
-    assert s.main.cpt2=={'init': 1, 'build': 5}
+    assert s.main.cpt2=={'init': 1, 'build': 4}
 
     try: # change clickMe() to render local only
         Comp.clickMe.capacities=["local"]
@@ -80,7 +80,7 @@ def testClickChild(webMode):
         assert s.ichilds[0].value==0
 
         assert s.main.cpt1=={'init': 1, 'build': 4}
-        assert s.main.cpt2=={'init': 1, 'build': 2}
+        assert s.main.cpt2=={'init': 1, 'build': 1}
 
     finally:
         Comp.clickMe.capacities=[]
@@ -100,7 +100,7 @@ def testClickInnerChild(webMode):
     assert s.ichilds[0].value==3
 
     assert s.main.cpt1=={'init': 4, 'build': 4}
-    assert s.main.cpt2=={'init': 1, 'build': 5}
+    assert s.main.cpt2=={'init': 1, 'build': 4}
 
     try: # change clickMe() to render local only
         Comp.clickMe.capacities=["local"]
@@ -118,7 +118,7 @@ def testClickInnerChild(webMode):
         assert s.ichilds[0].value==0
 
         assert s.main.cpt1=={'init': 1, 'build': 4}
-        assert s.main.cpt2=={'init': 1, 'build': 2}
+        assert s.main.cpt2=={'init': 1, 'build': 1}
 
     finally:
         Comp.clickMe.capacities=[]
@@ -127,21 +127,21 @@ def testClickInnerChild(webMode):
 def testBaseApp(webMode):
 
     a=App()
-    assert a.cpt1=={'init': 1, 'build': 1}
-    assert a.cpt2=={'init': 1, 'build': 1}
+    assert a.cpt1=={'init': 0, 'build': 0}
+    assert a.cpt2=={'init': 1, 'build': 0}
     s=GSimu( a,webMode,js)
-    assert a.cpt1=={'init': 1, 'build': 1}
-    assert a.cpt2=={'init': 1, 'build': 2}
+    assert a.cpt1=={'init': 0, 'build': 0}
+    assert a.cpt2=={'init': 1, 'build': 0}
 
     try: # change clickMe() to render local only
         Comp.clickMe.capacities=["local"]
 
         a=App()
-        assert a.cpt1=={'init': 1, 'build': 1}
-        assert a.cpt2=={'init': 1, 'build': 1}
+        assert a.cpt1=={'init': 0, 'build': 0}
+        assert a.cpt2=={'init': 1, 'build': 0}
         s=GSimu( a,webMode,js)
-        assert a.cpt1=={'init': 1, 'build': 1}
-        assert a.cpt2=={'init': 1, 'build': 2}
+        assert a.cpt1=={'init': 0, 'build': 0}
+        assert a.cpt2=={'init': 1, 'build': 0}
 
     finally:
         Comp.clickMe.capacities=[]

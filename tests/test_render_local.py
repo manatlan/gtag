@@ -30,16 +30,16 @@ def test_redraw_global():
 
 
     def assertRender(x):
-        assert 'document.body.innerHTML=`<div id="A"><div id="C">0</div> 0</div>`' in x
+        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{"A": {}, "C": {}})' in x
 
     cbs=dict(
-        render=assertRender,
+        eval=assertRender,
         getSessionId= lambda: None, # GID is None
     )
     app=A(0)
     s=GSimu( app,False,cbs)
     x=s.callEvent("C","evt")
-    assert x["script"]=="""document.querySelector("#A").outerHTML=`<div id="A"><div id="C">1</div> 1</div>`;"""
+    assert '<div id="A"><div id="C">1</div> 1</div>' in x["script"]
 
 
 
@@ -67,19 +67,19 @@ def test_redraw_local():
 
 
     def assertRender(x):
-        assert 'document.body.innerHTML=`<div id="A"><div id="C">0</div> 0</div>`' in x
+        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{"A": {}, "C": {}})' in x
 
     cbs=dict(
-        render=assertRender,
+        eval=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 
     app=A(0)
     s=GSimu( app,False,cbs)
     x=s.callEvent("C","evt")
-    assert x["script"]=="""document.querySelector("#C").outerHTML=`<div id="C">1</div>`;"""
+    assert '<div id="C">1</div>' in x["script"]
 
-def test_redraw_none(): 
+def test_redraw_none():
     class C(GTag):
         def init(self,v):
             self.v=v
@@ -103,10 +103,10 @@ def test_redraw_none():
 
 
     def assertRender(x):
-        assert 'document.body.innerHTML=`<div id="A"><div id="C">0</div> 0</div>`' in x
+        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{"A": {}, "C": {}})' in x
 
     cbs=dict(
-        render=assertRender,
+        eval=assertRender,
         getSessionId= lambda: None, # GID is None
     )
     app=A(0)
@@ -139,14 +139,14 @@ def test_redraw_parent():
 
 
     def assertRender(x):
-        assert 'document.body.innerHTML=`<div id="A"><div id="C">0</div> 0</div>`' in x
+        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{"A": {}, "C": {}})' in x
 
     cbs=dict(
-        render=assertRender,
+        eval=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 
     app=A(0)
     s=GSimu( app,False,cbs)
     x=s.callEvent("C","evt")
-    assert x["script"]=="""document.querySelector("#A").outerHTML=`<div id="A"><div id="C">1</div> 1</div>`;"""
+    assert '<div id="A"><div id="C">1</div> 1</div>' in x["script"]

@@ -3,14 +3,16 @@ import pytest
 from gtag import GTag,Tag,render
 from . import GSimu
 
+cbs=dict(
+    eval=lambda x:x,
+    getSessionId= lambda: None, # GID is None
+)
+
 
 
 @pytest.mark.parametrize("webMode", [False,True])
 def testSimple(webMode):
-    cbs=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
+
     class My(GTag):
         def build(self):
             return "Hello"
@@ -25,10 +27,7 @@ def testSimple(webMode):
 
 @pytest.mark.parametrize("webMode", [False,True])
 def testSimpleBad(webMode):
-    cbs=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
+
     class My(GTag):
         def build(self):
             return "Hello"
@@ -41,10 +40,7 @@ def testSimpleBad(webMode):
 
 @pytest.mark.parametrize("webMode", [False,True])
 def testSimpleBadAsync(webMode):
-    cbs=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
+
     class My(GTag):
         def build(self):
             return "Hello"
@@ -57,10 +53,7 @@ def testSimpleBadAsync(webMode):
 
 @pytest.mark.parametrize("webMode", [False,True])
 def testSimpleBadAsyncGen(webMode):
-    cbs=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
+
     class My(GTag):
         def build(self):
             return "Hello"
@@ -74,10 +67,6 @@ def testSimpleBadAsyncGen(webMode):
 
 @pytest.mark.parametrize("webMode", [False,True])
 def testSimple2(webMode):
-    cbs=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
 
     class My(GTag):
         def build(self):
@@ -91,10 +80,7 @@ def testSimple2(webMode):
 
 @pytest.mark.parametrize("webMode", [False,True])
 def testTheComplex(webMode):
-    cbs=dict(
-        render=lambda x:x,
-        getSessionId= lambda: None, # GID is None
-    )
+
     class My(GTag):
         def build(self):
             return "Hello"
@@ -123,12 +109,11 @@ def testStartAsyncGen(webMode):
             self.r=a+b+c
 
     def assertRender(x):
-        assert "document.body.innerHTML" in x
         assert "self.bindUpdate(" in x
-        assert ",GID,'evt',[1, 10, 30],{})" in x
+        assert ',GID,\'_start\',[],{},{"My": {}})' in x
 
     cbs=dict(
-        render=assertRender,
+        eval=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 
@@ -146,12 +131,11 @@ def testStartAsync(webMode):
             self.r=a+b+c
 
     def assertRender(x):
-        assert "document.body.innerHTML" in x
         assert "self.bindUpdate(" in x
-        assert ",GID,'evt',[1, 10, 30],{})" in x
+        assert ',GID,\'_start\',[],{},{"My": {}})' in x
 
     cbs=dict(
-        render=assertRender,
+        eval=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 

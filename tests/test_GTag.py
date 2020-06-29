@@ -3,6 +3,7 @@ if __name__=="__main__":
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
 from gtag import GTag,Tag,value
+from gtag.gtag import NONE
 import pytest
 
 def test_GTag():
@@ -10,9 +11,9 @@ def test_GTag():
         pass
     m=My()
     assert m.parent is None
-    assert m._tag is None
-    assert m.build() is None
-    # assert m.render() is None
+    assert m._tag is NONE
+    with pytest.raises(Exception):
+        print(m.build())
     id=m.id
     assert id
     # assert m._getInstance(id) == m
@@ -24,10 +25,11 @@ def test_GTag():
     with pytest.raises(Exception):
         print(m.bind.unknown())
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(Exception):
         assert str(m)
 
-    assert type(m._update()) is dict
+    with pytest.raises(Exception):
+        assert type(m._update()) is dict
 
 def test_GTag_simplest():
     class My(GTag):
@@ -271,6 +273,7 @@ def test_GTag_with_childs():
 
 
     p=MTag()
+    p.build()
     assert p.parent is None
     assert repr(p.main) == repr(p)
     assert repr(p.child.parent) == repr(p)
@@ -309,6 +312,11 @@ def test_GTag_childs_ichilds():
 
     assert p.c1     in p._ichilds
     assert p.c1 not in p._childs
+
+    # assert p.c2 not in p._ichilds
+    # assert p.c2 not in p._childs
+
+    p.build()
 
     assert p.c2 in p._ichilds
     assert p.c2 in p._childs #it appears in childs coz it was created in build() (not in init)

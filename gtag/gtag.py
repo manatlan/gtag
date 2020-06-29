@@ -86,8 +86,9 @@ class Tag(metaclass=MyMetaclass):
 class NONE: pass
 class ReactiveProp:
     def __init__(self,dico:dict,attribut:str,value=NONE):
-        assert isinstance(dico,dict)
-        assert isinstance(attribut,str)
+        assert not isinstance(dico,ReactiveProp)
+        assert not isinstance(attribut,ReactiveProp)
+        assert not isinstance(value,ReactiveProp)
         self._instance=dico
         self._attribut=attribut
         if value!=NONE:
@@ -130,16 +131,16 @@ class ReactiveProp:
     def __mod__(self,v):
         return self.getValue() % value(v)
 
-    # def __iadd__(self,v):
-    #     return self.getValue() + value(v)
-    # def __isub__(self,v):
-    #     return self.getValue() - value(v)
-    # def __imul__(self,v):
-    #     return self.getValue() * value(v)
-    # def __itruediv__(self,v):
-    #     return self.getValue() / value(v)
-    # def __ifloordiv__(self,v):
-    #     return self.getValue() // value(v)
+    def __iadd__(self,v):
+        return self.getValue() + value(v)
+    def __isub__(self,v):
+        return self.getValue() - value(v)
+    def __imul__(self,v):
+        return self.getValue() * value(v)
+    def __itruediv__(self,v):
+        return self.getValue() / value(v)
+    def __ifloordiv__(self,v):
+        return self.getValue() // value(v)
 
 
     def __radd__(self, v):
@@ -227,6 +228,7 @@ class ReactiveProp:
 
 class render:
 
+    # POST build
     @staticmethod
     def local( method ): # gtag.event decorator
         """ Make the method renders only this component (and its childs)"""
@@ -245,6 +247,7 @@ class render:
         Capacity(method).set(inspect.getouterframes(inspect.currentframe())[0].function)
         return method
 
+
 class Capacity:
     def __init__(self,method:callable):
         self.__method=method
@@ -255,6 +258,31 @@ class Capacity:
         if not hasattr(self.__method,"capacities"):
             self.__method.capacities=[]
         self.__method.capacities.append(capacity)
+
+
+class Binder:
+    def __init__(self,instance):
+        self.__instance=instance
+    def __getattr__(self,name:str):
+        m=hasattr(self.__instance,name) and getattr(self.__instance,name)
+        if m and callable( m ):   # bind a self.method    -> return a js/string for a guy's call in js side
+
+            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+            # resolve all declaredJsVars from all childs
+            pool={}
+            for id,o in self.__instance._getChilds().items():
+                pool.update( {o.__class__.__name__:o._declaredJsInputs} )
+            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+            def _(*args,**kargs):
+                if args or kargs:
+                    args=[value(i) for i in args]
+                    kargs={k:value(v) for k,v in kargs.items()}
+
+                return "self.bindUpdate('%s',GID,'%s',%s,%s,%s)" % (self.__instance.id,name,jjs(args),jjs(kargs),jjs(pool))
+            return _
+        else:
+            raise Exception("Unknown method '%s' in '%s'"%(name,self.__instance.__class__.__name__))
 
 
 class GTag:
@@ -271,7 +299,7 @@ class GTag:
     def __init__(self,*a,**k):
         self._data={}
         self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
-        self._tag=None
+        self._tag=NONE
         self._scripts=[]
 
         if "parent" in k.keys(): # clonage (only main tags, so parent is None)
@@ -300,12 +328,17 @@ class GTag:
         self._parent=parent
 
         log("INIT",repr(self))
+
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        signature = inspect.signature( self.init )
+        self._declaredJsInputs={k: v.default for k, v in signature.parameters.items() if type(v.default)==bytes}
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
         self.init(*self._args,**self._kargs)
         self._childs=[]     #<- clear innerchilds (creating during child phase), to avoid to appears in child
 
         self._scriptsInInit=self._scripts[:]
-
-        self._tag = self.build()
+        # self._tag = self.build()    #TODO: remove this build !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         # Store the instance in the parent._childs
         if self._parent:
@@ -347,11 +380,6 @@ class GTag:
         except KeyError:
             raise Exception("ERROR: Unknown child '%s' in '%s'"%(id,self.id))
 
-    def _getMain(self):
-        x=self
-        while x._parent is not None:
-            x=x._parent
-        return x
 
     @property
     def id(self):
@@ -360,7 +388,7 @@ class GTag:
 
     @property
     def parent(self): # -> T.Union[GTag,None]:
-        """ return caller/binder to parent instance (None if gtag is the main) """
+        """ return the parent instance (None if gtag is the main) """
         if self._parent is None:
             return None
         else:
@@ -369,33 +397,21 @@ class GTag:
 
     @property
     def main(self): # -> GTag:
-        """ return caller/binder to main instance """
-        return self._getMain()
+        """ return the main instance """
+        x=self
+        while x._parent is not None:
+            x=x._parent
+        return x
 
 
 
     @property
     def bind(self):
         """ to bind method ! and return its js repr"""
-        class Binder:
-            def __getattr__(this,name:str):
-                m=hasattr(self,name) and getattr(self,name)
-                if m and callable( m ):   # bind a self.method    -> return a js/string for a guy's call in js side
-                    def _(*args,**kargs):
-                        if args or kargs:
-                            args=[value(i) for i in args]
-                            kargs={k:value(v) for k,v in kargs.items()}
-
-                            return "self.bindUpdate('%s',GID,'%s',%s,%s)" % (self.id,name,jjs(args),jjs(kargs))
-                        else:
-                            return "self.bindUpdate('%s',GID,'%s',[],{})" % (self.id,name)
-                    return _
-                else:
-                    raise Exception("Unknown method '%s' in '%s'"%(name,self.__class__.__name__))
-        return Binder()
+        return Binder(self)
 
 
-    def _clone(self): #TODO: not clear here ... need redone (the rebuild() needed ?! why ?!)
+    def _clone(self): #TODO: not clear here ... need redone (the rebuild() needed ?! why ?! (because storage in "_tag")
         assert self._parent==None,"Can't clone a gtag which is not the main one"
         props={k:v for k,v in self.__dict__.items() if k[0]!="_" or k=="_call" or k=="_data"}
         gtag = self.__class__(*self._args,**self._kargs,parent=None) # parent=None, will avoid guess parent ! (it makes sense, because you can clone only mains)
@@ -436,7 +452,20 @@ class GTag:
         """ Override for static build
             SHOULD RETURN a "Tag" (not a GTag)
         """
-        pass
+        raise Exception("Should be implemented")
+
+    async def _start(self):
+        #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- call statement (old autostart system)
+        if self._call:  # there is an event to call at start !
+            if asyncio.iscoroutine(self._call):
+                await self._call
+            elif isAsyncGenerator(self._call):
+                async for _ in self._call:
+                    assert _ is None, "wtf?"
+                    yield
+            else:
+                raise Exception("Not implemented (calling a sync/start function)")
+        #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
     def exit(self,v=None): pass # overriden by run/runcef/serve
 
@@ -446,11 +475,16 @@ class GTag:
     def _rebuild(self,clearScripts=True):
         if clearScripts: self._clearScripts()
         self._childs=[]
-        self._tag=self.build()
+        self._tag=self.build( )
 
     def __str__(self):
         log("___rendering",repr(self))
+
+        if self._tag == NONE:
+            self._tag=self.build()
+
         o= self._tag
+
         if o is None:
             return ""
         else:
@@ -526,9 +560,14 @@ class GTag:
         s=self._getScripts()
         log(">>>UPDATE:",repr(self))
         log(self._tree())
-        return dict(script="""document.querySelector("#%s").outerHTML=`%s`;%s""" % (
-            self.id, fixBacktip(h),s
-        ))
+
+        return dict( script="""
+(function (id,content) {
+    let o=document.querySelector(id);
+    if(o) o.outerHTML=content;
+    else document.body.innerHTML=content;
+})("#%s",`%s`); %s
+        """ % (self.id, fixBacktip(h),s))
 
     def run(self,*a,start=None,**k) -> any:
         """ Run as Guy App (using Chrome) """
@@ -554,7 +593,7 @@ class GTag:
 
 
 class GTagApp(guy.Guy):
-    """ The main guy instance app, which cn run a gtag inside """
+    """ The main guy instance app, which can run a gtag inside """
 
     def __init__(self,gtag,isMultipleSessionPossible=False):
         assert isinstance(gtag,GTag)
@@ -580,7 +619,6 @@ class GTagApp(guy.Guy):
             if(!sessionStorage["gtag"]) sessionStorage["gtag"]=Math.random().toString(36).substring(2);
             var GID=sessionStorage["gtag"];
             async function getSessionId() {return GID}
-            async function render(js) {eval(js)}
         </script>
         %s
     </head>
@@ -605,35 +643,17 @@ class GTagApp(guy.Guy):
         log(">>>SERVE",repr(gtag))
         log(gtag._tree())
 
-        #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- call statement (old autostart system)
-        caller=""
-        if gtag._call:  # there is an event to call at start !
-            if isAsyncGenerator(gtag._call) or asyncio.iscoroutine(gtag._call):
-                fname,args="",{}
+        await self.js.eval( gtag.bind._start()+";"+gtag._getScripts() )
 
-                if asyncio.iscoroutine(gtag._call):
-                    fname = gtag._call.__name__
-                    args = gtag._call.cr_frame.f_locals  # dict object
-                elif isAsyncGenerator(gtag._call):
-                    fname=gtag._call.__name__
-                    args = gtag._call.ag_frame.f_locals  # dict object
 
-                if "self" in args: del args["self"]
-                args=args.values()  #TODO: how can it works ?! (verify that with TU *a,**k)!)
-
-                method=getattr(gtag.bind,fname)
-                caller=method(*args)
-        #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        js="document.body.innerHTML=`%s`;%s;%s" %(fixBacktip(str(gtag)),gtag._getScripts(),caller)
-        await self.js.render(js)
-
-    async def forceUpdate(self,g): #can't be called from client side !
-        g._rebuild(False)
-        log(">>>Force UPDATE:",repr(g))
-        await self.js.render( g._update()["script"] )
-
-    async def bindUpdate(self,id:str,gid:str,method:str,args,kargs):
+    async def bindUpdate(self,id:str,gid:str,method:str,args,kargs,jsArgs={}):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
+
+        async def forceUpdate(g):
+            g._rebuild(clearScripts=False)
+            log(">>>Force UPDATE:",repr(g))
+            await self.js.eval( g._update()["script"] )
+
         if self._ses is None:
             gtag=self._originalGTag
         else:
@@ -644,6 +664,17 @@ class GTagApp(guy.Guy):
 
         log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s %s)"% (method,args,kargs))
         proc=getattr(obj,method)
+
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        # dispatch jsArgs in gtag childs
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        for o in gtag._getChilds().values():
+            defs=jsArgs.get( o.__class__.__name__,{})
+            if defs:
+                for jsk in o._declaredJsInputs.keys():
+                    if jsk in defs:
+                        setattr(o,jsk,defs[jsk])
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
         if Capacity(proc).has(render.local):
             toRender=obj
@@ -664,14 +695,14 @@ class GTagApp(guy.Guy):
         if rep:
             if isAsyncGenerator(rep):
                 async for _ in rep: # could use yielded thing to update all or local ?!
-                    assert _ is None, "wtf?"
+                    assert _ is None, "wtf (event returns something)?"
                     if toRender:
-                        await self.forceUpdate(toRender)
+                        await forceUpdate(toRender)
             else:
-                raise Exception("wtf?")
+                raise Exception("wtf (event returns something)?")
 
         if toRender:
-            toRender._rebuild(False)
-            return toRender._update() #UPDATE ALL (historic way)
+            toRender._rebuild(clearScripts=False)
+            return toRender._update()
         #////////////////////////////////////////////////////////////////// THE MAGIC
 

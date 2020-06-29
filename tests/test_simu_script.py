@@ -15,11 +15,11 @@ def testInInit(webMode):
             return "Hello"
 
     def assertRender(x):
-        assert "document.body.innerHTML" in x
+        assert "self.bindUpdate" in x
         assert "alert(42)" in x
 
     cbs=dict(
-        render=assertRender,
+        eval=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 
@@ -35,14 +35,13 @@ def testInBuild(webMode):
             return "Hello"
 
     def assertRender(x):
-        assert "document.body.innerHTML" in x
+        assert "self.bindUpdate" in x
         assert "alert(42)" in x
 
     cbs=dict(
-        render=assertRender,
+        eval=assertRender,
         getSessionId= lambda: None, # GID is None
     )
-
     app=My()
     s=GSimu( app,webMode,cbs)
 
@@ -58,12 +57,12 @@ def testInBoth(webMode):
             return "Hello"
 
     def assertRender(x):
-        assert "document.body.innerHTML" in x
+        assert "self.bindUpdate" in x
         assert "alert(42)" in x
         assert "alert(43)" in x
 
     cbs=dict(
-        render=assertRender,
+        eval=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 
