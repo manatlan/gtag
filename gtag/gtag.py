@@ -335,10 +335,10 @@ class GTag:
         signature = inspect.signature( self.init )
         self._declaredJsInputs={k: v.default for k, v in signature.parameters.items() if type(v.default)==bytes}
         for k,v in self._declaredJsInputs.items():
-            rp=ReactiveProp( ALL,k,"")
-
-            self._data[k]=rp            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
-            super().__setattr__(k,rp)
+            if k not in ALL:
+                rp=ReactiveProp( ALL,k,"")
+                self._data[k]=rp            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
+                super().__setattr__(k,rp)
 
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
