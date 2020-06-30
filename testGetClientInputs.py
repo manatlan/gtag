@@ -9,7 +9,6 @@ class A(GTag):
 
     def init(self,v=0,width=b"window.innerWidth"):
         self.c=v
-        self.width=width    # here 'width' is b"window.innerWidth" !!!! (not valued!)
 
     def build(self):
         o=Tag.div( self.width )
@@ -22,8 +21,9 @@ class A(GTag):
 class AA(GTag):
     def init(self):
         self.a=A(12)
+        self.va=42
     def build(self):
-        return self.a
+        return Tag(self.a,A(self.va))
 
 if __name__=="__main__":
     a=AA()

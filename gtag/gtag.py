@@ -340,7 +340,7 @@ class GTag:
             if k not in self.main._localInputs:
                 self.main._localInputs[k]=None         # init js props at null
             rp=ReactiveProp( self.main._localInputs,k)
-            self._data[k]=rp            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
+            # self._data[k]=rp            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
             super().__setattr__(k,rp)
 
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
