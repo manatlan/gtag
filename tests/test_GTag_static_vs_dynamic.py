@@ -61,7 +61,7 @@ def test_simple():
 
 def test_change():
     """ initial value changed between rendered"""
-    iv=2
+    iv=3
     cv=3
 
     tags=[
@@ -72,7 +72,7 @@ def test_change():
     for t in tags:
         t.n=cv
 
-    check(tags[0],cv,iv) 
+    check(tags[0],cv,iv)
     check(tags[1],cv,iv)
 
 

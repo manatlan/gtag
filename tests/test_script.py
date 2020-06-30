@@ -59,7 +59,7 @@ def test_scripts():
 
     app=App()
     assert app._scriptsInInit == ['alert(1)']
-    assert app._scripts==['alert(1)', 'alert(2)']
+    assert app._scripts==['alert(1)']
 
     app=App()
     app._rebuild()
