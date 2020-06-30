@@ -340,7 +340,6 @@ class GTag:
             if k not in self.main._localInputs:
                 self.main._localInputs[k]=None         # init js props at null
             rp=ReactiveProp( self.main._localInputs,k)
-            # self._data[k]=rp            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
             super().__setattr__(k,rp)
 
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -474,10 +473,10 @@ class GTag:
                 await self._call
             elif isAsyncGenerator(self._call):
                 async for _ in self._call:
-                    assert _ is None, "wtf?"
+                    assert _ is None, "wtf (event returns something)?"
                     yield
             else:
-                raise Exception("Not implemented (calling a sync/start function)")
+                raise Exception("Not implemented (calling a (sync)start function)")
         #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
     def exit(self,v=None): pass # overriden by run/runcef/serve
@@ -575,12 +574,12 @@ class GTag:
         log(self._tree())
 
         return dict( script="""
-(function (id,content) {
+%s;(function (id,content) {
     let o=document.querySelector(id);
     if(o) o.outerHTML=content;
     else document.body.innerHTML=content;
-})("#%s",`%s`); %s
-        """ % (self.id, fixBacktip(h),s))
+})("#%s",`%s`);
+        """ % (s,self.id, fixBacktip(h)))
 
     def run(self,*a,start=None,**k) -> any:
         """ Run as Guy App (using Chrome) """
@@ -656,7 +655,7 @@ class GTagApp(guy.Guy):
         log(">>>SERVE",repr(gtag))
         log(gtag._tree())
 
-        await self.js.eval( gtag.bind._start()+";"+gtag._getScripts() )
+        await self.js.eval( gtag._getScripts()+";"+gtag.bind._start() )
 
 
     async def bindUpdate(self,id:str,gid:str,method:str,args,kargs,jsArgs={}):

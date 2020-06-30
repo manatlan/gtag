@@ -48,8 +48,9 @@ js=dict(
 import pytest
 @pytest.mark.parametrize("webMode", [False,True])
 def testClickChild(webMode):
-
-    s=GSimu( App(),webMode ,js)
+    a=App()
+    a.build()
+    s=GSimu(a,webMode ,js)
 
     s.callEvent( s.childs[0].id, "clickMe",1)
     s.callEvent( s.childs[0].id, "clickMe",1)
@@ -61,13 +62,14 @@ def testClickChild(webMode):
     assert s.childs[0].value==3
     assert s.ichilds[0].value==0
 
-    assert s.main.cpt1=={'init': 4, 'build': 4}
-    assert s.main.cpt2=={'init': 1, 'build': 4}
+    assert s.main.cpt1=={'init': 4, 'build': 3}
+    assert s.main.cpt2=={'init': 1, 'build': 3}
 
     try: # change clickMe() to render local only
         Comp.clickMe.capacities=["local"]
-
-        s=GSimu( App(),webMode ,js)
+        a=App()
+        a.build()
+        s=GSimu( a,webMode ,js)
 
         s.callEvent( s.childs[0].id, "clickMe",1)
         s.callEvent( s.childs[0].id, "clickMe",1)
@@ -79,15 +81,17 @@ def testClickChild(webMode):
         assert s.childs[0].value==3
         assert s.ichilds[0].value==0
 
-        assert s.main.cpt1=={'init': 1, 'build': 4}
-        assert s.main.cpt2=={'init': 1, 'build': 1}
+        assert s.main.cpt1=={'init': 1, 'build': 3}
+        assert s.main.cpt2=={'init': 1, 'build': 0}
 
     finally:
         Comp.clickMe.capacities=[]
 
 @pytest.mark.parametrize("webMode", [False,True])
 def testClickInnerChild(webMode):
-    s=GSimu( App(), webMode ,js )
+    a=App()
+    a.build()
+    s=GSimu( a, webMode ,js )
 
     s.callEvent( s.ichilds[0].id, "clickMe",1)
     s.callEvent( s.ichilds[0].id, "clickMe",1)
@@ -99,13 +103,15 @@ def testClickInnerChild(webMode):
     assert s.childs[0].value==0
     assert s.ichilds[0].value==3
 
-    assert s.main.cpt1=={'init': 4, 'build': 4}
-    assert s.main.cpt2=={'init': 1, 'build': 4}
+    assert s.main.cpt1=={'init': 4, 'build': 3}
+    assert s.main.cpt2=={'init': 1, 'build': 3}
 
     try: # change clickMe() to render local only
         Comp.clickMe.capacities=["local"]
 
-        s=GSimu( App(),webMode ,js)
+        a=App()
+        a.build()
+        s=GSimu( a,webMode ,js)
 
         s.callEvent( s.childs[0].id, "clickMe",1)
         s.callEvent( s.childs[0].id, "clickMe",1)
@@ -117,8 +123,8 @@ def testClickInnerChild(webMode):
         assert s.childs[0].value==3
         assert s.ichilds[0].value==0
 
-        assert s.main.cpt1=={'init': 1, 'build': 4}
-        assert s.main.cpt2=={'init': 1, 'build': 1}
+        assert s.main.cpt1=={'init': 1, 'build': 3}
+        assert s.main.cpt2=={'init': 1, 'build': 0}
 
     finally:
         Comp.clickMe.capacities=[]
@@ -129,10 +135,10 @@ def testBaseApp(webMode):
     a=App()
     assert a.cpt1=={'init': 0, 'build': 0}
     assert a.cpt2=={'init': 1, 'build': 0}
-    s=GSimu( a,webMode,js)
     a.build()
+    s=GSimu( a,webMode,js)
     assert a.cpt1=={'init': 1, 'build': 0}
-    assert a.cpt2=={'init': 2, 'build': 0}
+    assert a.cpt2=={'init': 1, 'build': 0}
 
     try: # change clickMe() to render local only
         Comp.clickMe.capacities=["local"]
@@ -140,10 +146,13 @@ def testBaseApp(webMode):
         a=App()
         assert a.cpt1=={'init': 0, 'build': 0}
         assert a.cpt2=={'init': 1, 'build': 0}
-        s=GSimu( a,webMode,js)
         a.build()
+        s=GSimu( a,webMode,js)
         assert a.cpt1=={'init': 1, 'build': 0}
-        assert a.cpt2=={'init': 2, 'build': 0}
+        assert a.cpt2=={'init': 1, 'build': 0}
 
     finally:
         Comp.clickMe.capacities=[]
+
+if __name__=="__main__":
+    App().run()

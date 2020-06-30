@@ -17,6 +17,7 @@ def test_ReactiveProp():
     a=ReactiveProp(p,"a")
     assert "<ReactiveProp" in repr(a)
     assert int(a)==12
+    assert float(a)==12.0
     assert p["a"]==12
     a.setValue(42)
     assert p["a"]==42
