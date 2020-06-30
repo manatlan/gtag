@@ -31,9 +31,10 @@ def test_redraw_global():
 
     def assertRender(x):
         assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
+        return {}
 
     cbs=dict(
-        eval=assertRender,
+        execute=assertRender,
         getSessionId= lambda: None, # GID is None
     )
     app=A(0)
@@ -68,9 +69,10 @@ def test_redraw_local():
 
     def assertRender(x):
         assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
+        return {}
 
     cbs=dict(
-        eval=assertRender,
+        execute=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 
@@ -104,10 +106,12 @@ def test_redraw_none():
 
     def assertRender(x):
         assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
+        return {}
 
     cbs=dict(
-        eval=assertRender,
+        execute=assertRender,
         getSessionId= lambda: None, # GID is None
+
     )
     app=A(0)
     s=GSimu( app,False,cbs)
@@ -140,9 +144,10 @@ def test_redraw_parent():
 
     def assertRender(x):
         assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
-
+        return {}
+        
     cbs=dict(
-        eval=assertRender,
+        execute=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 

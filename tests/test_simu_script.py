@@ -17,9 +17,10 @@ def testInInit(webMode):
     def assertRender(x):
         assert "self.bindUpdate" in x
         assert "alert(42)" in x
+        return {}
 
     cbs=dict(
-        eval=assertRender,
+        execute=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 
@@ -37,9 +38,11 @@ def testInBuild(webMode):
     def assertRender(x):
         assert "self.bindUpdate" in x
         assert "alert(42)" in x
+        return {}
+
 
     cbs=dict(
-        eval=assertRender,
+        execute=assertRender,
         getSessionId= lambda: None, # GID is None
     )
     app=My()
@@ -61,9 +64,10 @@ def testInBoth(webMode):
         assert "self.bindUpdate" in x
         assert "alert(42)" in x
         assert "alert(43)" in x
+        return {}
 
     cbs=dict(
-        eval=assertRender,
+        execute=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 

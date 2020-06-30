@@ -38,9 +38,10 @@ class App(GTag):
         )
 
 
-
+def myexec(x):
+    return {}
 js=dict(
-    eval=lambda x:x,
+    execute=myexec,
     getSessionId= lambda: None, # GID is None
 )
 

@@ -3,8 +3,10 @@ import pytest
 from gtag import GTag,Tag,render
 from . import GSimu
 
+def myexec(x):
+    return {}
 cbs=dict(
-    eval=lambda x:x,
+    execute=myexec,
     getSessionId= lambda: None, # GID is None
 )
 
@@ -112,8 +114,10 @@ def testStartAsyncGen(webMode):
         assert "self.bindUpdate(" in x
         assert ',GID,\'_start\',[],{},{})' in x
 
+        return {}
+
     cbs=dict(
-        eval=assertRender,
+        execute=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 
@@ -133,9 +137,10 @@ def testStartAsync(webMode):
     def assertRender(x):
         assert "self.bindUpdate(" in x
         assert ',GID,\'_start\',[],{},{})' in x
+        return {}
 
     cbs=dict(
-        eval=assertRender,
+        execute=assertRender,
         getSessionId= lambda: None, # GID is None
     )
 

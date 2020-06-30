@@ -340,6 +340,7 @@ class GTag:
             if k not in self.main._localInputs:
                 self.main._localInputs[k]=None         # init js props at null
             rp=ReactiveProp( self.main._localInputs,k)
+            #~ self._data[k]=rp
             super().__setattr__(k,rp)
 
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -568,18 +569,28 @@ class GTag:
 
 
     def _update(self) -> dict:
+
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        # resolve all declaredJsVars from all childs
+        pool={}
+        for id,o in self._getChilds().items():
+            pool.update( o._declaredJsInputs )
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+
         h=str(self)
         s=self._getScripts()
         log(">>>UPDATE:",repr(self))
         log(self._tree())
-
         return dict( script="""
-%s;(function (id,content) {
+(function (id,content) {
+    %s;
     let o=document.querySelector(id);
     if(o) o.outerHTML=content;
     else document.body.innerHTML=content;
-})("#%s",`%s`);
-        """ % (s,self.id, fixBacktip(h)))
+    return %s;
+})("#%s",`%s`)
+        """ % (s,jjs(pool),self.id, fixBacktip(h)))
 
     def run(self,*a,start=None,**k) -> any:
         """ Run as Guy App (using Chrome) """
@@ -631,6 +642,7 @@ class GTagApp(guy.Guy):
             if(!sessionStorage["gtag"]) sessionStorage["gtag"]=Math.random().toString(36).substring(2);
             var GID=sessionStorage["gtag"];
             async function getSessionId() {return GID}
+            function execute(s) { return eval(s) || {}; }
         </script>
         %s
     </head>
@@ -655,16 +667,28 @@ class GTagApp(guy.Guy):
         log(">>>SERVE",repr(gtag))
         log(gtag._tree())
 
-        await self.js.eval( gtag._getScripts()+";"+gtag.bind._start() )
+        jsargs=await self.js.execute( gtag._getScripts()+";"+gtag.bind._start() )
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        # dispatch jsArgs in gtag childs
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        gtag.main._localInputs.update(jsargs)
+        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 
     async def bindUpdate(self,id:str,gid:str,method:str,args,kargs,jsArgs={}):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
+        print(">>>>>>>>>>>>>> bindUpdate",id,gid,method,args,kargs,jsArgs)
 
-        async def forceUpdate(g):
+        async def asyncRender(g):
             g._rebuild(clearScripts=False)
             log(">>>Force UPDATE:",repr(g))
-            await self.js.eval( g._update()["script"] )
+            jsargs=await self.js.execute( g._update()["script"] )
+            g._clearScripts()
+            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+            # dispatch jsArgs in gtag childs
+            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+            gtag.main._localInputs.update(jsargs)
+            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
         if self._ses is None:
             gtag=self._originalGTag
@@ -672,16 +696,16 @@ class GTagApp(guy.Guy):
             gtag=self._ses[gid]
 
         #////////////////////////////////////////////////////////////////// THE MAGIC TODO: move to gtag
-        obj=gtag._getRef(id)
-
-        log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s %s)"% (method,args,kargs))
-        proc=getattr(obj,method)
 
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
         # dispatch jsArgs in gtag childs
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
         gtag.main._localInputs.update(jsArgs)
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        obj=gtag._getRef(id)
+
+        log("BINDUPDATE on",repr(gtag),"----->",repr(obj),"%s(%s %s)"% (method,args,kargs))
+        proc=getattr(obj,method)
 
         if Capacity(proc).has(render.local):
             toRender=obj
@@ -704,12 +728,14 @@ class GTagApp(guy.Guy):
                 async for _ in rep: # could use yielded thing to update all or local ?!
                     assert _ is None, "wtf (event returns something)?"
                     if toRender:
-                        await forceUpdate(toRender)
+                        await asyncRender(toRender)
             else:
                 raise Exception("wtf (event returns something)?")
 
         if toRender:
             toRender._rebuild(clearScripts=False)
-            return toRender._update()
+            r= toRender._update()
+            print("RENDER",r)
+            return r
         #////////////////////////////////////////////////////////////////// THE MAGIC
 
