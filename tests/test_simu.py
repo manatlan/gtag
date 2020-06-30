@@ -130,8 +130,9 @@ def testBaseApp(webMode):
     assert a.cpt1=={'init': 0, 'build': 0}
     assert a.cpt2=={'init': 1, 'build': 0}
     s=GSimu( a,webMode,js)
-    assert a.cpt1=={'init': 0, 'build': 0}
-    assert a.cpt2=={'init': 1, 'build': 0}
+    a.build()
+    assert a.cpt1=={'init': 1, 'build': 0}
+    assert a.cpt2=={'init': 2, 'build': 0}
 
     try: # change clickMe() to render local only
         Comp.clickMe.capacities=["local"]
@@ -140,8 +141,9 @@ def testBaseApp(webMode):
         assert a.cpt1=={'init': 0, 'build': 0}
         assert a.cpt2=={'init': 1, 'build': 0}
         s=GSimu( a,webMode,js)
-        assert a.cpt1=={'init': 0, 'build': 0}
-        assert a.cpt2=={'init': 1, 'build': 0}
+        a.build()
+        assert a.cpt1=={'init': 1, 'build': 0}
+        assert a.cpt2=={'init': 2, 'build': 0}
 
     finally:
         Comp.clickMe.capacities=[]

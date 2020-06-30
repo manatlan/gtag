@@ -43,6 +43,7 @@ def testInBuild(webMode):
         getSessionId= lambda: None, # GID is None
     )
     app=My()
+    app.build()
     s=GSimu( app,webMode,cbs)
 
 
@@ -67,4 +68,5 @@ def testInBoth(webMode):
     )
 
     app=My()
+    app.build()
     s=GSimu( app,webMode,cbs)
