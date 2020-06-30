@@ -30,7 +30,7 @@ def test_redraw_global():
 
 
     def assertRender(x):
-        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{"A": {}, "C": {}})' in x
+        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
 
     cbs=dict(
         eval=assertRender,
@@ -67,7 +67,7 @@ def test_redraw_local():
 
 
     def assertRender(x):
-        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{"A": {}, "C": {}})' in x
+        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
 
     cbs=dict(
         eval=assertRender,
@@ -103,7 +103,7 @@ def test_redraw_none():
 
 
     def assertRender(x):
-        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{"A": {}, "C": {}})' in x
+        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
 
     cbs=dict(
         eval=assertRender,
@@ -139,7 +139,7 @@ def test_redraw_parent():
 
 
     def assertRender(x):
-        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{"A": {}, "C": {}})' in x
+        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
 
     cbs=dict(
         eval=assertRender,

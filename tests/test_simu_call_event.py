@@ -110,7 +110,7 @@ def testStartAsyncGen(webMode):
 
     def assertRender(x):
         assert "self.bindUpdate(" in x
-        assert ',GID,\'_start\',[],{},{"My": {}})' in x
+        assert ',GID,\'_start\',[],{},{})' in x
 
     cbs=dict(
         eval=assertRender,
@@ -132,7 +132,7 @@ def testStartAsync(webMode):
 
     def assertRender(x):
         assert "self.bindUpdate(" in x
-        assert ',GID,\'_start\',[],{},{"My": {}})' in x
+        assert ',GID,\'_start\',[],{},{})' in x
 
     cbs=dict(
         eval=assertRender,

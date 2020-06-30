@@ -298,7 +298,6 @@ class GTag:
 
     # implicit parent version (don't need to pass self(=parent) when creating a gtag)
     def __init__(self,*a,**k):
-        global ALL
         self._data={}
         self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
         self._tag=NONE
@@ -332,13 +331,17 @@ class GTag:
         log("INIT",repr(self))
 
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        if self.parent is None:
+            self.main._localInputs={}
+
         signature = inspect.signature( self.init )
         self._declaredJsInputs={k: v.default for k, v in signature.parameters.items() if type(v.default)==bytes}
         for k,v in self._declaredJsInputs.items():
-            if k not in ALL:
-                rp=ReactiveProp( ALL,k,"")
-                self._data[k]=rp            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
-                super().__setattr__(k,rp)
+            if k not in self.main._localInputs:
+                self.main._localInputs[k]=None         # init js props at null
+            rp=ReactiveProp( self.main._localInputs,k)
+            self._data[k]=rp            #(put RP in RP !!!!!!!!!!!!!!!!!!!!!!)
+            super().__setattr__(k,rp)
 
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -678,10 +681,7 @@ class GTagApp(guy.Guy):
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
         # dispatch jsArgs in gtag childs
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-        global ALL
-        for k,v in jsArgs.items():
-            ALL[k]=v
-        print(ALL)
+        gtag.main._localInputs.update(jsArgs)
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
         if Capacity(proc).has(render.local):
