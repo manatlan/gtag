@@ -430,6 +430,7 @@ class GTag:
         gtag = self.__class__(*self._args,**self._kargs,parent=None) # parent=None, will avoid guess parent ! (it makes sense, because you can clone only mains)
         gtag.__dict__.update(props)
         gtag._scripts=[]
+        gtag._localInputs = self._localInputs
         gtag.init(*self._args,**self._kargs)
         gtag._rebuild()
         log("^^^ CLONED ^^^",repr(self),"-->",repr(gtag))
@@ -677,7 +678,6 @@ class GTagApp(guy.Guy):
 
     async def bindUpdate(self,id:str,gid:str,method:str,args,kargs,jsArgs={}):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
-        print(">>>>>>>>>>>>>> bindUpdate",id,gid,method,args,kargs,jsArgs)
 
         async def asyncRender(g):
             g._rebuild(clearScripts=False)
@@ -735,7 +735,6 @@ class GTagApp(guy.Guy):
         if toRender:
             toRender._rebuild(clearScripts=False)
             r= toRender._update()
-            print("RENDER",r)
             return r
         #////////////////////////////////////////////////////////////////// THE MAGIC
 

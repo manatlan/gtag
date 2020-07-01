@@ -27,4 +27,5 @@ class AA(GTag):
 
 if __name__=="__main__":
     a=AA()
+    # a=A(2)
     a.run(log=True)
