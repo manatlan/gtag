@@ -11,7 +11,6 @@ def test_GTag():
         pass
     m=My()
     assert m.parent is None
-    assert m._tag is NONE
     with pytest.raises(Exception):
         print(m.build())
     id=m.id

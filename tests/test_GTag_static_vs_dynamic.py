@@ -78,7 +78,7 @@ def test_change():
 
 def test_rp():
     """ initial value is a reative prop, all is good """
-    iv=2
+    iv=3
 
     p=dict(a=iv)
     a=ReactiveProp(p,"a")

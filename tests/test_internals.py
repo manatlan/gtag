@@ -47,13 +47,13 @@ def test_gtag_internals():
     g._rebuild()
     assert g._ichilds==[g.c] #object created in self container
     d= g._getChilds()
-    assert len(d)==3
+    assert len(d)==2
     assert g.id in d
     assert g.c.id in d
 
-    assert g._tree().count("\n") ==2
+    assert g._tree().count("\n") ==1
 
-    assert len(g._childs)==1
+    assert len(g._childs)==0
 
 def test_jjs():
     a=["A",b"this.value",False,None,42]

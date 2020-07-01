@@ -62,9 +62,10 @@ def test_scripts():
     assert app._scripts==['alert(1)']
 
     app=App()
-    app._rebuild()
-    app._rebuild()
-    app._rebuild()
+    app.build()
+    app.build()
+    app.build()
+    app.build()
     assert app._scripts==['alert(1)', 'alert(2)']
 
     app2=app._clone()

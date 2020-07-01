@@ -300,7 +300,6 @@ class GTag:
     def __init__(self,*a,**k):
         self._data={}
         self._id="%s_%s" % (self.__class__.__name__,hex(id(self))[2:])
-        self._tag=NONE
         self._scripts=[]
 
         if "parent" in k.keys(): # clonage (only main tags, so parent is None)
@@ -349,7 +348,6 @@ class GTag:
         self._childs=[]     #<- clear innerchilds (creating during child phase), to avoid to appears in child
 
         self._scriptsInInit=self._scripts[:]
-        # self._tag = self.build()    #TODO: remove this build !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         # Store the instance in the parent._childs
         if self._parent:
@@ -432,7 +430,7 @@ class GTag:
         gtag._scripts=[]
         gtag._localInputs = self._localInputs
         gtag.init(*self._args,**self._kargs)
-        gtag._rebuild()
+        gtag._rebuild()                                     #TODO: really needed now ?!
         log("^^^ CLONED ^^^",repr(self),"-->",repr(gtag))
         return gtag
 
@@ -489,20 +487,16 @@ class GTag:
     def _rebuild(self,clearScripts=True):
         if clearScripts: self._clearScripts()
         self._childs=[]
-        self._tag=self.build( )
 
     def __str__(self):
         log("___rendering",repr(self))
 
-        if self._tag == NONE:
-            self._tag=self.build()
-
-        o= self._tag
+        o= self.build()
 
         if o is None:
             return ""
         else:
-            for i in self._ichilds:
+            for i in self._ichilds: #TODO: really needed now ?!
                 i._rebuild()
 
             if isinstance(o,Tag):
