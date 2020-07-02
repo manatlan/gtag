@@ -134,7 +134,7 @@ def test_GTag_build():
     assert isinstance(o,Tag)
     html=str(m)
 
-    assert 'onclick="self.bindUpdate(' in html
+    assert 'onclick="callEvent(' in html
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
@@ -154,7 +154,7 @@ def test_GTag_render():
     o=m.build()
     html=str(m)
 
-    assert 'onclick="self.bindUpdate(' in html
+    assert 'onclick="callEvent(' in html
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
@@ -179,7 +179,7 @@ def test_GTag_clone():
     o=m.build()
     html=str(m)
 
-    assert 'onclick="self.bindUpdate(' in html
+    assert 'onclick="callEvent(' in html
     assert 'id="My_' in html
     assert '>hello 12<' in html
 
@@ -192,7 +192,7 @@ def test_GTag_clone():
     o=m.build()
     html=str(m)
 
-    assert 'onclick="self.bindUpdate(' in html
+    assert 'onclick="callEvent(' in html
     assert 'id="My_' in html
     assert '>hello 12<' in html
 

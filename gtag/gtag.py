@@ -21,7 +21,6 @@ import typing as T
 
 
 isAsyncGenerator=lambda x: "async_generator" in str(type(x)) #TODO: howto better ?
-fixBacktip=lambda x: x.replace("`",r"\`")
 
 value=lambda x: x.getValue() if isinstance(x,ReactiveProp) else x
 
@@ -187,10 +186,6 @@ class ReactiveProp:
     def __str__(self):
         return str(self.getValue())
 
-    def __repr__(self):
-        iid=self._instance.id if hasattr(self._instance,"id") else str(self._instance)
-        return "<ReactiveProp:%s attr=%s of instance=%s>" % (self.__class__.__name__,self._attribut,iid)
-
 
     @property
     def __class__(self):
@@ -209,7 +204,6 @@ class ReactiveProp:
         return value(x) in self.getValue()
 
 
-
     def __getattr__(self,k):
         return getattr(self.getValue(),k)
     def __setattr__(self,k,v):
@@ -224,6 +218,11 @@ class ReactiveProp:
     def __call__(self,*a,**k):
         return self.getValue()(*a,**k)
     #TODO: add a lot of __slot__ ;-)
+
+    def __repr__(self):
+        iid=self._instance.id if hasattr(self._instance,"id") else str(self._instance)
+        return "<ReactiveProp:%s attr=%s of instance=%s>" % (self.__class__.__name__,self._attribut,iid)
+
 
 
 class render:
@@ -259,7 +258,6 @@ class Capacity:
             self.__method.capacities=[]
         self.__method.capacities.append(capacity)
 
-ALL={}
 
 class Binder:
     def __init__(self,instance):
@@ -280,7 +278,7 @@ class Binder:
                     args=[value(i) for i in args]
                     kargs={k:value(v) for k,v in kargs.items()}
 
-                return "self.bindUpdate('%s',GID,'%s',%s,%s,%s)" % (self.__instance.id,name,jjs(args),jjs(kargs),jjs(pool))
+                return "callEvent('%s','%s',%s,%s,%s)" % (self.__instance.id,name,jjs(args),jjs(kargs),jjs(pool))
             return _
         else:
             raise Exception("Unknown method '%s' in '%s'"%(name,self.__instance.__class__.__name__))
@@ -354,8 +352,6 @@ class GTag:
         # Store the instance in the parent._childs
         if self._parent:
             self._parent._childs.append(self)
-        else:
-            self._XXX={}
 
     def _tree(self):
         def _gc(g,lvl=0) -> list:
@@ -569,7 +565,7 @@ class GTag:
         return ";".join(ll)
 
 
-    def _update(self) -> dict:
+    def _render(self) -> dict:
 
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
         # resolve all declaredJsVars from all childs
@@ -578,20 +574,17 @@ class GTag:
             pool.update( o._declaredJsInputs )
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
-
         h=str(self)
-        s=self._getScripts()
+
         log(">>>UPDATE:",repr(self))
         log(self._tree())
-        return dict( script="""
-(function (id,content) {
-    %s;
-    let o=document.querySelector(id);
-    if(o) o.outerHTML=content;
-    else document.body.innerHTML=content;
-    return %s;
-})("#%s",`%s`)
-        """ % (s,jjs(pool),self.id, fixBacktip(h)))
+
+        return dict(
+            id       = self.id,
+            content  = h,
+            scripts  = self._getScripts(),
+            exchange = jjs(pool),
+        )
 
     def run(self,*a,start=None,**k) -> any:
         """ Run as Guy App (using Chrome) """
@@ -643,12 +636,24 @@ class GTagApp(guy.Guy):
             if(!sessionStorage["gtag"]) sessionStorage["gtag"]=Math.random().toString(36).substring(2);
             var GID=sessionStorage["gtag"];
             async function getSessionId() {return GID}
-            function execute(s) { return eval(s) || {}; }
+
+            async function execute(id,content,scripts,exchange) {
+                document.querySelector("#"+id).outerHTML=content;
+                eval(scripts)
+                return eval("x="+exchange);
+            }
+
+            async function callEvent(id,event,a,k,e) {
+                let r=await self.bindUpdate(id,GID,event,a,k,e);
+                await execute( r.id, r.content, r.scripts, r.exchange );
+            }
         </script>
         %s
     </head>
     <body>
+        <div id="gtag">
             <script src="guy.js"></script>
+        </div>
     </body>
 </html>""" % "\n".join([str(h) for h in hh])
 
@@ -668,27 +673,25 @@ class GTagApp(guy.Guy):
         log(">>>SERVE",repr(gtag))
         log(gtag._tree())
 
-        jsargs=await self.js.execute( gtag._getScripts()+";"+gtag.bind._start() )
+        r=gtag._render()
+        scripts=r["scripts"]+";"+gtag.bind._start()
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-        # dispatch jsArgs in gtag childs
+        gtag.main._localInputs.update( await self.js.execute( "gtag", r["content"], scripts, r["exchange"] ) )
         #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-        gtag.main._localInputs.update(jsargs)
-        #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+
 
 
     async def bindUpdate(self,id:str,gid:str,method:str,args,kargs,jsArgs={}):
         """ inner (js exposed) guy method, called by gtag.bind.<method>(*args) """
-
         async def asyncRender(g):
             g._rebuild(clearScripts=False)
             log(">>>Force UPDATE:",repr(g))
-            jsargs=await self.js.execute( g._update()["script"] )
+            r=g._render()
+            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+            gtag.main._localInputs.update(await self.js.execute( r["id"], r["content"], r["scripts"], r["exchange"] ))
+            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
             g._clearScripts()
-            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-            # dispatch jsArgs in gtag childs
-            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-            gtag.main._localInputs.update(jsargs)
-            #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
         if self._ses is None:
             gtag=self._originalGTag
@@ -729,12 +732,16 @@ class GTagApp(guy.Guy):
                     assert _ is None, "wtf (event returns something)?"
                     if toRender:
                         await asyncRender(toRender)
+            elif isinstance(rep, types.GeneratorType):
+                for _ in rep:
+                    assert _ is None, "wtf (event returns something)?"
+                    if toRender:
+                        await asyncRender(toRender)
             else:
                 raise Exception("wtf (event returns something)?")
 
         if toRender:
             toRender._rebuild(clearScripts=False)
-            r= toRender._update()
-            return r
+            return toRender._render()
         #////////////////////////////////////////////////////////////////// THE MAGIC
 

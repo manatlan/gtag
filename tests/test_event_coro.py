@@ -30,8 +30,8 @@ def test_it():
 
     a=App()
     a._id="myid" #override random one, just for test
-    assert a.bind.evtReload()=="""self.bindUpdate('myid',GID,'evtReload',[],{},{})"""
-    assert a.bind.evtReload2()=="""self.bindUpdate('myid',GID,'evtReload2',[],{},{})"""
+    assert a.bind.evtReload()=="""callEvent('myid','evtReload',[],{},{})"""
+    assert a.bind.evtReload2()=="""callEvent('myid','evtReload2',[],{},{})"""
 
     assert a.v==None
     asyncio.run( a.evtReload2() )   # test normal coro

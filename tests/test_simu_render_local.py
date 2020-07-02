@@ -3,9 +3,9 @@ if __name__=="__main__":
     sys.path.insert(0,os.path.dirname(os.path.dirname(__file__)))
 
 
-from gtag import GTag,Tag,render
+from gtag import GTag,Tag,render,GSimu
 import pytest
-from . import GSimu
+
 
 def test_redraw_global():
     class C(GTag):
@@ -28,19 +28,12 @@ def test_redraw_global():
         def build(self):
             return Tag.div( self.c, self.v )
 
+    s=GSimu( A(0),False)
+    s.start()
+    rr=s.event(s.get("C"),"evt")
+    assert '<div id="A"><div id="C">1</div> 1</div>' in rr[-1]["content"]
 
-    def assertRender(x):
-        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
-        return {}
 
-    cbs=dict(
-        execute=assertRender,
-        getSessionId= lambda: None, # GID is None
-    )
-    app=A(0)
-    s=GSimu( app,False,cbs)
-    x=s.callEvent("C","evt")
-    assert '<div id="A"><div id="C">1</div> 1</div>' in x["script"]
 
 
 
@@ -67,19 +60,11 @@ def test_redraw_local():
             return Tag.div( self.c, self.v )
 
 
-    def assertRender(x):
-        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
-        return {}
+    s=GSimu( A(0),False)
+    s.start()
+    rr=s.event(s.get("C"),"evt")
+    assert '<div id="C">1</div>' in rr[-1]["content"]
 
-    cbs=dict(
-        execute=assertRender,
-        getSessionId= lambda: None, # GID is None
-    )
-
-    app=A(0)
-    s=GSimu( app,False,cbs)
-    x=s.callEvent("C","evt")
-    assert '<div id="C">1</div>' in x["script"]
 
 def test_redraw_none():
     class C(GTag):
@@ -104,19 +89,10 @@ def test_redraw_none():
             return Tag.div( self.c, self.v )
 
 
-    def assertRender(x):
-        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
-        return {}
-
-    cbs=dict(
-        execute=assertRender,
-        getSessionId= lambda: None, # GID is None
-
-    )
-    app=A(0)
-    s=GSimu( app,False,cbs)
-    x=s.callEvent("C","evt")
-    assert x is None
+    s=GSimu( A(0),False)
+    s.start()
+    rr=s.event(s.get("C"),"evt")
+    assert rr[-1] is None
 
 
 def test_redraw_parent():
@@ -141,17 +117,7 @@ def test_redraw_parent():
         def build(self):
             return Tag.div( self.c, self.v )
 
-
-    def assertRender(x):
-        assert 'self.bindUpdate(\'A\',GID,\'_start\',[],{},{})' in x
-        return {}
-        
-    cbs=dict(
-        execute=assertRender,
-        getSessionId= lambda: None, # GID is None
-    )
-
-    app=A(0)
-    s=GSimu( app,False,cbs)
-    x=s.callEvent("C","evt")
-    assert '<div id="A"><div id="C">1</div> 1</div>' in x["script"]
+    s=GSimu( A(0),False)
+    s.start()
+    rr=s.event(s.get("C"),"evt")
+    assert '<div id="A"><div id="C">1</div> 1</div>' in rr[-1]["content"]
