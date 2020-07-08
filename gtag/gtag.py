@@ -16,7 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-import guy,sys,asyncio,hashlib,html,inspect,types
+import guy,sys,asyncio,hashlib,html,inspect,types,json
 import typing as T
 
 
@@ -468,7 +468,14 @@ class GTag:
         #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- call statement (old autostart system)
         if self._call:  # there is an event to call at start !
             if asyncio.iscoroutine(self._call):
-                await self._call
+                rep=self._call
+                if isinstance(rep, types.GeneratorType):
+                    for _ in rep:
+                        assert _ is None, "wtf (event returns something)?"
+                        yield
+                else:
+                    await rep
+
             elif isAsyncGenerator(self._call):
                 async for _ in self._call:
                     assert _ is None, "wtf (event returns something)?"
@@ -576,15 +583,16 @@ class GTag:
 
         h=str(self)
 
-        log(">>>UPDATE:",repr(self))
-        log(self._tree())
 
-        return dict(
+        d=dict(
             id       = self.id,
             content  = h,
             scripts  = self._getScripts(),
             exchange = jjs(pool),
         )
+        log(">>>UPDATE:",repr(self),json.dumps(d,indent=True))
+        #~ log(self._tree())
+        return d
 
     def run(self,*a,start=None,**k) -> any:
         """ Run as Guy App (using Chrome) """

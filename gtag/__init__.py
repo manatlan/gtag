@@ -16,7 +16,7 @@
 #    more: https://github.com/manatlan/guy
 # #############################################################################
 
-__version__="0.0.40"
+__version__="0.0.41"
 
 from .gtag import GTag, Tag, value, render
 
@@ -26,14 +26,17 @@ from .gtag import GTagApp
 
 import asyncio,json
 
-class Response(dict):
+class GSResponse(dict):
     def __init__(self,type,dico):
         self.type=type
         super().__init__( dico)
+    def __repr__(self):
+        return "----------"+self.type+"-----------"+json.dumps(self,indent=4)
 
 class GSimu:
     """ New (Guy/GTag) Simulator """
-    def __init__(self, gtag, webMode=False):
+    def __init__(self, gtag, webMode=False, start=None):
+        gtag._call=start
         self.gapp = GTagApp(gtag, webMode)
         self.gapp._callMe = self._mockCallMe  # guy override!
         assert self.gapp.render()
@@ -51,7 +54,7 @@ class GSimu:
 
         ll=[]
         for i in self._iter:
-            ll.append( Response("INIT", i) )
+            ll.append( GSResponse("INIT", i) )
 
         for e in self.event(self.main, "_start"):
             ll.append(e)
@@ -63,9 +66,9 @@ class GSimu:
         r = asyncio.run( self.gapp.bindUpdate(gobject.id, "fake", eventMethod, a,k))  # GID is None
         ll=[]
         for i in self._iter:
-            ll.append( Response("%s yield" % eventMethod, i) )
+            ll.append( GSResponse("%s yield" % eventMethod, i) )
 
-        ll.append( None if r is None else Response( "%s end" % eventMethod, r ) )
+        ll.append( None if r is None else GSResponse( "%s end" % eventMethod, r ) )
         return ll
 
     @property
