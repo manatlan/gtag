@@ -67,20 +67,142 @@ class Section(GTag):
         return Tag.section(*self._args,**self._kargs,klass="section")
 
 
+import math
+
 class Table(GTag):
-    def init(self,rows:list,cols:list=None):
+    def init(self,rows:list,cols:list=None,pageSize:int=None,pageIndex:int=0):
         self.rows=rows
         self.cols=cols
+        self.pageSize=pageSize
+        self.pageIndex=pageIndex
+
     def build(self):
         if self.cols:
             h=Tag.thead(*[Tag.th(col) for col in self.cols])
         else:
             h=None
+
+        if self.pageSize is None:
+            rows=self.rows
+            nbPage=1
+        else:
+            rows=self.rows[ self.pageIndex*self.pageSize:self.pageIndex*self.pageSize + self.pageSize]
+            nbPage=math.ceil(len(self.rows)/self.pageSize)
+
         ll=[]
-        for row in self.rows:
-            row=row if hasattr(row,"__iter__") else [row]
-            ll.append( Tag.tr( *[Tag.td(col) for col in row] ))
-        return Tag.table(h,Tag.tbody(*ll),klass="table is-bordered is-striped is-narrow is-hoverable is-fullwidth")
+        #~ for row in rows:
+            #~ row=row if hasattr(row,"__iter__") else [row]
+            #~ ll.append( Tag.tr( *[Tag.td(col) for col in row] ) )
+
+        for idx in range(self.pageIndex*self.pageSize,self.pageIndex*self.pageSize + self.pageSize):
+            if idx<len(self.rows):
+                row=self.rows[idx]
+                if callable(row):
+                    cols=row(idx)
+                elif hasattr(row,"__iter__"):
+                    cols=row
+                else:
+                    cols=[row]
+
+                ll.append( Tag.tr( *[Tag.td(col) for col in cols] ) )
+
+        t=Tag.table(h,Tag.tbody(*ll),klass="table is-bordered is-striped is-narrow is-hoverable is-fullwidth")
+        if self.pageSize is None or nbPage<=1:
+            return t
+        else:
+            nav=Tag.nav(klass="pagination is-small",role="navigation",aria_label="pagination")
+            if self.pageIndex>0:
+                nav.add( Tag.a("<<",klass="pagination-previous",onclick=self.bind.setPage(self.pageIndex-1)) )
+            else:
+                nav.add( Tag.a("<<",klass="pagination-previous",disabled=True) )
+            if self.pageIndex<nbPage-1:
+                nav.add( Tag.a(">>",klass="pagination-next",onclick=self.bind.setPage(self.pageIndex+1)) )
+            else:
+                nav.add( Tag.a(">>",klass="pagination-next",disabled=True) )
+
+            ul=Tag.ul(klass="pagination-list")
+            for i in range(0,nbPage):
+                if i==0 or i==nbPage-1 or self.pageIndex-3<=i<=self.pageIndex+3:
+                    klass="pagination-link is-current" if self.pageIndex==i else "pagination-link"
+                    ul.add( Tag.li( Tag.a((i+1),klass=klass,aria_label="Goto page %s"%(i+1),onclick=self.bind.setPage(i)) ))
+                    hole=False
+                else:
+                    if not hole:
+                        ul.add( Tag.li( Tag.a("&hellip;",klass="pagination-ellipsis")) )
+                        hole=True
+
+            nav.add(ul)
+
+            d=Tag.div(t)
+            d.add( nav )
+            return d
+
+    @render.local
+    def setPage(self,p):
+        self.pageIndex=p
+
+
+#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
+
+class Tags(GTag):
+    """
+        tags:       mutable list of tags (should be in choices)
+        choices:    complete list of available tags
+        editable :  can edit the tags or not
+    """
+    def init(self,tags:list,choices:list,editable=False):
+        self.tags=tags
+        self.editable=editable
+        self.choices=choices
+    def build(self):
+        d=Tag.span()
+        for i in self.choices:
+            if self.editable:
+                klass="tag is-success" if i in self.tags else "tag"
+                d.add( Tag.span(i,klass=klass,onclick=self.bind.switch(i),style="cursor:pointer") )
+            else:
+                if i in self.tags:
+                    d.add( Tag.span(i,klass="tag is-success") )
+        return d
+
+    def switch(self,t):
+        if t in self.tags:
+            self.tags.remove(t)
+        else:
+            self.tags.append(t)
+
+#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
+
+class PopMenu(GTag):
+    def init(self,menu:dict):
+        self.menu=menu
+    def build(self):
+        if self.menu and self.menu.get("entries"):
+            entries=Tag.ul(klass="menu-list")
+            for name,event in self.menu["entries"].items():
+                entries.add( Tag.li( Tag.a(name,onclick=self.bind.close()+";"+event) ))
+
+            if "pos" in self.menu:
+                fix="left:%spx;top:%spx" % (self.menu["pos"]["x"],self.menu["pos"]["y"])
+            else:
+                fix=""
+
+            return Tag.span(
+                    Tag.div(
+                        klass="modal-background",
+                        onclick=self.bind.close(),
+                        style="background-color:inherit"
+                    ),
+                    Tag.div(
+                        Tag.aside(entries,klass="menu"),
+                        klass="card",
+                        style="position:fixed;z-index:10000;padding:2px;"+fix,
+                    ),
+            )
+
+    def close(self):
+        self.menu=None
+
 
 class MBox(GTag):
     def init(self,content,canClose=True):
@@ -281,41 +403,25 @@ class Checkbox(GTag):
 
 if __name__=="__main__":
 
-    # class M(GTag):
-    #     size=(400,400)
-    #     def init(self,n,t):
-    #         self.v=False
-    #         self.n=n
-    #         self.t=t
-
-    #     def build(self):
-    #         tt=Table([[1,2,3,4],[1,2,3,4]],cols=list("abcd"))
-    #         return Tag.div(tt,
-    #             Checkbox(self.v,"ok ?"),
-    #             RadioButtons(self.n,[1,2,3],self.v),
-    #             Tabs(self.n,[1,2,3],self.v),
-    #             SelectButtons(self.n,[1,2,3],self.v),
-    #             InputText(self.t,disabled=self.v),
-    #             TextArea(self.t,disabled=self.v),
-    #             self.v,
-    #         )
-
-    # app=M(1,"hello")
-    # app.run()
-
-    class XMain(GTag):
-    #########################################################################
-        def init(self,v):
-            self.x=v
+    class M(GTag):
+        size=(400,400)
+        def init(self,n,t):
+            self.v=False
+            self.n=n
+            self.t=t
 
         def build(self):
-            return Tag.div(
-                RadioButtons(self.x,["111","222"]),
-                self.x,
+            tt=Table([(i,"ab",3.14,"yo") for i in range(111)],cols=list("abcd"),pageSize=10) # add pageIndex to keep current page
+            return Tag.div(tt,
+                Checkbox(self.v,"ok ?"),
+                RadioButtons(self.n,[1,2,3],self.v),
+                Tabs(self.n,[1,2,3],self.v),
+                SelectButtons(self.n,[1,2,3],self.v),
+                InputText(self.t,disabled=self.v),
+                TextArea(self.t,disabled=self.v),
+                self.v,
             )
 
-
-
-
-    app=XMain( "111" )
+    app=M(1,"hello")
     app.run()
+

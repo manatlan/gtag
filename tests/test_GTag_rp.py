@@ -6,6 +6,20 @@ from gtag import GTag,Tag,value
 from gtag import gtag
 import pytest
 
+def test_autocreate_rp():
+    class A(GTag):
+        def init(self):
+            self.v="1"  # RP !
+            self._v="1" # not a RP, just a normal STR
+
+    a=A()
+    assert isinstance(a.v,gtag.ReactiveProp)
+    assert isinstance(a.v,str)  # react prop from str!
+    assert not isinstance(a._v,gtag.ReactiveProp) # normal prop !
+    assert isinstance(a._v,str) # normal prop !
+    assert a.v=="1"
+    assert a._v=="1"
+
 def test_change_rp_values():
     class A(GTag):
         def init(self):
