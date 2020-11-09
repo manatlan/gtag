@@ -82,9 +82,6 @@ class Table(GTag):
         else:
             h=None
 
-        print("pageSize=",self.pageSize)
-        print("pageIndex=",self.pageIndex)
-
         if self.pageSize == None:
             rows=self.rows
             nbPage=1
