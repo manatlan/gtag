@@ -82,11 +82,16 @@ class Table(GTag):
         else:
             h=None
 
-        if self.pageSize is None:
+        print("pageSize=",self.pageSize)
+        print("pageIndex=",self.pageIndex)
+
+        if self.pageSize == None:
             rows=self.rows
             nbPage=1
+            i1,i2=0,len(rows)
         else:
-            rows=self.rows[ self.pageIndex*self.pageSize:self.pageIndex*self.pageSize + self.pageSize]
+            i1,i2=self.pageIndex*self.pageSize,self.pageIndex*self.pageSize + self.pageSize
+            rows=self.rows[ i1:i2 ]
             nbPage=math.ceil(len(self.rows)/self.pageSize)
 
         ll=[]
@@ -94,7 +99,7 @@ class Table(GTag):
             #~ row=row if hasattr(row,"__iter__") else [row]
             #~ ll.append( Tag.tr( *[Tag.td(col) for col in row] ) )
 
-        for idx in range(self.pageIndex*self.pageSize,self.pageIndex*self.pageSize + self.pageSize):
+        for idx in range(i1,i2):
             if idx<len(self.rows):
                 row=self.rows[idx]
                 if callable(row):
@@ -107,7 +112,7 @@ class Table(GTag):
                 ll.append( Tag.tr( *[Tag.td(col) for col in cols] ) )
 
         t=Tag.table(h,Tag.tbody(*ll),klass="table is-bordered is-striped is-narrow is-hoverable is-fullwidth")
-        if self.pageSize is None or nbPage<=1:
+        if self.pageSize == None or nbPage<=1:
             return t
         else:
             nav=Tag.nav(klass="pagination is-small",role="navigation",aria_label="pagination")
@@ -411,7 +416,8 @@ if __name__=="__main__":
             self.t=t
 
         def build(self):
-            tt=Table([(i,"ab",3.14,"yo") for i in range(111)],cols=list("abcd"),pageSize=10) # add pageIndex to keep current page
+            tt=Table([(i,"ab",3.14,"yo") for i in range(111)],cols=list("abcd")) # add pageIndex to keep current page
+            # tt=Table([(i,"ab",3.14,"yo") for i in range(111)],cols=list("abcd"),pageSize=10) # add pageIndex to keep current page
             return Tag.div(tt,
                 Checkbox(self.v,"ok ?"),
                 RadioButtons(self.n,[1,2,3],self.v),
