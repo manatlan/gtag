@@ -1,0 +1,35 @@
+site_name: Gtag's Docs
+site_description: GUI toolkit for building applications for desktop, web, and mobile from a single python3 codebase
+
+theme:
+    name: 'material'
+    palette:
+        primary: 'black'
+        accent: 'black'
+
+repo_name: manatlan/gtag
+repo_url: https://github.com/manatlan/gtag
+edit_uri: ""
+
+nav:
+    - Introduction: 'index.md'
+    - Tuto:
+      - Simplest: '10_simplest.md'
+      - Simplest2: '15_simplest.md'
+      - Interaction: '20_interaction.md'
+      - Databinding: '30_databind.md'
+      - Componentize: '40_nested.md'
+      - Understand lifecyle: '50_understand_lifecyle.md'
+      - Interact with js: '55_interact_with_js.md'
+      - Hold your state: '60_hold_your_state.md'
+      - Manage your events: '70_events.md'
+      - Optimize your rendering: '80_optimize_rendering.md'
+      - Customize your rendering: '90_include_js_css.md'
+      - Final words: '99_final_words.md'
+    - GTag: 'gtag.md'
+    - Tag: 'tag.md'
+
+markdown_extensions:
+  - markdown.extensions.codehilite:
+      guess_lang: false
+  - admonition      
